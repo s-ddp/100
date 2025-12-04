@@ -13,6 +13,6 @@
     "lib": ["ES2021"],
     "typeRoots": ["./src/types"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

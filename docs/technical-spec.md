@@ -57,6 +57,43 @@
 - Audit fields and soft-delete where appropriate.
 - Unique constraints to prevent overselling; reservation expirations for seat holds.
 
+## Interactive Seatmap — Water Events
+
+### Backend
+- **Routes**
+  - `GET /events` — список событий (Астрамарин + локальные water-*).
+  - `GET /events/:id` — детальная карточка события.
+  - `GET /events/:id/seat-layout` — иерархия палуб/рядов/мест, единый `seatCode`.
+  - `GET /events/:id/seats` — статусы мест (`free|sold|reserved|selected|unknown`).
+  - `GET /events/:id/ticket-types` — типы билетов для события.
+  - `GET /events/:id/prices` — цены по типам билетов и местам.
+  - `POST /events/:id/seats/lock` — блокировка мест на TTL.
+  - `POST /events/:id/seats/unlock` — снятие блокировки.
+
+- **Seat Locking**
+  - Модель Prisma: `WaterSeatLock` (таблица `water_seat_locks`).
+  - Рабочий процесс:
+    1. Клиент вызывает `/seats/lock` с `sessionId` и `seats[]`.
+    2. API создаёт записи `WaterSeatLock` с `expiresAt = now + TTL`.
+    3. При необходимости вызывает `astraClient.lockSeat`.
+    4. Worker `seatLockCleaner` регулярно чистит истёкшие блокировки и отменяет удалённые локи у Астрамарин.
+
+- **WebSocket**
+  - Собственный WebSocket-сервер на `/ws/seatmap`.
+  - При изменении статуса места `emitSeatStatus(eventId, seatCode, status)` пушит обновление всем подписчикам события.
+
+### Frontend (Next.js)
+- Используется Next.js App Router (`/services/web/app`).
+- Основные страницы:
+  - `/events` — список событий.
+  - `/events/[id]` — карточка события.
+  - `/events/[id]/seatmap` — интерактивная схема мест.
+- Компонент `SeatMapClient`:
+  - грузит layout / статусы мест / типы билетов / цены,
+  - управляет выбором мест и отправкой `lock` / `unlock`,
+  - подписывается на обновления по WebSocket,
+  - отображает легенду, количество выбранных мест и сумму заказа.
+
 ## API Surface (To Refine)
 - Public APIs for catalog retrieval, seat maps, availability checks, checkout, and order retrieval.
 - CRM APIs for agent actions (refunds when eligible; resend confirmations), support cases, and reporting. Exchanges and transfers are out of scope.

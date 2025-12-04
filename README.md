@@ -1,9 +1,10 @@
-# 100
+# Ticket Sales Website & CRM
 
-## Status
+This repository will house the roadmap and technical specification for a ticket sales website and its supporting CRM.
 
-Requested information for "Create custom CRM system for ticket sales" is not present in this repository or workspace. A search across the project did not find any related files or references.
+## Documents
+- [Roadmap](docs/roadmap.md)
+- [Technical Specification](docs/technical-spec.md)
 
-## Additional context
-
-The prior dialog content for "Create custom CRM system for ticket sales" is not stored in this repository or available in the workspace. If you can re-share the details or requirements from that conversation, they can be added here or used to populate the new repository structure.
+## Collaboration Workflow
+We will iterate on requirements by asking focused questions one at a time. Your answers will be captured in the documents above to refine scope, milestones, and the technical plan.

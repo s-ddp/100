@@ -39,6 +39,9 @@ export default function SeatMapClient({ eventId }) {
   const [levelIndex, setLevelIndex] = useState(0);
   const [seatStatus, setSeatStatus] = useState({});
   const [selectedSeats, setSelectedSeats] = useState([]);
+  const [ticketTypes, setTicketTypes] = useState([]);
+  const [selectedTicketType, setSelectedTicketType] = useState(null);
+  const [seatPrices, setSeatPrices] = useState({});
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [view, setView] = useState({ scale: 1, x: 0, y: 0 });
@@ -83,6 +86,67 @@ export default function SeatMapClient({ eventId }) {
     const timer = setInterval(fetchStatuses, 10000);
     return () => clearInterval(timer);
   }, [fetchStatuses]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadTicketTypes() {
+      try {
+        const resp = await fetch(`${API_URL}/events/${eventId}/ticket-types`);
+        const json = await resp.json();
+        if (cancelled) return;
+        const types = json.ticketTypes ?? [];
+        setTicketTypes(types);
+        setSelectedTicketType(types[0] ?? null);
+      } catch {
+        if (!cancelled) {
+          setTicketTypes([]);
+          setSelectedTicketType(null);
+        }
+      }
+    }
+
+    loadTicketTypes();
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId]);
+
+  useEffect(() => {
+    if (!selectedTicketType) {
+      setSeatPrices({});
+      return;
+    }
+
+    let cancelled = false;
+
+    async function loadPrices() {
+      try {
+        const resp = await fetch(
+          `${API_URL}/events/${eventId}/prices?ticketTypeId=${selectedTicketType.id}`,
+        );
+        const json = await resp.json();
+        if (cancelled) return;
+
+        const pricesMap = {};
+        for (const entry of json.prices ?? []) {
+          if (entry.seatCode) {
+            pricesMap[entry.seatCode] = entry.price;
+          }
+        }
+        setSeatPrices(pricesMap);
+      } catch {
+        if (!cancelled) {
+          setSeatPrices({});
+        }
+      }
+    }
+
+    loadPrices();
+    return () => {
+      cancelled = true;
+    };
+  }, [eventId, selectedTicketType]);
 
   useEffect(() => {
     const socket = new WebSocket(wsUrl(`/ws/events/${eventId}/seatmap`));
@@ -266,6 +330,34 @@ export default function SeatMapClient({ eventId }) {
       </div>
 
       <div style={{ border: "1px solid #1f2937", borderRadius: 12, padding: 12, background: "#0b1220" }}>
+        <div style={{ marginBottom: 12 }}>
+          <label style={{ fontSize: 13, color: "#9ca3af", display: "block", marginBottom: 4 }}>
+            Тип билета
+          </label>
+          <select
+            value={selectedTicketType?.id ?? ""}
+            onChange={(e) => {
+              const next = ticketTypes.find((t) => t.id === e.target.value);
+              setSelectedTicketType(next || null);
+            }}
+            style={{
+              padding: 6,
+              borderRadius: 6,
+              border: "1px solid #4b5563",
+              background: "#020617",
+              color: "white",
+              width: "100%",
+            }}
+          >
+            {ticketTypes.map((tt) => (
+              <option key={tt.id} value={tt.id}>
+                {tt.name}
+                {tt.minPrice ? ` — от ${tt.minPrice} ₽` : ""}
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div style={{ fontWeight: 600, marginBottom: 8 }}>Выбранные места</div>
         {selectedSeats.length === 0 ? (
           <div style={{ color: "#9ca3af" }}>Пока ничего не выбрано</div>
@@ -287,6 +379,22 @@ export default function SeatMapClient({ eventId }) {
             ))}
           </div>
         )}
+
+        <div style={{ marginTop: 16, fontSize: 14, color: "#e5e7eb" }}>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Места:</span>
+            <span>{selectedSeats.length}</span>
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between" }}>
+            <span>Сумма:</span>
+            <span>
+              {selectedSeats
+                .reduce((sum, code) => sum + (seatPrices[code] || 0), 0)
+                .toLocaleString("ru-RU")}{" "}
+              ₽
+            </span>
+          </div>
+        </div>
       </div>
     </div>
   );

@@ -1,10 +1,24 @@
 import { Router } from "../vendor/express";
 import { astraClient } from "../core/astraClient";
 import { getPrismaClient } from "../core/prisma";
-import { waterEvents, waterSeatMaps, waterTrips, waterVessels } from "../water-data";
+import {
+  buildSeatStatus,
+  findPrice,
+  findSeatMapForEvent,
+  getSeatCategoryForSeat,
+  listTicketTypes,
+  listVessels,
+  nextTripForEvent,
+  reservationKey,
+  resolveEvent,
+  resolveTrip,
+  seatReservations,
+} from "../core/waterStore";
+import { waterEvents, waterSeatPrices, waterSeatMaps, waterTrips, waterVessels } from "../water-data";
 import { emitSeatStatus } from "../ws/seatmapHub";
 
 export const eventsRouter = Router();
+const seatLockTtlMs = Number(process.env.SEAT_LOCK_TTL_MS ?? 10 * 60 * 1000);
 
 eventsRouter.get("/", async (req, res, next) => {
   try {
@@ -15,22 +29,56 @@ eventsRouter.get("/", async (req, res, next) => {
       dateTo: typeof dateTo === "string" ? dateTo : undefined,
     });
 
-    const events = astra.events.map((ev) => ({
-      id: ev.eventID,
-      name: ev.eventName,
-      datetime: ev.eventDateTime,
-      serviceId: ev.serviceID,
-      serviceName: ev.serviceName,
-      venueName: ev.venueName,
-      pierName: ev.pierName,
-      endPointName: ev.endPointName,
-      duration: ev.eventDuration,
-      availableSeats: ev.availableSeats,
-      freeSeating: ev.eventFreeSeating,
-      noSeats: ev.eventNoSeats,
-    }));
+    const events = (astra.events.length
+      ? astra.events.map((ev) => {
+          const waterEvent = resolveEvent(ev.serviceID || ev.eventID);
+          const nextTrip = waterEvent ? nextTripForEvent(waterEvent.id) : null;
+          const datetime = ev.eventDateTime ?? nextTrip?.departureDateTime ?? null;
 
-    res.json({ events });
+          return {
+            id: waterEvent?.id ?? ev.eventID,
+            name: ev.eventName,
+            title: waterEvent?.title ?? ev.eventName,
+            datetime,
+            serviceId: ev.serviceID,
+            serviceName: ev.serviceName,
+            venueName: ev.venueName,
+            pierName: ev.pierName ?? nextTrip?.pierStart,
+            endPointName: ev.endPointName ?? nextTrip?.pierEnd,
+            duration: ev.eventDuration ?? waterEvent?.durationMinutes,
+            availableSeats: ev.availableSeats ?? nextTrip?.availableSeats,
+            freeSeating: ev.eventFreeSeating,
+            noSeats: ev.eventNoSeats,
+            city: waterEvent?.city,
+            category: waterEvent?.category,
+            hasSeating: waterEvent?.hasSeating,
+            image: waterEvent?.image,
+          };
+        })
+      : waterEvents.map((event) => {
+          const nextTrip = nextTripForEvent(event.id);
+          return {
+            id: event.id,
+            name: event.title,
+            title: event.title,
+            datetime: nextTrip?.departureDateTime ?? null,
+            serviceId: event.id,
+            serviceName: event.title,
+            venueName: event.city,
+            pierName: nextTrip?.pierStart ?? event.pierStart,
+            endPointName: nextTrip?.pierEnd ?? event.pierEnd,
+            duration: event.durationMinutes,
+            availableSeats: nextTrip?.availableSeats,
+            freeSeating: !event.hasSeating,
+            noSeats: !event.hasSeating,
+            city: event.city,
+            category: event.category,
+            hasSeating: event.hasSeating,
+            image: event.image,
+          };
+        }));
+
+    res.json({ events, total: events.length });
   } catch (err) {
     next(err);
   }
@@ -41,6 +89,26 @@ eventsRouter.get("/:eventId", async (req, res, next) => {
     const { eventId } = req.params ?? {};
     if (!eventId) {
       return res.status(400).json({ error: "eventId is required" });
+    }
+
+    const waterEvent = resolveEvent(eventId);
+
+    if (waterEvent) {
+      const prisma = getPrismaClient();
+      const seatLocks = prisma
+        ? await (prisma as any).waterSeatLock.findMany({ where: { eventId: waterEvent.id } })
+        : [];
+      const vessel = listVessels().find((v) => v.id === waterEvent.vesselId);
+      const seatMap = buildSeatStatus(waterEvent.id, undefined, seatLocks);
+      const trips = waterTrips.filter((trip) => trip.eventId === waterEvent.id);
+      return res.json({
+        event: {
+          ...waterEvent,
+          vessel,
+          seatMap,
+          trips,
+        },
+      });
     }
 
     const astra = await astraClient.getEvents({ eventID: eventId });
@@ -75,6 +143,12 @@ eventsRouter.get("/:eventId/seat-layout", async (req, res, next) => {
       return res.status(400).json({ error: "eventId is required" });
     }
     const prisma = getPrismaClient();
+
+    const seatLocks = prisma ? await (prisma as any).waterSeatLock.findMany({ where: { eventId } }) : [];
+    const seatLayout = buildSeatStatus(eventId, undefined, seatLocks);
+    if (seatLayout) {
+      return res.json(seatLayout);
+    }
 
     if (prisma) {
       try {
@@ -139,12 +213,72 @@ eventsRouter.get("/:eventId/seat-layout", async (req, res, next) => {
   }
 });
 
+eventsRouter.get("/:eventId/trips", (req, res) => {
+  const { eventId } = req.params ?? {};
+  if (!eventId) {
+    return res.status(400).json({ error: "eventId is required" });
+  }
+
+  const event = resolveEvent(eventId);
+  if (!event) {
+    return res.status(404).json({ error: "Event not found" });
+  }
+
+  const trips = waterTrips.filter((trip) => trip.eventId === event.id);
+  return res.json({ eventId: event.id, trips, total: trips.length });
+});
+
+eventsRouter.get("/:eventId/categories", (req, res) => {
+  const { eventId } = req.params ?? {};
+  if (!eventId) {
+    return res.status(400).json({ error: "eventId is required" });
+  }
+
+  const event = resolveEvent(eventId);
+  if (!event) {
+    return res.status(404).json({ error: "Event not found" });
+  }
+
+  const seatMap = findSeatMapForEvent(event.id);
+  const categories =
+    seatMap?.areas.map((area: any) => ({
+      id: area.id,
+      name: area.name,
+      priceFrom: waterSeatPrices.find((price) => price.eventId === event.id && price.seatCategoryId === area.id)?.price,
+      seats: area.seats.length,
+    })) ?? [];
+
+  return res.json({ eventId: event.id, categories, total: categories.length });
+});
+
 eventsRouter.get("/:eventId/seats", async (req, res, next) => {
   try {
     const { eventId } = req.params ?? {};
     if (!eventId) {
       return res.status(400).json({ error: "eventId is required" });
     }
+    const prisma = getPrismaClient();
+    const event = resolveEvent(eventId);
+    if (event) {
+      const seatLocks = prisma ? await (prisma as any).waterSeatLock.findMany({ where: { eventId: event.id } }) : [];
+      const trip = typeof req.query?.tripId === "string" ? resolveTrip(req.query.tripId) : null;
+      const seatMap = buildSeatStatus(event.id, trip?.id, seatLocks);
+      const seats =
+        seatMap?.areas.flatMap((area: any) =>
+          area.seats.map((seat: any) => ({
+            seatId: seat.id,
+            alias: seat.alias ?? seat.seatCode,
+            status: seat.status,
+            seatCategoryId: area.id,
+            seatCategoryName: area.name,
+            ticketsPerSeat: seat.ticketsPerSeat ?? 1,
+            availableTickets: seat.ticketsPerSeat ?? 1,
+            reservation: seat.reservation,
+          })),
+        ) ?? [];
+      return res.json({ eventId: event.id, seats });
+    }
+
     const astraSeats = await astraClient.getSeatsOnEvent({ eventID: eventId });
 
     const seats = astraSeats.seats.map((s) => ({
@@ -170,6 +304,11 @@ eventsRouter.get("/:eventId/ticket-types", async (req, res, next) => {
       return res.status(400).json({ error: "eventId is required" });
     }
 
+    const event = resolveEvent(eventId);
+    if (event) {
+      return res.json({ eventId: event.id, ticketTypes: listTicketTypes(), total: listTicketTypes().length });
+    }
+
     const astraResp = await astraClient.getTicketTypes({
       eventID: eventId,
       email: process.env.ASTRA_EMAIL ?? undefined,
@@ -192,6 +331,17 @@ eventsRouter.get("/:eventId/prices", async (req, res, next) => {
 
     if (!ticketTypeId || typeof ticketTypeId !== "string") {
       return res.status(400).json({ error: "ticketTypeId is required" });
+    }
+
+    const event = resolveEvent(eventId);
+    if (event) {
+      const prices = waterSeatPrices.filter((price) => {
+        if (price.eventId !== event.id) return false;
+        if (seatCategoryId && price.seatCategoryId !== seatCategoryId) return false;
+        if (ticketTypeId && price.ticketTypeId !== ticketTypeId) return false;
+        return true;
+      });
+      return res.json({ eventId: event.id, prices, total: prices.length });
     }
 
     const astraResp = await astraClient.getSeatPrices({
@@ -243,13 +393,13 @@ eventsRouter.post("/:eventId/seats/lock", async (req, res, next) => {
           locked.push(seatId);
 
           if (prisma) {
-            await (prisma as any).seatLock.create({
+            await (prisma as any).waterSeatLock.create({
               data: {
                 eventId,
                 seatCode: seatId,
                 sessionId,
                 lockedAt: new Date(),
-                expiresAt: new Date(Date.now() + 5 * 60 * 1000),
+                expiresAt: new Date(Date.now() + seatLockTtlMs),
               },
             });
           }
@@ -290,7 +440,7 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
 
     if (!Array.isArray(seats) || seats.length === 0) {
       const lockedSeats = prisma
-        ? await (prisma as any).seatLock.findMany({ where: { eventId, sessionId } })
+        ? await (prisma as any).waterSeatLock.findMany({ where: { eventId, sessionId } })
         : [];
 
       await astraClient.cancelBookSeat({
@@ -301,7 +451,7 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
       });
 
       if (prisma) {
-        await (prisma as any).seatLock.deleteMany({
+        await (prisma as any).waterSeatLock.deleteMany({
           where: { eventId, sessionId },
         });
       }
@@ -326,7 +476,7 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
         if (result.isCanceledBookSeat) {
           unlocked.push(seatId);
           if (prisma) {
-            await (prisma as any).seatLock.deleteMany({
+            await (prisma as any).waterSeatLock.deleteMany({
               where: { eventId, sessionId, seatCode: seatId },
             });
           }
@@ -343,6 +493,85 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
   } catch (err) {
     next(err);
   }
+});
+
+eventsRouter.post("/:eventId/book", async (req, res) => {
+  const { eventId } = req.params ?? {};
+  const { sessionID, seatID, tripId } = req.body ?? {};
+
+  if (!eventId) {
+    return res.status(400).json({ error: "eventId is required" });
+  }
+  if (!sessionID || !seatID) {
+    return res.status(400).json({ error: "sessionID and seatID are required" });
+  }
+
+  const event = resolveEvent(eventId);
+  if (!event) {
+    return res.status(404).json({ error: "Event not found" });
+  }
+
+  const trip = tripId ? resolveTrip(tripId) : null;
+  if (tripId && !trip) {
+    return res.status(404).json({ error: "Trip not found", tripId });
+  }
+
+  const seatMap = findSeatMapForEvent(event.id);
+  const category = getSeatCategoryForSeat(seatMap, seatID);
+  if (!category) {
+    return res.status(404).json({ error: "Seat not found", seatID });
+  }
+
+  const key = reservationKey(event.id, trip?.id ?? tripId, seatID);
+  const existing = seatReservations.get(key);
+  if (existing && existing.sessionId !== sessionID && existing.status !== "sold") {
+    return res.status(409).json({ error: "Seat already reserved", seatID });
+  }
+
+  const holdExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+  const reservation = {
+    sessionId: sessionID,
+    seatId: seatID,
+    eventId: event.id,
+    tripId: trip?.id ?? tripId,
+    status: "reserved" as const,
+    holdExpiresAt,
+  };
+  seatReservations.set(key, reservation);
+  emitSeatStatus(event.id, seatID, "reserved");
+
+  return res.status(201).json({ reservation });
+});
+
+eventsRouter.post("/:eventId/unbook", async (req, res) => {
+  const { eventId } = req.params ?? {};
+  const { sessionID, seatID, tripId } = req.body ?? {};
+
+  if (!eventId) {
+    return res.status(400).json({ error: "eventId is required" });
+  }
+  if (!sessionID || !seatID) {
+    return res.status(400).json({ error: "sessionID and seatID are required" });
+  }
+
+  const event = resolveEvent(eventId);
+  if (!event) {
+    return res.status(404).json({ error: "Event not found" });
+  }
+
+  const key = reservationKey(event.id, tripId, seatID);
+  const existing = seatReservations.get(key);
+  if (!existing) {
+    return res.status(404).json({ error: "Reservation not found", seatID });
+  }
+  if (existing.sessionId !== sessionID) {
+    return res.status(403).json({ error: "Reservation belongs to another session", seatID });
+  }
+
+  seatReservations.delete(key);
+  emitSeatStatus(event.id, seatID, "free");
+
+  return res.json({ released: seatID });
 });
 
 function buildFixtureSeatLayout(eventId: string) {

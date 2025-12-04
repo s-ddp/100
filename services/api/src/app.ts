@@ -4,6 +4,7 @@ import { AppConfig } from "./config/env";
 import { createHealthRouter } from "./routes/health";
 import { eventsRouter } from "./routes/events";
 import { ordersRouter } from "./routes/orders";
+import { tripsRouter } from "./routes/trips";
 import { errorHandler } from "./middleware/error-handler";
 
 export function createApp(config: AppConfig) {
@@ -19,6 +20,7 @@ export function createApp(config: AppConfig) {
 
   app.use("/events", eventsRouter);
   app.use("/orders", ordersRouter);
+  app.use("/trips", tripsRouter);
 
   app.use(errorHandler);
 

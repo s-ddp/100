@@ -40,3 +40,11 @@ Status board for the five outstanding workstreams. Use this to coordinate the en
   - Add dashboards/alerts in Grafana for CRM API latency/error rates and support queue times.
   - Reflect SLAs in runbooks and customer/agent-facing expectations.
 - **Owner**: Product + Engineering.
+
+## 6) Interactive Seatmap — Implemented (MVP, ready for integration)
+- **Goal**: Deliver interactive seat maps for water events with live status, locking, and pricing integration.
+- **Notes**: API exposes layout, seat statuses, ticket types, prices, lock/unlock endpoints, plus WebSocket broadcast. Next.js seatmap UI consumes these and shows totals.
+
+## 7) Provider Integration (AstraMarine) — Ready (pending credentials/testing)
+- **Goal**: Run against the real AstraMarine API instead of stubs.
+- **Notes**: `astraClient` supports stub/real modes; set `ASTRA_USE_STUB=false`, `ASTRA_BASE_URL`, and `ASTRA_AUTH` to enable live calls. Awaiting real credentials and end-to-end verification.

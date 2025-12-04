@@ -19,7 +19,7 @@
 - Establish system architecture and hosting strategy (cloud/region, high availability, backups).
 - Choose core stack for web app (frontend, backend, DB), CRM UI framework, and CI/CD pipeline.
 - Define payment service approach with initial integration to ЮMoney (RUB settlements; no alternate payout schedules needed).
-- Capture refund/after-sales rules for tickets and rentals (refunds allowed until 24h before event start; no exchanges or transfers; sub-24h window is non-refundable/non-transferable).
+- Capture refund/after-sales rules for tickets and rentals (refunds allowed until 24h before event start; no exchanges or transfers; sub-24h window is non-refundable/non-transferable; no commissions/withholdings from the customer, merchant covers payment fees on refunds).
 
 ### Phase 2 — Core Ticketing
 - Build catalog management for events, venues, seating/sections, pricing tiers, and promotions.
@@ -51,7 +51,7 @@
 2. Which payment providers and payout/settlement requirements do we have? **(Resolved: integrate ЮMoney for RUB payments; no alternate payout schedules/currencies required)**
 3. Do we need reserved seating maps, general admission, or both? **(Resolved: combined model—seat maps shown when the vessel/event requires assigned seating; general admission flows when seating is not applicable)**
 4. What integrations are required (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**
-5. What refund, exchange, and transfer policies apply? **(Partially resolved: refunds allowed until 24h before event start; no exchanges or transfers; fees/commission rules pending)**
+5. What refund, exchange, and transfer policies apply? **(Resolved: refunds allowed until 24h before event start; no exchanges or transfers; no commissions/withholdings from the customer, merchant covers payment fees on refunds; sub-24h window is non-refundable/non-transferable)**
 6. What operational roles should the CRM support, and what permissions are needed? **(Pending)**
 7. Are there compliance constraints (GDPR, PCI scope, tax invoicing, data residency)? **(Partially resolved: data residency in Russia; tax/PCI specifics pending)**
 8. What reporting and KPI dashboards are required at launch? **(Pending)**

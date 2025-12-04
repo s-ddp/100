@@ -88,11 +88,32 @@
   - `/events` — список событий.
   - `/events/[id]` — карточка события.
   - `/events/[id]/seatmap` — интерактивная схема мест.
-- Компонент `SeatMapClient`:
-  - грузит layout / статусы мест / типы билетов / цены,
-  - управляет выбором мест и отправкой `lock` / `unlock`,
-  - подписывается на обновления по WebSocket,
-  - отображает легенду, количество выбранных мест и сумму заказа.
+  - Компонент `SeatMapClient`:
+    - грузит layout / статусы мест / типы билетов / цены,
+    - управляет выбором мест и отправкой `lock` / `unlock`,
+    - подписывается на обновления по WebSocket,
+    - отображает легенду, количество выбранных мест и сумму заказа.
+
+## CRM Orders for Water Events
+
+- **Prisma models**
+  - `CrmOrder` with customer contacts, status (`PENDING|LOCKED|PAID|CANCELLED|EXPIRED`), payment metadata, relation to `WaterEvent`, and `totalPrice` in minor units.
+  - `CrmOrderSeat` for seat-level price breakdowns bound to `CrmOrder`.
+
+- **Admin API (RBAC protected)**
+  - `GET /admin/orders` with filters by status, eventId, email, phone, dateFrom/dateTo.
+  - `GET /admin/orders/:orderId` — карточка заказа с местами и событием.
+  - `POST /admin/orders` — создание заказа (черновик/PENDING) с местами и ценами.
+  - `POST /admin/orders/:orderId/status` — смена статуса (PENDING/LOCKED/PAID/EXPIRED/CANCELLED).
+  - `POST /admin/orders/:orderId/cancel` — отмена с освобождением seat locks и пушем в seatmap WebSocket.
+
+- **Payments (ЮKassa)**
+  - `POST /payments/yookassa/create` — создаёт оплату по заказу, сохраняет `paymentId`/`paymentStatus` в `CrmOrder` и возвращает `confirmationUrl`.
+  - `POST /payments/yookassa/webhook` — обновляет `paymentStatus` и переводит заказ в `PAID`/`CANCELLED` по событиям YooKassa.
+
+- **Admin UI (Next.js)**
+  - `/admin/orders` — таблица заказов с фильтрами по email/телефон/статус/событие; ссылки на карточки.
+  - `/admin/orders/[id]` — детализация заказа, контактные данные, оплата, список мест, кнопки «Оплачен» и «Отменить».
 
 ## API Surface (To Refine)
 - Public APIs for catalog retrieval, seat maps, availability checks, checkout, and order retrieval.

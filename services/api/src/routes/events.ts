@@ -94,8 +94,12 @@ eventsRouter.get("/:eventId", async (req, res, next) => {
     const waterEvent = resolveEvent(eventId);
 
     if (waterEvent) {
+      const prisma = getPrismaClient();
+      const seatLocks = prisma
+        ? await (prisma as any).waterSeatLock.findMany({ where: { eventId: waterEvent.id } })
+        : [];
       const vessel = listVessels().find((v) => v.id === waterEvent.vesselId);
-      const seatMap = buildSeatStatus(waterEvent.id);
+      const seatMap = buildSeatStatus(waterEvent.id, undefined, seatLocks);
       const trips = waterTrips.filter((trip) => trip.eventId === waterEvent.id);
       return res.json({
         event: {
@@ -140,7 +144,8 @@ eventsRouter.get("/:eventId/seat-layout", async (req, res, next) => {
     }
     const prisma = getPrismaClient();
 
-    const seatLayout = buildSeatStatus(eventId);
+    const seatLocks = prisma ? await (prisma as any).waterSeatLock.findMany({ where: { eventId } }) : [];
+    const seatLayout = buildSeatStatus(eventId, undefined, seatLocks);
     if (seatLayout) {
       return res.json(seatLayout);
     }
@@ -252,10 +257,12 @@ eventsRouter.get("/:eventId/seats", async (req, res, next) => {
     if (!eventId) {
       return res.status(400).json({ error: "eventId is required" });
     }
+    const prisma = getPrismaClient();
     const event = resolveEvent(eventId);
     if (event) {
+      const seatLocks = prisma ? await (prisma as any).waterSeatLock.findMany({ where: { eventId: event.id } }) : [];
       const trip = typeof req.query?.tripId === "string" ? resolveTrip(req.query.tripId) : null;
-      const seatMap = buildSeatStatus(event.id, trip?.id);
+      const seatMap = buildSeatStatus(event.id, trip?.id, seatLocks);
       const seats =
         seatMap?.areas.flatMap((area: any) =>
           area.seats.map((seat: any) => ({

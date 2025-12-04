@@ -28,7 +28,7 @@ Status board for the five outstanding workstreams. Use this to coordinate the en
 ## 4) Vertical Slice (Catalog → Seat Map → Checkout → Docs → CRM) — In Progress
 - **Goal**: Deliver a sandbox flow: catalog/search → selection/seat map → ЮMoney checkout (full payment) → e-ticket/email + auto invoices/acts → CRM order view with 24h refund enforcement.
 - **Immediate actions**:
-  - CRM order listing now available at `/crm/orders` (with SLO context) and document payloads at `/orders/:id/documents`; wire these into the front-end CRM view.
+  - Admin CRM now exposes `/admin/orders` (filters, status updates, cancel with seat unlock) plus Next.js pages `/admin/orders` and `/admin/orders/:id`.
   - Integrate ЮMoney sandbox with fiscalization hooks and refund API honoring cutoff; reuse `/metrics` for basic health dashboards.
   - Surface SLA flags and refund controls in CRM while persisting orders/documents to PostgreSQL.
 - **Owner**: Full-stack.

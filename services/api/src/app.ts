@@ -5,6 +5,8 @@ import { createHealthRouter } from "./routes/health";
 import { eventsRouter } from "./routes/events";
 import { ordersRouter } from "./routes/orders";
 import { tripsRouter } from "./routes/trips";
+import { adminOrdersRouter } from "./routes/adminOrders";
+import { paymentsRouter } from "./routes/payments";
 import { errorHandler } from "./middleware/error-handler";
 
 export function createApp(config: AppConfig) {
@@ -21,6 +23,8 @@ export function createApp(config: AppConfig) {
   app.use("/events", eventsRouter);
   app.use("/orders", ordersRouter);
   app.use("/trips", tripsRouter);
+  app.use("/admin/orders", adminOrdersRouter);
+  app.use("/payments", paymentsRouter);
 
   app.use(errorHandler);
 

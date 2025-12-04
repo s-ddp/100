@@ -103,11 +103,57 @@ export function listVessels() {
   return waterVessels;
 }
 
-export function buildSeatStatus(eventId: string, tripId?: string | null) {
+type SeatLock = {
+  seatCode?: string | null;
+  sessionId?: string | null;
+  expiresAt?: Date | string | null;
+};
+
+function normalizeSeatStatus(
+  status?: string | null,
+): "free" | "sold" | "reserved" | "selected" | "unknown" {
+  if (!status) return "free";
+  const lowered = status.toLowerCase();
+  if (lowered === "available" || lowered === "free") return "free";
+  if (lowered === "sold") return "sold";
+  if (lowered === "reserved" || lowered === "locked") return "reserved";
+  if (lowered === "selected") return "selected";
+  return "unknown";
+}
+
+export function buildSeatStatus(eventId: string, tripId?: string | null, seatLocks: SeatLock[] = []) {
   const event = resolveEvent(eventId);
   const trip = tripId ? resolveTrip(tripId) : null;
   const seatMap = findSeatMapForEvent(eventId);
   if (!seatMap) return null;
+
+  const mapSeat = (seat: any) => {
+    const reservation =
+      seatReservations.get(reservationKey(eventId, tripId, seat.id)) ||
+      seatReservations.get(reservationKey(eventId, null, seat.id));
+    const dbLock = seatLocks.find((lock) => lock.seatCode === seat.id || lock.seatCode === seat.seatCode);
+    const status = reservation?.status === "sold"
+      ? "sold"
+      : reservation?.status === "reserved" || dbLock
+        ? "reserved"
+        : normalizeSeatStatus(seat.status);
+    const holdExpiresAt =
+      reservation?.holdExpiresAt ?? (dbLock?.expiresAt ? new Date(dbLock.expiresAt).toISOString() : undefined);
+
+    return {
+      ...seat,
+      status,
+      reservation:
+        (reservation || dbLock) && status !== "free"
+          ? {
+              sessionID: reservation?.sessionId ?? dbLock?.sessionId ?? undefined,
+              status,
+              holdExpiresAt,
+              orderId: reservation?.orderId,
+            }
+          : undefined,
+    };
+  };
 
   return {
     eventId: event?.id ?? eventId,
@@ -117,29 +163,7 @@ export function buildSeatStatus(eventId: string, tripId?: string | null) {
     ...seatMap,
     areas: seatMap.areas.map((area) => ({
       ...area,
-      seats: area.seats.map((seat: any) => {
-        const reservation =
-          seatReservations.get(reservationKey(eventId, tripId, seat.id)) ||
-          seatReservations.get(reservationKey(eventId, null, seat.id));
-        const status = reservation?.status === "sold"
-          ? "sold"
-          : reservation?.status === "reserved"
-            ? "reserved"
-            : seat.status ?? "available";
-        return {
-          ...seat,
-          status,
-          reservation:
-            reservation && status !== "available"
-              ? {
-                  sessionID: reservation.sessionId,
-                  status: reservation.status,
-                  holdExpiresAt: reservation.holdExpiresAt,
-                  orderId: reservation.orderId,
-                }
-              : undefined,
-        };
-      }),
+      seats: area.seats.map(mapSeat),
     })),
     levels: [
       {
@@ -148,34 +172,13 @@ export function buildSeatStatus(eventId: string, tripId?: string | null) {
         backgroundSvg: seatMap.backgroundSvg,
         areas: seatMap.areas.map((area) => ({
           ...area,
-          seats: area.seats.map((seat: any) => {
-            const reservation =
-              seatReservations.get(reservationKey(eventId, tripId, seat.id)) ||
-              seatReservations.get(reservationKey(eventId, null, seat.id));
-            const status = reservation?.status === "sold"
-              ? "sold"
-              : reservation?.status === "reserved"
-                ? "reserved"
-                : seat.status ?? "available";
-            return {
-              ...seat,
-              status,
-              reservation:
-                reservation && status !== "available"
-                  ? {
-                      sessionID: reservation.sessionId,
-                      status: reservation.status,
-                      holdExpiresAt: reservation.holdExpiresAt,
-                      orderId: reservation.orderId,
-                    }
-                  : undefined,
-            };
-          }),
+          seats: area.seats.map(mapSeat),
         })),
       },
     ],
   };
 }
+
 
 export function createSeatOrder(params: {
   eventId: string;

@@ -1,5 +1,13 @@
 import crypto from 'node:crypto';
 import { sampleCatalog, sampleSuppliers } from './sample-data.js';
+import {
+  waterEvents,
+  waterSeatMaps,
+  waterSeatPrices,
+  waterTicketTypes,
+  waterTrips,
+  waterVessels,
+} from './water-data.js';
 
 function nowIso() {
   return new Date().toISOString();
@@ -93,8 +101,15 @@ export function createRequestHandler(config, logger, options = {}) {
   const basePayload = { service: config.serviceName, env: config.env };
   const catalog = options.catalogData || sampleCatalog;
   const suppliers = options.supplierData || sampleSuppliers;
+  const events = options.waterEventsData || waterEvents;
+  const trips = options.waterTripsData || waterTrips;
+  const seatMaps = options.waterSeatMaps || waterSeatMaps;
+  const vessels = options.waterVessels || waterVessels;
+  const seatPrices = options.waterSeatPrices || waterSeatPrices;
+  const ticketTypes = options.waterTicketTypes || waterTicketTypes;
   const orders = options.orderStore || [];
   const supportCases = options.supportCaseStore || [];
+  const seatReservations = options.seatReservations || new Map();
   const defaultVatRate = typeof config.vatDefaultRate === 'number' ? config.vatDefaultRate : 0;
   const defaultVatMode = config.vatDefaultMode || 'included';
   const metrics = {
@@ -152,11 +167,86 @@ export function createRequestHandler(config, logger, options = {}) {
     };
   }
 
+  function findEvent(eventId) {
+    return events.find((entry) => entry.id === eventId);
+  }
+
+  function findTrip(tripId) {
+    return trips.find((entry) => entry.id === tripId);
+  }
+
+  function findSeatMapForEvent(event) {
+    if (!event?.seatMapId) return null;
+    return seatMaps.find((map) => map.id === event.seatMapId) || null;
+  }
+
+  function getSeatCategoryForSeat(seatMap, seatId) {
+    if (!seatMap) return null;
+    for (const area of seatMap.areas) {
+      if (area.seats.some((seat) => seat.id === seatId)) {
+        return area;
+      }
+    }
+    return null;
+  }
+
+  function reservationKey(eventId, tripId, seatId) {
+    return `${eventId}:${tripId || 'na'}:${seatId}`;
+  }
+
+  function buildSeatStatus(seatMap, eventId, tripId) {
+    if (!seatMap) return null;
+    return {
+      ...seatMap,
+      areas: seatMap.areas.map((area) => ({
+        ...area,
+        seats: area.seats.map((seat) => {
+          const key = reservationKey(eventId, tripId, seat.id);
+          const reservation = seatReservations.get(key);
+          const status = reservation?.status === 'sold' ? 'sold' : reservation?.status === 'reserved' ? 'reserved' : seat.status;
+          return {
+            ...seat,
+            status,
+            reservation: reservation
+              ? {
+                  sessionID: reservation.sessionID,
+                  status: reservation.status,
+                  holdExpiresAt: reservation.holdExpiresAt,
+                  orderId: reservation.orderId,
+                }
+              : undefined,
+          };
+        }),
+      })),
+    };
+  }
+
+  function findPrice(eventId, seatCategoryId, ticketTypeId) {
+    return seatPrices.find(
+      (price) => price.eventId === eventId && price.seatCategoryId === seatCategoryId && price.ticketTypeId === ticketTypeId,
+    );
+  }
+
+  function nextTripForEvent(eventId) {
+    const sorted = trips
+      .filter((trip) => trip.eventId === eventId)
+      .map((trip) => ({
+        ...trip,
+        departureDateTime: new Date(`${trip.date}T${trip.time}:00`).toISOString(),
+      }))
+      .sort((a, b) => new Date(a.departureDateTime).getTime() - new Date(b.departureDateTime).getTime());
+    return sorted[0] || null;
+  }
+
   return async (req, res) => {
     try {
       metrics.requests += 1;
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const path = url.pathname;
+
+      if (req.method === 'GET' && path === '/status') {
+        return sendJson(res, 200, { ...basePayload, status: 'ok', uptimeMs: Math.round(process.uptime() * 1000) });
+      }
 
       if (req.method === 'GET' && path === '/health') {
         metrics.health += 1;
@@ -199,6 +289,162 @@ export function createRequestHandler(config, logger, options = {}) {
           return sendJson(res, 404, { ...basePayload, error: 'Catalog item not found', id });
         }
         return sendJson(res, 200, { ...basePayload, item });
+      }
+
+      if (req.method === 'GET' && path === '/events') {
+        const enriched = events.map((event) => {
+          const nextTrip = nextTripForEvent(event.id);
+          return {
+            id: event.id,
+            title: event.title,
+            category: event.category,
+            description: event.description,
+            city: event.city,
+            hasSeating: event.hasSeating,
+            vesselType: event.vesselType,
+            date: nextTrip?.departureDateTime,
+            pierStart: nextTrip?.pierStart || event.pierStart,
+            pierEnd: nextTrip?.pierEnd || event.pierEnd,
+            durationMinutes: event.durationMinutes,
+            image: event.image,
+          };
+        });
+
+        return sendJson(res, 200, { ...basePayload, events: enriched, total: enriched.length });
+      }
+
+      const eventMatch = matchPath(path, '/events');
+      if (eventMatch) {
+        const [eventId, tail] = eventMatch.split('/')
+          .filter(Boolean)
+          .reduce(
+            (acc, part, idx) => {
+              if (idx === 0) acc[0] = part;
+              else acc[1].push(part);
+              return acc;
+            },
+            ['', []],
+          );
+
+        const event = findEvent(eventId);
+        if (!event) {
+          return sendJson(res, 404, { ...basePayload, error: 'Event not found', id: eventId });
+        }
+
+        const remainingPath = tail.join('/');
+
+        if (!remainingPath && req.method === 'GET') {
+          const vessel = vessels.find((item) => item.id === event.vesselId);
+          const seatMap = buildSeatStatus(findSeatMapForEvent(event), event.id, undefined);
+          return sendJson(res, 200, { ...basePayload, event: { ...event, vessel, seatMap, trips: trips.filter((trip) => trip.eventId === event.id) } });
+        }
+
+        if (req.method === 'GET' && remainingPath === 'trips') {
+          const list = trips.filter((trip) => trip.eventId === event.id);
+          return sendJson(res, 200, { ...basePayload, trips: list, total: list.length });
+        }
+
+        if (req.method === 'GET' && remainingPath === 'categories') {
+          const seatMap = findSeatMapForEvent(event);
+          const categories = seatMap?.areas.map((area) => ({
+            id: area.id,
+            name: area.name,
+            priceFrom: area.price,
+            seats: area.seats.length,
+          })) || [];
+          return sendJson(res, 200, { ...basePayload, categories, total: categories.length });
+        }
+
+        if (req.method === 'GET' && remainingPath === 'seats') {
+          const seatMap = buildSeatStatus(findSeatMapForEvent(event), event.id, url.searchParams.get('tripId') || undefined);
+          const seats = seatMap
+            ? seatMap.areas.flatMap((area) => area.seats.map((seat) => ({ ...seat, categoryId: area.id, categoryName: area.name })))
+            : [];
+          return sendJson(res, 200, { ...basePayload, seats, total: seats.length });
+        }
+
+        if (req.method === 'GET' && remainingPath === 'ticket-types') {
+          return sendJson(res, 200, { ...basePayload, ticketTypes, total: ticketTypes.length });
+        }
+
+        if (req.method === 'GET' && remainingPath === 'prices') {
+          const prices = seatPrices.filter((price) => price.eventId === event.id);
+          return sendJson(res, 200, { ...basePayload, prices, total: prices.length });
+        }
+
+        if (req.method === 'POST' && remainingPath === 'book') {
+          const payload = parseJson(await readBody(req));
+          if (!payload || typeof payload !== 'object') {
+            return sendJson(res, 400, { ...basePayload, error: 'Invalid payload' });
+          }
+
+          const { sessionID, seatID, tripId } = payload;
+          if (!sessionID || !seatID) {
+            return sendJson(res, 400, { ...basePayload, error: 'sessionID and seatID are required' });
+          }
+
+          const trip = tripId ? findTrip(tripId) : null;
+          if (tripId && !trip) {
+            return sendJson(res, 404, { ...basePayload, error: 'Trip not found', tripId });
+          }
+
+          const seatMap = findSeatMapForEvent(event);
+          const category = getSeatCategoryForSeat(seatMap, seatID);
+          if (!category) {
+            return sendJson(res, 404, { ...basePayload, error: 'Seat not found in event seat map', seatID });
+          }
+
+          const key = reservationKey(event.id, tripId || trip?.id, seatID);
+          const existing = seatReservations.get(key);
+          if (existing && existing.sessionID !== sessionID && existing.status !== 'sold') {
+            return sendJson(res, 409, { ...basePayload, error: 'Seat already reserved', seatID });
+          }
+
+          const holdExpiresAt = new Date(Date.now() + 15 * 60 * 1000).toISOString();
+          const reservation = { sessionID, seatID, eventId: event.id, tripId: tripId || trip?.id, status: 'reserved', holdExpiresAt };
+          seatReservations.set(key, reservation);
+
+          return sendJson(res, 201, { ...basePayload, reservation });
+        }
+
+        if (req.method === 'POST' && remainingPath === 'unbook') {
+          const payload = parseJson(await readBody(req));
+          if (!payload || typeof payload !== 'object') {
+            return sendJson(res, 400, { ...basePayload, error: 'Invalid payload' });
+          }
+
+          const { sessionID, seatID, tripId } = payload;
+          if (!sessionID || !seatID) {
+            return sendJson(res, 400, { ...basePayload, error: 'sessionID and seatID are required' });
+          }
+
+          const key = reservationKey(event.id, tripId, seatID);
+          const existing = seatReservations.get(key);
+          if (!existing) {
+            return sendJson(res, 404, { ...basePayload, error: 'Reservation not found', seatID });
+          }
+          if (existing.sessionID !== sessionID) {
+            return sendJson(res, 403, { ...basePayload, error: 'Reservation belongs to another session', seatID });
+          }
+
+          seatReservations.delete(key);
+          return sendJson(res, 200, { ...basePayload, released: seatID });
+        }
+      }
+
+      const tripMatch = matchPath(path, '/trips');
+      if (req.method === 'GET' && tripMatch && tripMatch.endsWith('/seatmap')) {
+        const tripId = tripMatch.replace(/\/$/, '').replace(/\/seatmap$/, '');
+        const trip = findTrip(tripId);
+        if (!trip) {
+          return sendJson(res, 404, { ...basePayload, error: 'Trip not found', tripId });
+        }
+        const event = findEvent(trip.eventId);
+        const seatMap = buildSeatStatus(findSeatMapForEvent(event), event?.id, trip.id);
+        if (!seatMap) {
+          return sendJson(res, 404, { ...basePayload, error: 'Seat map not available for trip', tripId });
+        }
+        return sendJson(res, 200, { ...basePayload, seatMap });
       }
 
       if (req.method === 'GET' && path === '/suppliers') {
@@ -300,6 +546,89 @@ export function createRequestHandler(config, logger, options = {}) {
         return sendJson(res, 201, { ...basePayload, order });
       }
 
+      if (req.method === 'POST' && path === '/orders') {
+        const payload = parseJson(await readBody(req));
+        if (!payload || typeof payload !== 'object') {
+          return sendJson(res, 400, { ...basePayload, error: 'Invalid payload' });
+        }
+
+        const { eventId, tripId, seats = [], ticketTypeId = 'adult', sessionID, customer } = payload;
+        const event = findEvent(eventId);
+        if (!event) {
+          return sendJson(res, 404, { ...basePayload, error: 'Event not found', eventId });
+        }
+        const trip = tripId ? findTrip(tripId) : null;
+        if (tripId && !trip) {
+          return sendJson(res, 404, { ...basePayload, error: 'Trip not found', tripId });
+        }
+        if (!customer?.name || !customer?.phone) {
+          return sendJson(res, 400, { ...basePayload, error: 'Customer name and phone are required' });
+        }
+        if (!Array.isArray(seats) || seats.length === 0) {
+          return sendJson(res, 400, { ...basePayload, error: 'At least one seat is required' });
+        }
+
+        const seatMap = findSeatMapForEvent(event);
+        if (!seatMap && event.hasSeating) {
+          return sendJson(res, 400, { ...basePayload, error: 'Seat map not configured for event', eventId });
+        }
+
+        let total = 0;
+        const reservationSummary = [];
+
+        for (const seatId of seats) {
+          const category = getSeatCategoryForSeat(seatMap, seatId);
+          if (!category) {
+            return sendJson(res, 404, { ...basePayload, error: 'Seat not found', seatId });
+          }
+
+          const priceInfo = findPrice(event.id, category.id, ticketTypeId);
+          if (!priceInfo) {
+            return sendJson(res, 404, { ...basePayload, error: 'Price not found for seat', seatId, ticketTypeId });
+          }
+
+          const key = reservationKey(event.id, tripId || trip?.id, seatId);
+          const existing = seatReservations.get(key);
+          if (existing && existing.status === 'sold') {
+            return sendJson(res, 409, { ...basePayload, error: 'Seat already sold', seatId });
+          }
+          if (existing && existing.sessionID !== sessionID && existing.status === 'reserved') {
+            return sendJson(res, 409, { ...basePayload, error: 'Seat reserved by another session', seatId });
+          }
+
+          total += priceInfo.price;
+          reservationSummary.push({ seatId, categoryId: category.id, price: priceInfo.price, currency: priceInfo.currency });
+        }
+
+        const order = {
+          id: crypto.randomUUID(),
+          type: 'seat-order',
+          status: 'pending_payment',
+          createdAt: nowIso(),
+          eventId: event.id,
+          tripId: trip?.id,
+          seats,
+          ticketTypeId,
+          totals: { gross: total, currency: 'RUB', vatRate: defaultVatRate, vatMode: defaultVatMode },
+          customer,
+        };
+
+        reservationSummary.forEach((seat) => {
+          const key = reservationKey(event.id, tripId || trip?.id, seat.seatId);
+          seatReservations.set(key, {
+            sessionID: sessionID || 'order',
+            seatID: seat.seatId,
+            eventId: event.id,
+            tripId: trip?.id,
+            status: 'sold',
+            orderId: order.id,
+          });
+        });
+
+        orders.push(order);
+        return sendJson(res, 201, { ...basePayload, order });
+      }
+
       const orderMatch = matchPath(path, '/orders');
       if (req.method === 'GET' && orderMatch && path.endsWith('/documents')) {
         metrics.documents += 1;
@@ -319,6 +648,32 @@ export function createRequestHandler(config, logger, options = {}) {
         if (!order) {
           return sendJson(res, 404, { ...basePayload, error: 'Order not found', id });
         }
+        return sendJson(res, 200, { ...basePayload, order });
+      }
+
+      if (req.method === 'POST' && orderMatch && !path.endsWith('/refund')) {
+        const id = orderMatch;
+        const order = orders.find((entry) => entry.id === id);
+        if (!order) {
+          return sendJson(res, 404, { ...basePayload, error: 'Order not found', id });
+        }
+
+        const payload = parseJson(await readBody(req));
+        if (!payload || typeof payload !== 'object') {
+          return sendJson(res, 400, { ...basePayload, error: 'Invalid payload' });
+        }
+
+        if (order.status === 'confirmed' || order.status === 'paid') {
+          return sendJson(res, 200, { ...basePayload, order });
+        }
+
+        order.status = 'confirmed';
+        order.payment = {
+          provider: payload.provider || 'mock',
+          reference: payload.reference || `payment-${order.id}`,
+          confirmedAt: nowIso(),
+        };
+
         return sendJson(res, 200, { ...basePayload, order });
       }
 

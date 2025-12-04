@@ -1,10 +1,15 @@
 {
   "name": "ticketing-web",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
-  "type": "module",
   "scripts": {
-    "start": "node server.js",
-    "dev": "NODE_ENV=development node --watch server.js"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
+  },
+  "dependencies": {
+    "next": "14.2.3",
+    "react": "18.3.1",
+    "react-dom": "18.3.1"
   }
 }

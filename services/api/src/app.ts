@@ -1,8 +1,10 @@
-import cors from "cors";
-import express from "express";
-import { AppConfig } from "./config/env";
-import { createHealthRouter } from "./routes/health";
-import { errorHandler } from "./middleware/error-handler";
+import cors from "./vendor/cors.js";
+import express from "./vendor/express.js";
+import { AppConfig } from "./config/env.js";
+import { createHealthRouter } from "./routes/health.js";
+import { eventsRouter } from "./routes/events.js";
+import { ordersRouter } from "./routes/orders.js";
+import { errorHandler } from "./middleware/error-handler.js";
 
 export function createApp(config: AppConfig) {
   const app = express();
@@ -11,6 +13,12 @@ export function createApp(config: AppConfig) {
   app.use(cors());
 
   app.use(createHealthRouter(config));
+  app.get("/status", (_req: any, res: any) => {
+    res.json({ service: config.serviceName, env: config.env, status: "ok" });
+  });
+
+  app.use("/events", eventsRouter);
+  app.use("/orders", ordersRouter);
 
   app.use(errorHandler);
 

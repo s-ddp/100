@@ -1,5 +1,5 @@
-import { Router } from "express";
-import { AppConfig } from "../config/env";
+import { Router } from "../vendor/express.js";
+import { AppConfig } from "../config/env.js";
 
 export function createHealthRouter(config: AppConfig) {
   const router = Router();
@@ -9,11 +9,11 @@ export function createHealthRouter(config: AppConfig) {
     env: config.env,
   } as const;
 
-  router.get("/health", (_req, res) => {
+  router.get("/health", (_req: any, res: any) => {
     res.json({ ...basePayload, status: "ok", uptimeMs: Math.round(process.uptime() * 1000) });
   });
 
-  router.get("/readiness", (_req, res) => {
+  router.get("/readiness", (_req: any, res: any) => {
     res.json({ ...basePayload, status: "ready", timestamp: new Date().toISOString() });
   });
 

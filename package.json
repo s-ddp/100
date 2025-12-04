@@ -5,6 +5,8 @@
     "services/api"
   ],
   "scripts": {
-    "start:api": "npm run start --workspace services/api"
+    "start:api": "npm run start --workspace services/api",
+    "test:api": "npm run test --workspace services/api",
+    "test": "npm run test:api"
   }
 }

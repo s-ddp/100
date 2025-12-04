@@ -9,10 +9,11 @@ This repository will house the roadmap and technical specification for a ticket 
 
 ## Local development (kickoff)
 - Dependencies: the starter API now uses only built-in Node.js modules, so `npm install` is optional and does **not** reach external registries. If your environment injects proxy settings that break installs, clear them with `npm config delete proxy && npm config delete https-proxy`.
-- Run the API locally: `npm run start:api` (starts a minimal Node.js server with health/readiness probes and an `/echo` endpoint)
+- Run the API locally: `npm run start:api` (starts a minimal Node.js server with health/readiness probes, catalog/supplier stubs, and an `/echo` endpoint)
+- Smoke tests: `npm test` exercises the health, catalog, and supplier endpoints via Node's built-in test runner.
 
 The initial service lives in `services/api` and will grow into the backend for catalog/search/checkout/CRM flows. Health endpoints
-are available at `/health` and `/readiness` for container orchestration/readiness checks; both include the configured service name (`SERVICE_NAME` env) and environment. A simple `/echo` POST endpoint is available for quick connectivity checks.
+are available at `/health` and `/readiness` for container orchestration/readiness checks; both include the configured service name (`SERVICE_NAME` env) and environment. Catalog/supplier stubs are exposed at `/catalog` (filter by `type`, `supplier`, `lang`) and `/catalog/:id`, plus `/suppliers`. A simple `/echo` POST endpoint is available for quick connectivity checks and will JSON-parse payloads when possible.
 
 ## Collaboration Workflow
 We will iterate on requirements by asking focused questions one at a time. Your answers will be captured in the documents above to refine scope, milestones, and the technical plan.

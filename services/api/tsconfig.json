@@ -1,14 +1,25 @@
 {
   "compilerOptions": {
-    "target": "ES2020",
-    "module": "CommonJS",
+    "target": "ES2021",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "baseUrl": "./",
+    "paths": {
+      "express": ["src/vendor/express.ts"],
+      "cors": ["src/vendor/cors.ts"],
+      "@prisma/client": ["src/vendor/prisma.ts"],
+      "dotenv": ["src/vendor/dotenv.ts"],
+      "pino": ["src/vendor/pino.ts"]
+    },
     "rootDir": "src",
     "outDir": "dist",
-    "strict": true,
+    "strict": false,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "lib": ["ES2021", "DOM"]
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]
 }

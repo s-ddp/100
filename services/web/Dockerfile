@@ -1,6 +1,14 @@
-FROM node:20-slim AS runtime
+FROM node:20-alpine
+
 WORKDIR /app
-COPY public ./public
-COPY server.js ./server.js
+
+COPY package.json .
+RUN npm install
+
+COPY . .
+
+RUN npm run build
+
 EXPOSE 3000
-CMD ["node", "server.js"]
+
+CMD ["npm", "run", "start"]

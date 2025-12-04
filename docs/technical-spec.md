@@ -3,8 +3,8 @@
 > This specification will be completed iteratively as we collect requirements. Sections marked **Pending user input** will be updated once details are provided.
 
 ## Scope Overview
-- Public ticket sales website with secure checkout and account management. **(Pending user input for markets, flows)**
-- CRM for managing customers, orders, events, and support operations. **(Pending user input for roles/permissions)**
+- Public ticket sales website for water excursions, events, and rentals of boats/yachts with secure checkout and account management. **(Markets/countries pending; Languages: RU primary, EN + ZH secondary; Currency: RUB)**
+- CRM for managing customers, orders, events, rentals, and support operations. **(Pending user input for roles/permissions)**
 
 ## Functional Requirements
 ### Ticket Sales Website
@@ -23,7 +23,7 @@
 - Availability targets, performance SLAs (page load, checkout latency), and concurrency expectations.
 - Security: authentication/authorization approach, PCI scope boundaries, and data protection policies.
 - Observability: logging standards, metrics, tracing, and alerting thresholds.
-- Compliance: data retention, privacy, tax invoicing, and regional constraints.
+- Compliance: data retention, privacy, tax invoicing, and regional constraints (market/country scope pending).
 
 ## Architecture (Initial Draft)
 - **Frontend:** Modern SPA/SSR framework (e.g., React/Next.js or Vue/Nuxt) with component library and design system. **(Pending selection)**
@@ -54,7 +54,7 @@
 - Runbooks for incident response, rollbacks, and data recovery.
 
 ## Open Questions
-- Markets, languages, currencies? **(Pending)**
+- Markets/countries in scope? **(Pending)**
 - Payment gateways and settlement rules? **(Pending)**
 - Seating model (reserved vs general admission)? **(Pending)**
 - Refund/exchange/transfer policies? **(Pending)**

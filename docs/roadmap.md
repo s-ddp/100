@@ -3,14 +3,14 @@
 > This roadmap is a living document. Items marked **Pending user input** will be refined as we gather details.
 
 ## Objectives
-- Launch a customer-facing ticket sales website with secure checkout.
-- Deliver an integrated CRM to manage events, customers, orders, and support workflows.
+- Launch a customer-facing ticket sales website focused on water excursions, events, and rentals of boats/yachts.
+- Deliver an integrated CRM to manage events, customers, orders, rentals, and support workflows.
 
 ## Phases
 
 ### Phase 0 — Discovery (Pending user input)
 - Capture business goals, target audience, and success metrics.
-- Define supported markets (countries, currencies, languages) and compliance needs (tax, invoicing, data retention).
+- Define supported markets (countries, currencies, languages) and compliance needs (tax, invoicing, data retention). **(Markets: focus on water excursions/events; Languages: RU primary, EN + ZH secondary; Currency: RUB)**
 - Inventory existing systems to integrate (payment providers, email/SMS gateways, analytics, accounting/ERP).
 
 ### Phase 1 — Foundations
@@ -44,7 +44,7 @@
 - Ongoing A/B tests, funnel optimization, and backlog grooming from feedback.
 
 ## Open Questions (to be resolved with stakeholders)
-1. What markets, languages, and currencies must the site support? **(Pending)**
+1. What markets/countries are in scope for launch and compliance? **(Pending)**
 2. Which payment providers and payout/settlement requirements do we have? **(Pending)**
 3. Do we need reserved seating maps, general admission, or both? **(Pending)**
 4. What integrations are required (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**

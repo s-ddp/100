@@ -1,0 +1,11 @@
+version: "3.9"
+services:
+  api:
+    build:
+      context: ./services/api
+    image: ticketing-api:local
+    env_file:
+      - services/api/.env.example
+    ports:
+      - "4000:4000"
+    restart: unless-stopped

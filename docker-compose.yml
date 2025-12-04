@@ -9,10 +9,3 @@ services:
     ports:
       - "4000:4000"
     restart: unless-stopped
-  web:
-    build:
-      context: ./services/web
-    image: ticketing-web:local
-    ports:
-      - "3000:3000"
-    restart: unless-stopped

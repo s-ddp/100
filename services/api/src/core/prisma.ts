@@ -1,17 +1,17 @@
-import { PrismaClient } from "../vendor/prisma.js";
+import { PrismaClient } from "../vendor/prisma";
 
 let prisma: PrismaClient | null = null;
 
-export function getPrismaClient() {
-  if (!process.env.DATABASE_URL) {
-    return null;
-  }
-
+function ensureClient() {
+  if (!process.env.DATABASE_URL) return null;
   if (!prisma) {
     prisma = new PrismaClient();
   }
-
   return prisma;
+}
+
+export function getPrismaClient() {
+  return ensureClient();
 }
 
 export async function disposePrisma() {
@@ -20,3 +20,5 @@ export async function disposePrisma() {
     prisma = null;
   }
 }
+
+export type PrismaClientType = PrismaClient;

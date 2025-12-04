@@ -1,5 +1,5 @@
-import { astraClient } from "../core/astraClient.js";
-import { getPrismaClient } from "../core/prisma.js";
+import { astraClient } from "../core/astraClient";
+import { getPrismaClient } from "../core/prisma";
 
 export async function cleanExpiredSeatLocks() {
   const prisma = getPrismaClient();

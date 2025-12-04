@@ -1,4 +1,4 @@
-import { waterEvents, waterSeatMaps, waterTrips } from "../water-data.js";
+import { waterEvents, waterSeatMaps, waterTrips } from "../water-data";
 
 export interface AstraEvent {
   eventID: string;

@@ -1,4 +1,4 @@
-import dotenv from "../vendor/dotenv.js";
+import dotenv from "../vendor/dotenv";
 
 dotenv.config();
 

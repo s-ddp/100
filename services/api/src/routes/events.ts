@@ -1,7 +1,7 @@
-import { Router } from "../vendor/express.js";
-import { astraClient } from "../core/astraClient.js";
-import { getPrismaClient } from "../core/prisma.js";
-import { waterEvents, waterSeatMaps, waterTrips, waterVessels } from "../water-data.js";
+import { Router } from "../vendor/express";
+import { astraClient } from "../core/astraClient";
+import { getPrismaClient } from "../core/prisma";
+import { waterEvents, waterSeatMaps, waterTrips, waterVessels } from "../water-data";
 
 export const eventsRouter = Router();
 
@@ -123,7 +123,6 @@ eventsRouter.get("/:eventId/seat-layout", async (req, res, next) => {
           return res.json(layout);
         }
       } catch (dbError) {
-        // fall back to fixtures
         console.warn("Falling back to fixture seat layout", dbError);
       }
     }
@@ -199,7 +198,7 @@ eventsRouter.get("/:eventId/prices", async (req, res, next) => {
       ticketTypeID: ticketTypeId,
       seatCategoryID: typeof seatCategoryId === "string" ? seatCategoryId : "",
       paymentTypeID: typeof paymentTypeID === "string" ? paymentTypeID : "",
-      resident: resident === undefined ? "" : String(resident) === "true",
+      resident: resident === undefined ? "" : resident === "true",
       email: process.env.ASTRA_EMAIL ?? undefined,
     });
 
@@ -212,14 +211,15 @@ eventsRouter.get("/:eventId/prices", async (req, res, next) => {
 eventsRouter.post("/:eventId/seats/lock", async (req, res, next) => {
   try {
     const { eventId } = req.params ?? {};
-    if (!eventId) {
-      return res.status(400).json({ error: "eventId is required" });
-    }
     const { sessionId, seats, email } = req.body as {
       sessionId: string;
       seats: string[];
       email?: string;
     };
+
+    if (!eventId) {
+      return res.status(400).json({ error: "eventId is required" });
+    }
 
     if (!sessionId || !Array.isArray(seats) || seats.length === 0) {
       return res.status(400).json({ error: "sessionId and seats[] are required" });
@@ -240,6 +240,7 @@ eventsRouter.post("/:eventId/seats/lock", async (req, res, next) => {
 
         if (result.isSeatBooked) {
           locked.push(seatId);
+
           if (prisma) {
             await (prisma as any).seatLock.create({
               data: {
@@ -247,7 +248,7 @@ eventsRouter.post("/:eventId/seats/lock", async (req, res, next) => {
                 seatCode: seatId,
                 sessionId,
                 lockedAt: new Date(),
-                expiresAt: addMinutes(new Date(), 5),
+                expiresAt: new Date(Date.now() + 5 * 60 * 1000),
               },
             });
           }
@@ -268,14 +269,15 @@ eventsRouter.post("/:eventId/seats/lock", async (req, res, next) => {
 eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
   try {
     const { eventId } = req.params ?? {};
-    if (!eventId) {
-      return res.status(400).json({ error: "eventId is required" });
-    }
     const { sessionId, seats, email } = req.body as {
       sessionId: string;
       seats?: string[];
       email?: string;
     };
+
+    if (!eventId) {
+      return res.status(400).json({ error: "eventId is required" });
+    }
 
     if (!sessionId) {
       return res.status(400).json({ error: "sessionId is required" });
@@ -284,10 +286,19 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
     const prisma = getPrismaClient();
 
     if (!Array.isArray(seats) || seats.length === 0) {
-      await astraClient.cancelBookSeat({ eventID: eventId, sessionID: sessionId, seatID: "", email });
+      await astraClient.cancelBookSeat({
+        eventID: eventId,
+        sessionID: sessionId,
+        seatID: "",
+        email,
+      });
+
       if (prisma) {
-        await (prisma as any).seatLock.deleteMany({ where: { eventId, sessionId } });
+        await (prisma as any).seatLock.deleteMany({
+          where: { eventId, sessionId },
+        });
       }
+
       return res.json({ eventId, sessionId, unlockedAll: true });
     }
 
@@ -296,11 +307,19 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
 
     for (const seatId of seats) {
       try {
-        const result = await astraClient.cancelBookSeat({ eventID: eventId, sessionID: sessionId, seatID: seatId, email });
+        const result = await astraClient.cancelBookSeat({
+          eventID: eventId,
+          sessionID: sessionId,
+          seatID: seatId,
+          email,
+        });
+
         if (result.isCanceledBookSeat) {
           unlocked.push(seatId);
           if (prisma) {
-            await (prisma as any).seatLock.deleteMany({ where: { eventId, sessionId, seatCode: seatId } });
+            await (prisma as any).seatLock.deleteMany({
+              where: { eventId, sessionId, seatCode: seatId },
+            });
           }
         } else {
           failed.push({ seatId, reason: result.descriptionSeatBooked });
@@ -316,7 +335,49 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
   }
 });
 
-function mapAstraSeatStatus(status: string): "free" | "sold" | "reserved" | "selected" | "unknown" {
+function buildFixtureSeatLayout(eventId: string) {
+  const trip = waterTrips.find((t) => t.id === eventId || t.eventId === eventId);
+  const event = trip
+    ? waterEvents.find((ev) => ev.id === trip.eventId)
+    : waterEvents.find((ev) => ev.id === eventId);
+
+  if (!event) return null;
+
+  const vessel = waterVessels.find((v) => v.id === (trip?.vesselId ?? event.vesselId));
+  if (!vessel) return null;
+  const maps = waterSeatMaps.filter(
+    (m) => m.vesselId === vessel.id || (event.seatMapId && m.id === event.seatMapId),
+  );
+
+  return {
+    eventId,
+    vesselId: vessel.id,
+    vesselName: vessel.name,
+    levels: maps.map((deck) => ({
+      id: deck.id,
+      name: deck.name,
+      backgroundSvg: deck.backgroundSvg,
+      areas: deck.areas.map((area) => ({
+        id: area.id,
+        name: area.name,
+        category: area.category,
+        color: area.color,
+        seats: area.seats.map((seat) => ({
+          id: seat.id,
+          seatCode: seat.seatCode,
+          alias: seat.alias,
+          x: seat.x,
+          y: seat.y,
+          ticketsPerSeat: seat.ticketsPerSeat,
+        })),
+      })),
+    })),
+  };
+}
+
+function mapAstraSeatStatus(
+  status: string,
+): "free" | "sold" | "reserved" | "selected" | "unknown" {
   switch (status) {
     case "Свободно":
       return "free";
@@ -329,44 +390,4 @@ function mapAstraSeatStatus(status: string): "free" | "sold" | "reserved" | "sel
     default:
       return "unknown";
   }
-}
-
-function buildFixtureSeatLayout(eventId: string) {
-  const trip = waterTrips.find((t) => t.id === eventId || t.eventId === eventId);
-  const event = waterEvents.find((e) => e.id === (trip?.eventId ?? eventId));
-  if (!event) return null;
-
-  const vessel = waterVessels.find((v) => v.id === event.vesselId);
-  const seatMap = waterSeatMaps.find((s) => s.id === event.seatMapId);
-  if (!vessel || !seatMap) return null;
-
-  return {
-    eventId,
-    vesselId: vessel.id,
-    vesselName: vessel.name,
-    levels: [
-      {
-        id: `${vessel.id}_deck`,
-        name: "Палуба 1",
-        backgroundSvg: seatMap.image,
-        areas: seatMap.areas.map((area) => ({
-          id: area.id,
-          name: area.name,
-          category: area.id,
-          seats: area.seats.map((seat: any) => ({
-            id: `${area.id}_${seat.id}`,
-            seatCode: seat.id,
-            alias: seat.id,
-            x: seat.x,
-            y: seat.y,
-            ticketsPerSeat: (seat as any).ticketsPerSeat ?? 1,
-          })),
-        })),
-      },
-    ],
-  };
-}
-
-function addMinutes(date: Date, minutes: number) {
-  return new Date(date.getTime() + minutes * 60000);
 }

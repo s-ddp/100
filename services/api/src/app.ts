@@ -1,10 +1,10 @@
-import cors from "./vendor/cors.js";
-import express from "./vendor/express.js";
-import { AppConfig } from "./config/env.js";
-import { createHealthRouter } from "./routes/health.js";
-import { eventsRouter } from "./routes/events.js";
-import { ordersRouter } from "./routes/orders.js";
-import { errorHandler } from "./middleware/error-handler.js";
+import cors from "./vendor/cors";
+import express from "./vendor/express";
+import { AppConfig } from "./config/env";
+import { createHealthRouter } from "./routes/health";
+import { eventsRouter } from "./routes/events";
+import { ordersRouter } from "./routes/orders";
+import { errorHandler } from "./middleware/error-handler";
 
 export function createApp(config: AppConfig) {
   const app = express();

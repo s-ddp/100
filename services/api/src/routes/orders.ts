@@ -1,29 +1,6 @@
-import { Router } from "../vendor/express.js";
-import { astraClient } from "../core/astraClient.js";
-import { getPrismaClient } from "../core/prisma.js";
-
-interface MemoryOrderItem {
-  seatCode?: string;
-  ticketTypeId?: string;
-  priceTypeId?: string;
-  seatCategoryId?: string;
-  quantity: number;
-  price?: number;
-}
-
-interface MemoryOrder {
-  id: number;
-  externalOrderId: string;
-  eventId: string;
-  sessionId?: string;
-  email?: string;
-  status: string;
-  amount?: number;
-  items: MemoryOrderItem[];
-  astraResponse?: unknown;
-}
-
-const memoryOrders: MemoryOrder[] = [];
+import { Router } from "../vendor/express";
+import { astraClient } from "../core/astraClient";
+import { getPrismaClient } from "../core/prisma";
 
 export const ordersRouter = Router();
 
@@ -49,6 +26,7 @@ ordersRouter.post("/", async (req, res, next) => {
     }
 
     const orderID = `local_${Date.now()}`;
+
     const astraBody = {
       sessionID: sessionId,
       orderID,
@@ -76,65 +54,41 @@ ordersRouter.post("/", async (req, res, next) => {
     }
 
     const prisma = getPrismaClient();
-    let orderIdNumeric: number;
+    const order = prisma
+      ? await (prisma as any).order.create({
+          data: {
+            externalOrderId: orderID,
+            eventId,
+            sessionId,
+            email,
+            status: "pending",
+            amount: astraResp.orderAmount ?? null,
+            astraResponse: astraResp,
+          },
+        })
+      : null;
 
-    if (prisma) {
-      const order = await (prisma as any).order.create({
-        data: {
-          externalOrderId: orderID,
-          eventId,
-          sessionId,
-          email,
-          status: "pending",
-          amount: astraResp.orderAmount ?? null,
-          astraResponse: astraResp,
-        },
-      });
-
-      orderIdNumeric = order.id;
-
-      if (Array.isArray(astraResp.orderedSeats)) {
-        for (const seat of astraResp.orderedSeats) {
-          await (prisma as any).orderItem.create({
-            data: {
-              orderId: order.id,
-              seatCode: seat.seatID ?? null,
-              ticketTypeId: seat.ticketTypeID ?? null,
-              priceTypeId: seat.priceTypeID ?? null,
-              seatCategoryId: seat.seatCategoryID ?? null,
-              quantity: seat.quantityOfTickets ?? 1,
-              price: seat.price ?? null,
-            },
-          });
-        }
+    if (prisma && Array.isArray(astraResp.orderedSeats)) {
+      for (const seat of astraResp.orderedSeats) {
+        await (prisma as any).orderItem.create({
+          data: {
+            orderId: order.id,
+            seatCode: seat.seatID ?? null,
+            ticketTypeId: seat.ticketTypeID ?? null,
+            priceTypeId: seat.priceTypeID ?? null,
+            seatCategoryId: seat.seatCategoryID ?? null,
+            quantity: seat.quantityOfTickets ?? 1,
+            price: seat.price ?? null,
+          },
+        });
       }
-    } else {
-      orderIdNumeric = memoryOrders.length + 1;
-      memoryOrders.push({
-        id: orderIdNumeric,
-        externalOrderId: orderID,
-        eventId,
-        sessionId,
-        email,
-        status: "pending",
-        amount: astraResp.orderAmount ?? undefined,
-        astraResponse: astraResp,
-        items: (astraResp.orderedSeats ?? []).map((seat: any) => ({
-          seatCode: seat.seatID ?? undefined,
-          ticketTypeId: seat.ticketTypeID ?? undefined,
-          priceTypeId: seat.priceTypeID ?? undefined,
-          seatCategoryId: seat.seatCategoryID ?? undefined,
-          quantity: seat.quantityOfTickets ?? 1,
-          price: seat.price ?? undefined,
-        })),
-      });
     }
 
     res.status(201).json({
-      id: orderIdNumeric,
+      id: order?.id ?? null,
       externalOrderId: orderID,
-      status: "pending",
-      amount: astraResp.orderAmount,
+      status: order?.status ?? "pending",
+      amount: order?.amount ?? astraResp.orderAmount ?? null,
     });
   } catch (err) {
     next(err);
@@ -144,23 +98,14 @@ ordersRouter.post("/", async (req, res, next) => {
 ordersRouter.post("/:id/confirm", async (req, res, next) => {
   try {
     const { id } = req.params ?? {};
+    const { confirm } = req.body as { confirm: boolean };
+
     if (!id) {
       return res.status(400).json({ error: "id is required" });
     }
-    const { confirm } = req.body as { confirm: boolean };
 
     const prisma = getPrismaClient();
-    let order: { id: number; externalOrderId: string | null; email: string | null } | null = null;
-
-    if (prisma) {
-      order = await (prisma as any).order.findUnique({ where: { id: Number(id) }, select: { id: true, externalOrderId: true, email: true } });
-    } else {
-      const mem = memoryOrders.find((o) => o.id === Number(id));
-      if (mem) {
-        order = { id: mem.id, externalOrderId: mem.externalOrderId, email: mem.email ?? null };
-      }
-    }
-
+    const order = prisma ? await (prisma as any).order.findUnique({ where: { id: Number(id) } }) : null;
     if (!order || !order.externalOrderId) {
       return res.status(404).json({ error: "Order not found" });
     }
@@ -168,20 +113,17 @@ ordersRouter.post("/:id/confirm", async (req, res, next) => {
     const astraResp = await astraClient.confirmPayment({
       orderID: order.externalOrderId,
       orderConfirm: confirm ?? true,
-      email: order.email ?? undefined,
+      email: order.email,
     });
 
     if (prisma) {
       await (prisma as any).order.update({
-        where: { id: Number(id) },
-        data: { status: astraResp.orderPaymentConfirmed ? "paid" : "error", astraResponse: astraResp },
+        where: { id: order.id },
+        data: {
+          status: astraResp.orderPaymentConfirmed ? "paid" : "error",
+          astraResponse: astraResp,
+        },
       });
-    } else {
-      const mem = memoryOrders.find((o) => o.id === Number(id));
-      if (mem) {
-        mem.status = astraResp.orderPaymentConfirmed ? "paid" : "error";
-        mem.astraResponse = astraResp;
-      }
     }
 
     res.json({
@@ -199,28 +141,27 @@ ordersRouter.get("/:id", async (req, res, next) => {
     if (!id) {
       return res.status(400).json({ error: "id is required" });
     }
+
     const prisma = getPrismaClient();
-
-    if (prisma) {
-      const order = await (prisma as any).order.findUnique({
-        where: { id: Number(id) },
-        include: { items: true, payments: true, event: true },
-      });
-
-      if (!order) {
-        return res.status(404).json({ error: "Order not found" });
-      }
-
-      return res.json(order);
-    }
-
-    const mem = memoryOrders.find((o) => o.id === Number(id));
-    if (!mem) {
+    if (!prisma) {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    res.json(mem);
+    const order = await (prisma as any).order.findUnique({
+      where: { id: Number(id) },
+      include: { items: true, payments: true, event: true },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json(order);
   } catch (err) {
     next(err);
   }
 });
+
+export function createOrdersRouter() {
+  return ordersRouter;
+}

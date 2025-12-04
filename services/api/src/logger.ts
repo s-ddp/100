@@ -1,4 +1,4 @@
-import pino from "./vendor/pino.js";
+import pino from "./vendor/pino";
 
 const level = process.env.LOG_LEVEL || "info";
 

@@ -86,6 +86,22 @@ declare module "node:fetch" {
   export default function fetch(input: any, init?: any): Promise<any>;
 }
 
+declare function fetch(input: any, init?: any): Promise<any>;
+
+declare const console: {
+  log: (...args: any[]) => void;
+  error: (...args: any[]) => void;
+  warn: (...args: any[]) => void;
+};
+
+declare function setInterval(handler: (...args: any[]) => any, timeout?: number): any;
+
+declare class URL {
+  constructor(input: string, base?: string);
+  pathname: string;
+  searchParams: any;
+}
+
 declare namespace NodeJS {
   interface Process {
     env: Record<string, string | undefined>;

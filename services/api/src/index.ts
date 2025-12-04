@@ -1,7 +1,7 @@
-import { createApp } from "./app.js";
-import { loadConfig } from "./config/env.js";
-import { logger } from "./logger.js";
-import { cleanExpiredSeatLocks } from "./workers/seatLockCleaner.js";
+import { createApp } from "./app";
+import { loadConfig } from "./config/env";
+import { logger } from "./logger";
+import { cleanExpiredSeatLocks } from "./workers/seatLockCleaner";
 
 async function bootstrap() {
   const config = loadConfig();

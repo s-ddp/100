@@ -2,8 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
 
-import { createApp } from "./app.js";
-import { loadConfig } from "./config/env.js";
+import { createApp } from "./app";
+import { loadConfig } from "./config/env";
 
 async function withServer(fn: (baseUrl: string) => Promise<void>) {
   const app = createApp(loadConfig());

@@ -1,16 +1,8 @@
 {
   "compilerOptions": {
     "target": "ES2021",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "baseUrl": "./",
-    "paths": {
-      "express": ["src/vendor/express.ts"],
-      "cors": ["src/vendor/cors.ts"],
-      "@prisma/client": ["src/vendor/prisma.ts"],
-      "dotenv": ["src/vendor/dotenv.ts"],
-      "pino": ["src/vendor/pino.ts"]
-    },
+    "module": "Node16",
+    "moduleResolution": "Node16",
     "rootDir": "src",
     "outDir": "dist",
     "strict": false,
@@ -18,7 +10,8 @@
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true,
     "resolveJsonModule": true,
-    "lib": ["ES2021", "DOM"]
+    "lib": ["ES2021"],
+    "typeRoots": ["./src/types"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["node_modules", "dist"]

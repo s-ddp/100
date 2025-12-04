@@ -24,9 +24,10 @@ This snapshot consolidates the agreed requirements and pending decisions capture
 - **Requisites**: Include юрлицо, ИНН/КПП, ОГРН, юр. адрес, банковские реквизиты (р/с, банк, БИК, к/с), контактные данные, и ссылка на оферту/договор во всех нефискальных документах/письмах.
 
 ## Immediate Next Steps
-- Use the confirmed VAT defaults and document rules to finalize pricing, checkout, and document templates.
-- Apply the chosen stack (Next.js/React + TypeScript; NestJS on Node.js/TypeScript; PostgreSQL; Redis; RabbitMQ; observability via OpenTelemetry + Prometheus/Grafana for metrics, Loki for logs, Jaeger/Tempo for traces; self-hosted Matomo for web/cross-channel analytics) and stand up CI/CD plus bare-metal deployment in Russia.
-- Model the domain/schema (events/sailings, fares, seats, orders, payments, refunds, documents) and size the vertical slice against the agreed SLOs and RPS peaks.
+- Track execution across the five active workstreams via [Execution Tracker](./execution-tracker.md); compose now provisions PostgreSQL, Redis, RabbitMQ, Prometheus, and Grafana for local parity with bare metal.
+- Use the confirmed VAT defaults and document rules to finalize pricing, checkout, and document templates — API already returns VAT-aware totals and `/orders/:id/documents` with invoice/act payloads.
+- Apply the chosen stack (Next.js/React + TypeScript; NestJS on Node.js/TypeScript; PostgreSQL; Redis; RabbitMQ; observability via OpenTelemetry + Prometheus/Grafana for metrics, Loki for logs, Jaeger/Tempo for traces; self-hosted Matomo for web/cross-channel analytics) and stand up CI/CD plus bare-metal deployment in Russia (compose baseline is ready for bootstrap).
+- Model the domain/schema (events/sailings, fares, seats, orders, payments, refunds, documents) — first SQL migration added at `services/api/db/migrations/001_init.sql` for the core entities.
 
 ## Action Plan (что делаем дальше)
 1. Применить выбранный стек (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) и схему деплоя на bare metal в РФ с учётом 99.5–99.9% SLA, согласованных SLO и RPO/RTO.
@@ -40,4 +41,4 @@ This snapshot consolidates the agreed requirements and pending decisions capture
 - Собрать первый вертикальный срез: каталог → выбор рейса/мест → чек-аут (ЮMoney sandbox, полная оплата без броней/частичных оплат) → e-ticket/email + счета/акты → CRM-вью заказа + возврат ≥24h.
 
 ## Next Questions
-- Требуются ли дополнительные требования к SLA поддержки/CRM (p95/p99 для агентских операций, целевые времена ответов на обращения).
+- Нет открытых вопросов: CRM/поддержка используют те же SLO, что и CRM API (p95 ≤ 800 мс, p99 ≤ 1500 мс) и 99.5–99.9% доступности.

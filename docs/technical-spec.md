@@ -85,18 +85,18 @@
 - What customer data is mandatory and how long is it stored? **(Resolved: collect full name, email, and phone; no retention limit specified)**
 
 ## New Open Questions (for next iteration)
-- Требуются ли дополнительные SLA/целевые p95/p99 для CRM/поддержки и отклики на обращения.
+- Нет открытых вопросов: SLA для CRM/поддержки привязаны к CRM API SLO (p95 ≤ 800 мс, p99 ≤ 1500 мс; 99.5–99.9% SLA).
 
 ## Immediate Next Steps
-- Развернуть выбранный стек (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) и CI/CD/деплой для bare metal в РФ под согласованные SLO/RPS.
-- Закрепить мониторинг/алертинг по SLO/SLA (включая burn rate) и шаблоны документов/коммуникаций с requisites под автоматическую выдачу после полной оплаты.
-- Уточнить SLA/времена ответа для CRM/поддержки (p95/p99 для ключевых операций) и учесть их в мониторинге.
+- Отслеживать прогресс по пяти активным потокам (стек/CI/CD, VAT/документы, доменная модель/миграции, вертикальный срез, SLA/observability) в [Execution Tracker](./execution-tracker.md); compose уже поднимает PostgreSQL, Redis, RabbitMQ, Prometheus, Grafana.
+- Развернуть выбранный стек (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) и CI/CD/деплой для bare metal в РФ под согласованные SLO/RPS, используя compose-базис как точку старта.
+- Закрепить мониторинг/алертинг по SLO/SLA (включая burn rate) и шаблоны документов/коммуникаций с requisites под автоматическую выдачу после полной оплаты; API уже отдаёт VAT-aware totals и `/orders/:id/documents` для счетов/актов.
 
 ### Kickoff focus (to start building)
 - Build against the confirmed stack: Next.js/React + TypeScript (frontend); NestJS/Node.js + TypeScript (backend); PostgreSQL; Redis; RabbitMQ; observability with OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; analytics with Matomo; environments prod/stage/dev on bare metal in Russia with backups.
 - Capture sample payloads/credentials for Astra Marin, Neva Travel, and ЮMoney/ЮKassa sandbox to model ingestion and payment flows.
-- Design the initial schema/migrations for sailings/events, fares/ticket types, seats, orders/payments, customers, refunds, and documents (invoices/acts) with reservation expiry/oversell safeguards and full-payment assumption (без броней/частичных оплат).
-- Implement a vertical slice: catalog/search → selection/seat map → ЮMoney checkout (sandbox, полная оплата) → e-ticket/email + авто счета/акты → CRM order view with 24h refund enforcement.
+- Design the initial schema/migrations for sailings/events, fares/ticket types, seats, orders/payments, customers, refunds, and documents (invoices/acts) with reservation expiry/oversell safeguards and full-payment assumption (без броней/частичных оплат); первый SQL файл лежит в `services/api/db/migrations/001_init.sql`.
+- Implement a vertical slice: catalog/search → selection/seat map → ЮMoney checkout (sandbox, полная оплата) → e-ticket/email + авто счета/акты → CRM order view with 24h refund enforcement. CRM/API now surface `/crm/orders`, `/crm/sla`, and `/crm/support/cases` to wire the UI and support workflows with SLA deadlines.
 
 ## Action Plan (execution path)
 1. Применить выбранный стек (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) и схему деплоя на bare metal в РФ, соответствующую SLA 99.5–99.9%, SLO и RPO ≤ 5–15м / RTO ≤ 15м.

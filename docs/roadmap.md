@@ -9,6 +9,8 @@
 
 ## Phases
 
+> Execution across the five active workstreams (stack/CI/CD, VAT templates, domain model/migrations, vertical slice, CRM/support SLA/observability) is tracked in [Execution Tracker](./execution-tracker.md).
+
 ### Phase 0 — Discovery (Pending user input)
 - Capture business goals, target audience, and success metrics.
 - Define supported markets (countries, currencies, languages) and compliance needs (tax, invoicing, data retention). **(Markets: operate in Russia; Languages: RU primary, EN + ZH secondary; Currency: RUB; Data storage: comply with Russian data residency laws)**
@@ -79,25 +81,25 @@
 - **Reporting slices/filters (launch priority)**: route/itinerary, vessel/event, ticket category/fare class, supplier, berth/port, departure date/time, channel/source/UTM, locale (RU/EN/ZH), device, promo/campaign, customer type (new vs. repeat), and CRM manager/team.
 
 ## Next Steps
-- Execute on the chosen stack/tooling for the bare-metal deployment (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) and wire CI/CD.
+- Execute on the chosen stack/tooling for the bare-metal deployment (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) and wire CI/CD — compose baseline (api/web/PostgreSQL/Redis/RabbitMQ/Prometheus/Grafana) is ready for bootstrap.
 - Refine scope, milestones, and estimates based on confirmed requirements and agreed SLO/RPS targets.
 - Finalize delivery plan with dependencies and timelines.
 
 ### Immediate Next Actions
-- Use the confirmed VAT defaults to finalize pricing rules and document templates (invoices/acts, confirmations) with full-payment issuance (без драфтов/частичных оплат).
-- Stand up the selected stack (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) with CI/CD/deployment on bare metal in Russia.
-- Design schema and flows for document generation/resend within the CRM alongside the vertical slice sized to SLO/RPS targets.
+- Use the confirmed VAT defaults to finalize pricing rules and document templates (invoices/acts, confirmations) with full-payment issuance (без драфтов/частичных оплат); API already returns `/orders/:id/documents` with VAT-aware invoice/act payloads.
+- Stand up the selected stack (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) with CI/CD/deployment on bare metal in Russia using the compose baseline.
+- Design schema and flows for document generation/resend within the CRM alongside the vertical slice sized to SLO/RPS targets; initial SQL migration added at `services/api/db/migrations/001_init.sql`.
 
 ### Kickoff Checklist (start of development)
-- Provision the selected stack: Next.js/React + TypeScript (web), NestJS/Node.js + TypeScript (API), PostgreSQL, Redis, RabbitMQ; observability (OpenTelemetry + Prometheus/Grafana/Loki/Jaeger), analytics (Matomo); prod/stage/dev on bare metal in Russia with backups.
+- Provision the selected stack: Next.js/React + TypeScript (web), NestJS/Node.js + TypeScript (API), PostgreSQL, Redis, RabbitMQ; observability (OpenTelemetry + Prometheus/Grafana/Loki/Jaeger), analytics (Matomo); prod/stage/dev on bare metal in Russia with backups. The compose baseline already provisions PostgreSQL/Redis/RabbitMQ/Prometheus/Grafana for local parity.
 - Acquire/sample supplier API payloads (Astra Marin, Neva Travel) and ЮMoney/ЮKassa sandbox credentials; map routes/vessels/ports/pricing/seat maps.
 - Design the initial domain model and migrations for events/sailings, fares/ticket types, seats, orders, payments, customers, refunds, and documents (invoices/acts) with oversell protections and full-payment assumption (нет броней без оплаты и частичных оплат).
 - Build a thin vertical slice: catalog → selection (incl. seat maps where needed) → ЮMoney checkout (sandbox, полная оплата) → e-ticket/email + auto-issued счета/акты → CRM order view + 24h refund control.
 
 ### Action Plan (execution path)
-1. Применить выбранный стек (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) и схему деплоя на bare metal в Russia that meets the 99.5–99.9% availability target, defined SLOs, and RPO/RTO.
+1. Применить выбранный стек (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) и схему деплоя на bare metal в Russia that meets the 99.5–99.9% availability target, defined SLOs, and RPO/RTO; use the compose baseline as the deployment seed.
 2. Produce effort estimates and a phased delivery schedule (ticketing, CRM, integrations, reporting) sized to peak loads: 300 RPS overall, 600 RPS search/catalog, 20 RPS checkout, 150 RPS CRM.
 3. Implement the vertical slice (catalog/search → selection/seat maps → ЮMoney checkout → e-ticket/email + счета/акты → CRM view + refund enforcement) and iterate toward full scope.
 
-### Next Questions (batch of three)
-1. Какие SLA/время ответа нужны для CRM/поддержки (p95/p99 для агентских операций, целевые времена ответа на обращения).
+### Next Questions
+- Нет открытых вопросов: CRM/поддержка используют те же SLO (p95 ≤ 800 мс, p99 ≤ 1500 мс; 99.5–99.9% SLA) что и CRM API.

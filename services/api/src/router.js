@@ -1,6 +1,10 @@
 import crypto from 'node:crypto';
 import { sampleCatalog, sampleSuppliers } from './sample-data.js';
 
+function nowIso() {
+  return new Date().toISOString();
+}
+
 function sendJson(res, status, payload) {
   const body = JSON.stringify(payload);
   res.writeHead(status, {
@@ -90,23 +94,99 @@ export function createRequestHandler(config, logger, options = {}) {
   const catalog = options.catalogData || sampleCatalog;
   const suppliers = options.supplierData || sampleSuppliers;
   const orders = options.orderStore || [];
+  const supportCases = options.supportCaseStore || [];
   const defaultVatRate = typeof config.vatDefaultRate === 'number' ? config.vatDefaultRate : 0;
   const defaultVatMode = config.vatDefaultMode || 'included';
+  const metrics = {
+    requests: 0,
+    health: 0,
+    readiness: 0,
+    catalog: 0,
+    checkout: 0,
+    refund: 0,
+    documents: 0,
+    crmOrders: 0,
+    crmCases: 0,
+  };
+
+  const crmSlo = config.crmSlo || { p95Ms: 800, p99Ms: 1500 };
+  const supportSla = config.supportSla || { firstResponseMinutes: 15, resolutionMinutes: 240 };
+
+  function buildDocuments(order) {
+    const vatRate = typeof order.totals?.vatRate === 'number' ? order.totals.vatRate : defaultVatRate;
+    const vatMode = order.totals?.vatMode || defaultVatMode;
+    const amount = order.totals?.gross ?? 0;
+    const net = vatMode === 'included' ? roundMoney(amount / (1 + vatRate)) : order.totals?.net ?? amount;
+    const vatAmount = vatMode === 'included' ? roundMoney(amount - net) : roundMoney(net * vatRate);
+
+    const baseDoc = {
+      orderId: order.id,
+      customer: order.customer,
+      currency: order.totals?.currency || 'RUB',
+      totals: {
+        net,
+        vatAmount,
+        vatRate,
+        vatMode,
+        gross: amount,
+      },
+      issuedAt: nowIso(),
+    };
+
+    return {
+      invoice: { ...baseDoc, type: 'invoice', number: `INV-${order.id.slice(0, 8)}` },
+      act: { ...baseDoc, type: 'act', number: `ACT-${order.id.slice(0, 8)}` },
+    };
+  }
+
+  function buildSlaDeadlines(priority = 'standard') {
+    const multiplier = priority === 'high' ? 0.5 : priority === 'low' ? 1.5 : 1;
+    const now = Date.now();
+    const firstResponseMs = (supportSla.firstResponseMinutes || 15) * 60 * 1000 * multiplier;
+    const resolutionMs = (supportSla.resolutionMinutes || 240) * 60 * 1000 * multiplier;
+    return {
+      targetFirstResponseMinutes: supportSla.firstResponseMinutes,
+      targetResolutionMinutes: supportSla.resolutionMinutes,
+      firstResponseDueAt: new Date(now + firstResponseMs).toISOString(),
+      resolutionDueAt: new Date(now + resolutionMs).toISOString(),
+    };
+  }
 
   return async (req, res) => {
     try {
+      metrics.requests += 1;
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const path = url.pathname;
 
       if (req.method === 'GET' && path === '/health') {
+        metrics.health += 1;
         return sendJson(res, 200, { ...basePayload, status: 'ok', uptimeMs: Math.round(process.uptime() * 1000) });
       }
 
       if (req.method === 'GET' && path === '/readiness') {
+        metrics.readiness += 1;
         return sendJson(res, 200, { ...basePayload, status: 'ready', timestamp: new Date().toISOString() });
       }
 
+      if (req.method === 'GET' && path === '/metrics') {
+        const lines = [
+          `service_requests_total ${metrics.requests}`,
+          `service_health_total ${metrics.health}`,
+          `service_readiness_total ${metrics.readiness}`,
+          `service_catalog_total ${metrics.catalog}`,
+          `service_checkout_total ${metrics.checkout}`,
+          `service_refund_total ${metrics.refund}`,
+          `service_documents_total ${metrics.documents}`,
+          `service_crm_orders_total ${metrics.crmOrders}`,
+          `service_crm_cases_total ${metrics.crmCases}`,
+        ];
+        res.writeHead(200, { 'Content-Type': 'text/plain; version=0.0.4' });
+        res.end(lines.join('\n'));
+        return;
+      }
+
       if (req.method === 'GET' && path === '/catalog') {
+        metrics.catalog += 1;
         const items = filterCatalog(catalog, url);
         return sendJson(res, 200, { ...basePayload, items, total: items.length });
       }
@@ -125,12 +205,41 @@ export function createRequestHandler(config, logger, options = {}) {
         return sendJson(res, 200, { ...basePayload, suppliers, total: suppliers.length });
       }
 
+      if (req.method === 'GET' && path === '/crm/orders') {
+        metrics.crmOrders += 1;
+        return sendJson(res, 200, {
+          ...basePayload,
+          slo: crmSlo,
+          orders: orders.map((order) => ({
+            id: order.id,
+            status: order.status,
+            createdAt: order.createdAt,
+            catalogItemId: order.catalogItemId,
+            fareCode: order.fareCode,
+            quantity: order.quantity,
+            totals: order.totals,
+            refundPolicy: order.refundPolicy,
+          })),
+          total: orders.length,
+        });
+      }
+
+      if (req.method === 'GET' && path === '/crm/sla') {
+        metrics.crmOrders += 1;
+        return sendJson(res, 200, {
+          ...basePayload,
+          crmSlo,
+          supportSla,
+        });
+      }
+
       if (req.method === 'POST' && path === '/echo') {
         const body = await readBody(req);
         return sendJson(res, 200, { ...basePayload, echo: parseJson(body) });
       }
 
       if (req.method === 'POST' && path === '/checkout') {
+        metrics.checkout += 1;
         const payload = parseJson(await readBody(req));
         if (!payload || typeof payload !== 'object') {
           return sendJson(res, 400, { ...basePayload, error: 'Invalid payload' });
@@ -166,18 +275,25 @@ export function createRequestHandler(config, logger, options = {}) {
         const order = {
           id: crypto.randomUUID(),
           status: 'confirmed',
-          createdAt: new Date().toISOString(),
+          createdAt: nowIso(),
           catalogItemId: item.id,
           fareCode,
           quantity: qty,
           totals: { currency: item.currency || 'RUB', ...totals },
           customer,
           seating,
+          documents: buildDocuments({
+            id: 'pending',
+            customer,
+            totals: { currency: item.currency || 'RUB', ...totals },
+          }),
           refundPolicy: {
             refundable,
             refundableUntil: refundableUntil ? refundableUntil.toISOString() : null,
           },
         };
+
+        order.documents = buildDocuments(order);
 
         orders.push(order);
 
@@ -185,6 +301,18 @@ export function createRequestHandler(config, logger, options = {}) {
       }
 
       const orderMatch = matchPath(path, '/orders');
+      if (req.method === 'GET' && orderMatch && path.endsWith('/documents')) {
+        metrics.documents += 1;
+        const id = orderMatch.replace(/\/$/, '').replace(/\/documents$/, '');
+        const order = orders.find((entry) => entry.id === id);
+        if (!order) {
+          return sendJson(res, 404, { ...basePayload, error: 'Order not found', id });
+        }
+
+        const docs = order.documents || buildDocuments(order);
+        return sendJson(res, 200, { ...basePayload, documents: docs });
+      }
+
       if (req.method === 'GET' && orderMatch) {
         const id = orderMatch;
         const order = orders.find((entry) => entry.id === id);
@@ -215,10 +343,46 @@ export function createRequestHandler(config, logger, options = {}) {
         }
 
         order.status = 'refunded';
-        order.refundedAt = new Date().toISOString();
+        order.refundedAt = nowIso();
         order.refundSummary = { amount: order.totals?.gross || 0, currency: order.totals?.currency || 'RUB' };
+        metrics.refund += 1;
 
         return sendJson(res, 200, { ...basePayload, order });
+      }
+
+      if (req.method === 'GET' && path === '/crm/support/cases') {
+        metrics.crmCases += 1;
+        return sendJson(res, 200, { ...basePayload, cases: supportCases, total: supportCases.length, supportSla });
+      }
+
+      if (req.method === 'POST' && path === '/crm/support/cases') {
+        metrics.crmCases += 1;
+        const payload = parseJson(await readBody(req));
+        if (!payload || typeof payload !== 'object') {
+          return sendJson(res, 400, { ...basePayload, error: 'Invalid payload' });
+        }
+
+        const { subject, orderId, priority = 'standard', channel = 'email', customer } = payload;
+        if (!subject || !customer?.name || !customer?.email) {
+          return sendJson(res, 400, { ...basePayload, error: 'Missing required fields' });
+        }
+
+        const linkedOrder = orderId ? orders.find((entry) => entry.id === orderId) : null;
+        const sla = buildSlaDeadlines(priority);
+        const ticket = {
+          id: `case-${crypto.randomUUID()}`,
+          status: 'open',
+          subject,
+          priority,
+          channel,
+          orderId: linkedOrder?.id,
+          customer,
+          createdAt: nowIso(),
+          sla,
+        };
+
+        supportCases.push(ticket);
+        return sendJson(res, 201, { ...basePayload, case: ticket });
       }
 
       return sendJson(res, 404, { ...basePayload, error: 'Not Found' });

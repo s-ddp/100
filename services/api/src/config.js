@@ -52,5 +52,13 @@ export function loadConfig() {
     logLevel: process.env.LOG_LEVEL || 'info',
     vatDefaultRate: parseVatRate(process.env.VAT_DEFAULT_RATE, 0.2),
     vatDefaultMode: process.env.VAT_DEFAULT_MODE || 'included',
+    crmSlo: {
+      p95Ms: Number(process.env.CRM_P95_MS) || 800,
+      p99Ms: Number(process.env.CRM_P99_MS) || 1500,
+    },
+    supportSla: {
+      firstResponseMinutes: Number(process.env.SUPPORT_FIRST_RESPONSE_MINUTES) || 15,
+      resolutionMinutes: Number(process.env.SUPPORT_RESOLUTION_MINUTES) || 240,
+    },
   };
 }

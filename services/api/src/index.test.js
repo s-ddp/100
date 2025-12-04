@@ -166,6 +166,12 @@ test('checkout creates an order with totals and refund policy', async () => {
     const detailBody = await detailRes.json();
     assert.equal(detailBody.order.id, order.id);
     assert.equal(detailBody.order.status, 'confirmed');
+
+    const docsRes = await fetch(`${baseUrl}/orders/${order.id}/documents`);
+    assert.equal(docsRes.status, 200);
+    const docsBody = await docsRes.json();
+    assert.ok(docsBody.documents?.invoice?.number);
+    assert.ok(docsBody.documents?.act?.number);
   });
 });
 
@@ -195,5 +201,89 @@ test('checkout validates fare and quantity', async () => {
       }),
     });
     assert.equal(badQty.status, 400);
+  });
+});
+
+test('metrics endpoint emits counters', async () => {
+  const config = loadConfig();
+  const handler = createRequestHandler(config, createLoggerWithLevel('fatal'));
+  await withServer(handler, async (baseUrl) => {
+    await fetch(`${baseUrl}/health`);
+    await fetch(`${baseUrl}/readiness`);
+    await fetch(`${baseUrl}/catalog`);
+
+    const metrics = await fetch(`${baseUrl}/metrics`);
+    assert.equal(metrics.status, 200);
+    const text = await metrics.text();
+    assert.match(text, /service_requests_total/);
+    assert.match(text, /service_catalog_total/);
+  });
+});
+
+test('crm order listing exposes SLO targets', async () => {
+  const config = loadConfig();
+  const orders = [];
+  const handler = createRequestHandler(config, createLoggerWithLevel('fatal'), { orderStore: orders });
+  await withServer(handler, async (baseUrl) => {
+    const checkout = await fetch(`${baseUrl}/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        catalogItemId: 'exc-001',
+        fareCode: 'adult',
+        quantity: 1,
+        customer: { name: 'CRM User', email: 'crm@example.com', phone: '+79998887766' },
+      }),
+    });
+    assert.equal(checkout.status, 201);
+
+    const list = await fetch(`${baseUrl}/crm/orders`);
+    assert.equal(list.status, 200);
+    const body = await list.json();
+    assert.equal(body.total, 1);
+    assert.equal(body.orders[0].status, 'confirmed');
+    assert.ok(body.slo.p95Ms);
+    assert.ok(body.slo.p99Ms);
+  });
+});
+
+test('support cases include SLA deadlines', async () => {
+  const config = loadConfig();
+  const orders = [];
+  const supportCases = [];
+  const handler = createRequestHandler(config, createLoggerWithLevel('fatal'), { orderStore: orders, supportCaseStore: supportCases });
+  await withServer(handler, async (baseUrl) => {
+    const checkout = await fetch(`${baseUrl}/checkout`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        catalogItemId: 'exc-001',
+        fareCode: 'adult',
+        quantity: 1,
+        customer: { name: 'Support User', email: 'support@example.com', phone: '+79998887766' },
+      }),
+    });
+    const { order } = await checkout.json();
+
+    const created = await fetch(`${baseUrl}/crm/support/cases`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subject: 'Помощь с билетом',
+        orderId: order.id,
+        priority: 'high',
+        channel: 'whatsapp',
+        customer: { name: 'Support User', email: 'support@example.com' },
+      }),
+    });
+    assert.equal(created.status, 201);
+    const createdBody = await created.json();
+    assert.ok(createdBody.case.sla.firstResponseDueAt);
+
+    const list = await fetch(`${baseUrl}/crm/support/cases`);
+    const listBody = await list.json();
+    assert.equal(listBody.total, 1);
+    assert.equal(listBody.cases[0].orderId, order.id);
+    assert.equal(listBody.supportSla.firstResponseMinutes, config.supportSla.firstResponseMinutes);
   });
 });

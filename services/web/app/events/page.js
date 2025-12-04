@@ -4,7 +4,10 @@ async function fetchEvents() {
   try {
     const res = await fetch(`${API_URL}/events`, { cache: 'no-store' });
     if (!res.ok) return [];
-    return res.json();
+    const data = await res.json();
+    if (Array.isArray(data)) return data;
+    if (Array.isArray(data.events)) return data.events;
+    return [];
   } catch {
     return [];
   }

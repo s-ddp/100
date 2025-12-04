@@ -4,7 +4,9 @@ async function fetchEvent(id) {
   try {
     const res = await fetch(`${API_URL}/events/${id}`, { cache: 'no-store' });
     if (!res.ok) return null;
-    return res.json();
+    const data = await res.json();
+    if (data?.event) return data.event;
+    return data;
   } catch {
     return null;
   }

@@ -11,11 +11,12 @@
 - Browse/search events, view schedules, and select seats or general admission tickets based on vessel/event configuration (seat maps shown only when assigned seating is required; otherwise default to general admission flows).
 - Pricing, fees, taxes, and promotions displayed transparently through checkout. **(Pending tax/fee rules)**
 - Checkout with payments (ЮMoney) in RUB, order confirmation, and receipts via email/SMS.
+- Refund eligibility enforced: customer self-service refunds permitted until 24 hours before event start; no exchanges or transfers supported; within 24 hours of event start tickets are non-refundable/non-transferable.
 - Customer accounts: authentication, profile, order history, and download of tickets/QR codes. **(Pending identity/SSO needs)**
 
 ### CRM
 - Entity management: events, venues, inventory, customers, orders, promotions. **(Pending data model decisions)**
-- Agent console: search/lookups, refunds/exchanges/transfers, resend confirmations. **(Pending refund/transfer policy)**
+- Agent console: search/lookups, refunds (only when ≥24h before event start), resend confirmations. Exchanges and transfers are not supported.
 - Support case management with statuses, notes, attachments, and SLA tracking. **(Pending SLA definitions)**
 - Role-based access control with audit trails for sensitive actions. **(Pending roles/permissions)**
 
@@ -41,7 +42,7 @@
 
 ## API Surface (To Refine)
 - Public APIs for catalog retrieval, seat maps, availability checks, checkout, and order retrieval.
-- CRM APIs for agent actions (refund, exchange, transfer, resend), support cases, and reporting.
+- CRM APIs for agent actions (refunds when eligible; resend confirmations), support cases, and reporting. Exchanges and transfers are out of scope.
 - Webhooks/events for payment updates, ticket delivery, and analytics tracking.
 
 ## Testing & Quality
@@ -57,7 +58,7 @@
 - Markets/countries in scope? **(Resolved: operate in Russia)**
 - Payment gateways and settlement rules? **(Resolved: integrate ЮMoney, RUB-only, no alternate payout schedules)**
 - Seating model (reserved vs general admission)? **(Resolved: combined approach—enable seat maps when a vessel/event requires assigned seating; use general admission when not)**
-- Refund/exchange/transfer policies? **(Pending)**
+- Refund/exchange/transfer policies? **(Partially resolved: refunds allowed until 24h before event start; no exchanges or transfers; fee/commission rules pending)**
 - Integrations (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**
 - Roles/permissions and audit requirements? **(Pending)**
 - Compliance constraints (GDPR, PCI, tax invoices, data residency)? **(Partially resolved: data residency in Russia; tax/PCI specifics pending)**

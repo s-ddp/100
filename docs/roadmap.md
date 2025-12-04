@@ -17,6 +17,7 @@
 - Confirm information architecture and UX flows for browsing events, seat selection, and checkout.
 - Establish system architecture and hosting strategy (cloud/region, high availability, backups).
 - Choose core stack for web app (frontend, backend, DB), CRM UI framework, and CI/CD pipeline.
+- Define payment service approach with initial integration to ЮMoney (RUB settlements; no alternate payout schedules needed).
 
 ### Phase 2 — Core Ticketing
 - Build catalog management for events, venues, seating/sections, pricing tiers, and promotions.
@@ -45,7 +46,7 @@
 
 ## Open Questions (to be resolved with stakeholders)
 1. What markets/countries are in scope for launch and compliance? **(Pending)**
-2. Which payment providers and payout/settlement requirements do we have? **(Pending)**
+2. Which payment providers and payout/settlement requirements do we have? **(Resolved: integrate ЮMoney for RUB payments; no alternate payout schedules/currencies required)**
 3. Do we need reserved seating maps, general admission, or both? **(Pending)**
 4. What integrations are required (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**
 5. What refund, exchange, and transfer policies apply? **(Pending)**

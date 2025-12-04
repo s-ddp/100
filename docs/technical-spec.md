@@ -10,7 +10,7 @@
 ### Ticket Sales Website
 - Browse/search events, view schedules, and select seats or general admission tickets. **(Pending seating policy details)**
 - Pricing, fees, taxes, and promotions displayed transparently through checkout. **(Pending tax/fee rules)**
-- Checkout with payments, order confirmation, and receipts via email/SMS. **(Pending payment providers)**
+- Checkout with payments (ЮMoney) in RUB, order confirmation, and receipts via email/SMS.
 - Customer accounts: authentication, profile, order history, and download of tickets/QR codes. **(Pending identity/SSO needs)**
 
 ### CRM
@@ -29,7 +29,7 @@
 - **Frontend:** Modern SPA/SSR framework (e.g., React/Next.js or Vue/Nuxt) with component library and design system. **(Pending selection)**
 - **Backend:** API-first service (e.g., Node.js/TypeScript, Java/Kotlin, or Python) with REST/GraphQL endpoints. **(Pending selection)**
 - **Database:** Relational DB for transactions; consider Redis for caching/reservations. **(Pending provider)**
-- **Payments:** Integrations abstracted behind a payment service to support multiple gateways. **(Pending gateways)**
+- **Payments:** Payment service abstraction with initial gateway: ЮMoney (accepting customer payments in RUB; no alternate payout schedules or currencies required at this stage). Future gateways can be added behind the same abstraction.
 - **Notifications:** Email/SMS providers with template management and event-driven dispatch. **(Pending providers)**
 - **Infrastructure:** Containerized services with CI/CD, automated tests, IaC (Terraform), and cloud hosting. **(Pending cloud/region)**
 
@@ -55,7 +55,7 @@
 
 ## Open Questions
 - Markets/countries in scope? **(Pending)**
-- Payment gateways and settlement rules? **(Pending)**
+- Payment gateways and settlement rules? **(Resolved: integrate ЮMoney, RUB-only, no alternate payout schedules)**
 - Seating model (reserved vs general admission)? **(Pending)**
 - Refund/exchange/transfer policies? **(Pending)**
 - Integrations (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**

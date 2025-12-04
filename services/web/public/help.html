@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Помощь и поддержка — AquaVoyage</title>
+    <style>
+        *{margin:0;padding:0;box-sizing:border-box;font-family:'Roboto',sans-serif}
+        body{background:#fff;padding-top:80px;color:#212121}
+        .header{position:fixed;top:0;left:0;width:100%;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.08);z-index:100;padding:16px 0}
+        .header-container{max-width:1400px;margin:0 auto;padding:0 24px;display:flex;align-items:center;justify-content:space-between}
+        .header-logo{font-size:20px;font-weight:700;color:#0055FB;text-decoration:none}
+        .header-nav{display:flex;gap:32px;align-items:center}
+        .header-nav-link{font-size:14px;font-weight:500;color:#212121;transition:color .2s;text-decoration:none}
+        .header-nav-link:hover{color:#0055FB}
+        .header-cart{position:relative;font-size:20px;color:#212121;cursor:pointer}
+        .header-cart-badge{position:absolute;top:-8px;right:-8px;width:18px;height:18px;background:#FF6B00;color:#fff;font-size:10px;border-radius:50%;display:flex;align-items:center;justify-content:center}
+        .header-tickets-btn{padding:8px 16px;border:none;border-radius:6px;background:#0055FB;color:#fff;font-weight:500;cursor:pointer}
+        .container{max-width:1400px;margin:0 auto;padding:0 24px}
+        .hero{background:linear-gradient(135deg,#f0f7ff,#e0ecff);border-radius:16px;padding:32px 28px;display:grid;grid-template-columns:2fr 1.1fr;gap:28px;align-items:center;box-shadow:0 10px 32px rgba(0,85,251,.12);margin:24px 0 32px}
+        .hero h1{font-size:32px;font-weight:800;margin-bottom:10px}
+        .hero p{color:#4b5563;line-height:1.6;font-size:16px;margin-bottom:12px}
+        .hero-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-top:12px}
+        .hero-item{background:#fff;border-radius:12px;padding:12px 14px;box-shadow:0 6px 18px rgba(0,0,0,.06);font-size:14px;color:#374151}
+        .help-grid{display:grid;grid-template-columns:2fr 1fr;gap:32px;margin-bottom:48px}
+        .card{background:#fff;border-radius:14px;box-shadow:0 8px 24px rgba(0,0,0,.08);padding:24px}
+        .card h2{font-size:22px;margin-bottom:16px}
+        .list{display:flex;flex-direction:column;gap:14px;color:#4b5563;font-size:15px;line-height:1.6}
+        .contact-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin-top:12px}
+        .contact-item{padding:14px;border:1px solid #e5e7eb;border-radius:12px;background:#f8fbff;font-weight:500;color:#111827;display:flex;align-items:center;gap:10px}
+        .badge{display:inline-block;background:#0055FB;color:#fff;border-radius:20px;padding:4px 12px;font-size:12px;font-weight:600;margin-bottom:10px}
+        .faq-item{border-top:1px solid #e5e7eb;padding:14px 0}
+        .faq-item:first-child{border-top:none}
+        .faq-question{font-weight:600;margin-bottom:6px}
+        .faq-answer{color:#4b5563;line-height:1.6;font-size:15px}
+        .footer{background:#0F172A;color:#fff;padding:80px 0 30px;margin-top:60px}
+        .footer-container{max-width:1400px;margin:0 auto;padding:0 24px}
+        .footer-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:40px;margin-bottom:40px}
+        .footer-column h3{font-size:17px;margin-bottom:20px}
+        .footer-column a{color:rgba(255,255,255,.7);font-size:14px;line-height:2.2;text-decoration:none}
+        .footer-column a:hover{color:#fff}
+        .footer-copyright{border-top:1px solid rgba(255,255,255,.1);padding-top:24px;font-size:12px;text-align:center;color:rgba(255,255,255,.5)}
+        @media(max-width:1024px){.hero{grid-template-columns:1fr}.help-grid{grid-template-columns:1fr}}
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<header class="header">
+    <div class="header-container">
+        <a href="/index.html" class="header-logo">AquaVoyage</a>
+        <nav class="header-nav">
+            <a href="/index.html" class="header-nav-link">Главная</a>
+            <a href="/event.html" class="header-nav-link">Экскурсии</a>
+            <a href="/rent.html" class="header-nav-link">Аренда судов</a>
+            <a href="/help.html" class="header-nav-link">Помощь</a>
+        </nav>
+        <div style="display:flex;gap:16px;align-items:center">
+            <div class="header-cart"><i class="fas fa-shopping-cart"></i><span class="header-cart-badge">1</span></div>
+            <button class="header-tickets-btn">Мои билеты</button>
+        </div>
+    </div>
+</header>
+
+<main class="container">
+    <section class="hero">
+        <div>
+            <h1>Помощь и поддержка</h1>
+            <p>Мы отвечаем за 15 минут и напоминаем про рейс. Возврат возможен до 24 часов до начала, комиссии и удержаний нет — расходы по эквайрингу берём на себя.</p>
+            <div class="hero-list">
+                <div class="hero-item">ЮMoney и фискализация по 54-ФЗ через ЮKassa</div>
+                <div class="hero-item">Автоматическая рассылка билетов и чеков на email</div>
+                <div class="hero-item">Мессенджеры: Maxx (приоритет), WhatsApp, Telegram</div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="badge">Срочный вопрос?</div>
+            <div class="list">
+                <div>Позвоните: +7 (812) 123-45-67</div>
+                <div>Email: info@aquavoyage.ru</div>
+                <div>Ежедневно: 09:00–22:00 (МСК)</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="help-grid">
+        <div class="card">
+            <h2>Частые вопросы</h2>
+            <div class="faq-item">
+                <div class="faq-question">Как работает возврат?</div>
+                <div class="faq-answer">Можно оформить онлайн не позднее чем за 24 часа до начала рейса. Сумма возвращается полностью, без удержаний; комиссии платёжного провайдера покрывает продавец.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Можно ли перенести или обменять билет?</div>
+                <div class="faq-answer">Переносы и обмены не поддерживаются. При необходимости — отмените билет вовремя и оформите новую покупку.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Нужна ли привязка к местам?</div>
+                <div class="faq-answer">Схема отображается, если у рейса предусмотрено размещение. Для общих посадок места не фиксируются, билет действует на вход.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-question">Какие данные обязательны?</div>
+                <div class="faq-answer">ФИО, телефон и email. Паспортные данные не требуются; данные хранятся без ограничения срока по внутренним политикам.</div>
+            </div>
+        </div>
+        <div class="card">
+            <h2>Как связаться</h2>
+            <div class="contact-row">
+                <div class="contact-item"><i class="fas fa-phone"></i>+7 (812) 123-45-67</div>
+                <div class="contact-item"><i class="fas fa-envelope"></i>support@aquavoyage.ru</div>
+                <div class="contact-item"><i class="fab fa-telegram"></i>@aquavoyage_support</div>
+                <div class="contact-item"><i class="fas fa-file-invoice"></i>Счета и акты на email сразу после оплаты</div>
+            </div>
+            <div class="list" style="margin-top:16px">
+                <div><strong>Юр. лицо:</strong> ООО «AquaVoyage» (РФ)</div>
+                <div><strong>НДС:</strong> 20% по умолчанию; доступны 0%/10%/20% в настройках рейса</div>
+                <div><strong>Чеки:</strong> Фискализируются через ЮKassa, реквизиты в письме и в CRM</div>
+            </div>
+        </div>
+    </section>
+</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-column"><h3>AquaVoyage</h3><p style="color:rgba(255,255,255,.7)">Водные экскурсии и аренда судов по Санкт-Петербургу</p></div>
+            <div class="footer-column"><h3>Навигация</h3><a href="/index.html">Главная</a><br><a href="/event.html">Экскурсии</a><br><a href="/rent.html">Аренда судов</a></div>
+            <div class="footer-column"><h3>Контакты</h3><div style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.8">+7 (812) 123-45-67<br>info@aquavoyage.ru<br>Причал №5, Санкт-Петербург</div></div>
+        </div>
+        <div class="footer-copyright">© 2025 AquaVoyage. Все права защищены.</div>
+    </div>
+</footer>
+</body>
+</html>

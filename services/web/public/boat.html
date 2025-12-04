@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Моторная яхта "Альбатрос" — AquaVoyage</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background: #f8fafc; color: #212121; padding-top: 80px; }
+
+        .header { position: fixed; top: 0; left: 0; width: 100%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); z-index: 100; padding: 16px 0; }
+        .header-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+        .header-logo { font-size: 20px; font-weight: 700; color: #0055FB; text-decoration: none; }
+        .header-nav { display: flex; gap: 32px; align-items: center; }
+        .header-nav-link { font-size: 14px; font-weight: 500; color: #212121; transition: color 0.2s; text-decoration: none; }
+        .header-nav-link:hover { color: #0055FB; }
+        .header-cart { position: relative; font-size: 20px; color: #212121; cursor: pointer; }
+        .header-cart-badge { position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; background: #FF6B00; color: #fff; font-size: 10px; font-weight: 500; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        .boat-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        .breadcrumbs { margin: 24px 0; font-size: 14px; color: #666; }
+        .breadcrumbs a { color: #666; text-decoration: none; }
+        .breadcrumbs a:hover { color: #0055FB; }
+
+        .boat-gallery { margin-bottom: 48px; }
+        .main-photo { height: 520px; background-size: cover; background-position: center; border-radius: 16px; box-shadow: 0 8px 24px rgba(0,0,0,0.1); margin-bottom: 16px; }
+        .gallery-thumbs { display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 12px; }
+        .thumb { height: 100px; background-size: cover; background-position: center; border-radius: 8px; cursor: pointer; transition: all 0.3s; border: 2px solid transparent; }
+        .thumb.active, .thumb:hover { border-color: #0055FB; transform: scale(1.05); }
+
+        .boat-main-info { display: grid; grid-template-columns: 2fr 1fr; gap: 48px; margin-bottom: 48px; }
+        .boat-details h1 { font-size: 32px; font-weight: 700; margin-bottom: 12px; }
+        .boat-type { font-size: 14px; color: #0055FB; background: #f0f7ff; padding: 6px 12px; border-radius: 20px; display: inline-block; margin-bottom: 24px; }
+        .boat-meta { display: flex; flex-wrap: wrap; gap: 24px; margin-bottom: 32px; }
+        .meta-item { display: flex; align-items: center; gap: 8px; font-size: 15px; color: #4b5563; }
+        .meta-item i { color: #0055FB; font-size: 18px; }
+
+        .amenities h2 { font-size: 20px; font-weight: 600; margin-bottom: 16px; }
+        .amenities-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 16px; }
+        .amenity-item { display: flex; align-items: center; gap: 8px; font-size: 15px; color: #4b5563; padding: 10px; background: #fff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .amenity-item i { color: #0055FB; font-size: 16px; }
+
+        .pricing-block { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); height: fit-content; }
+        .pricing-title { font-size: 20px; font-weight: 600; margin-bottom: 20px; }
+        .price-option { display: flex; justify-content: space-between; align-items: center; padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 2px solid #e5e7eb; cursor: pointer; transition: all 0.2s; }
+        .price-option.active { border-color: #0055FB; background: #f0f7ff; }
+        .price-duration { font-size: 16px; font-weight: 500; }
+        .price-value { font-size: 20px; font-weight: 700; color: #0055FB; }
+        .rent-btn { width: 100%; padding: 16px; border: none; border-radius: 12px; background: #0055FB; color: #fff; font-size: 18px; font-weight: 600; cursor: pointer; transition: background 0.2s; margin-top: 16px; }
+        .rent-btn:hover { background: #0044CC; }
+
+        .boat-description { background: #fff; border-radius: 12px; padding: 32px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 64px; }
+        .boat-description h2 { font-size: 24px; font-weight: 600; margin-bottom: 20px; }
+        .boat-description p { font-size: 16px; line-height: 1.7; color: #4b5563; margin-bottom: 16px; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 200; display: none; align-items: center; justify-content: center; }
+        .modal-overlay.active { display: flex; }
+        .modal-form { background: #fff; border-radius: 16px; padding: 32px; width: 100%; max-width: 500px; position: relative; }
+        .close-modal { position: absolute; top: 16px; right: 16px; font-size: 24px; color: #666; cursor: pointer; transition: color 0.2s; }
+        .close-modal:hover { color: #0055FB; }
+        .modal-title { font-size: 24px; font-weight: 600; margin-bottom: 24px; text-align: center; }
+        .form-group { margin-bottom: 20px; }
+        .form-label { display: block; font-size: 14px; font-weight: 500; margin-bottom: 8px; color: #212121; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 15px; }
+        .form-input:focus { outline: none; border-color: #0055FB; }
+        .form-textarea { resize: vertical; min-height: 100px; }
+        .submit-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; background: #0055FB; color: #fff; font-size: 16px; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+        .submit-btn:hover { background: #0044CC; }
+
+        .footer { background: #0F172A; color: #fff; padding: 80px 0 30px; }
+        .footer-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 40px; }
+        .footer-column h3 { font-size: 17px; margin-bottom: 20px; }
+        .footer-column a { color: rgba(255,255,255,.7); font-size: 14px; line-height: 2.2; text-decoration: none; }
+        .footer-column a:hover { color: #fff; }
+        .footer-copyright { border-top: 1px solid rgba(255,255,255,.1); padding-top: 24px; font-size: 12px; text-align: center; color: rgba(255,255,255,.5); }
+
+        @media (max-width: 1024px) {
+            .boat-main-info { grid-template-columns: 1fr; gap: 32px; }
+            .header-nav { display: none; }
+        }
+        @media (max-width: 768px) {
+            .main-photo { height: 320px; }
+            .gallery-thumbs { grid-template-columns: repeat(4, 1fr); }
+            .thumb { height: 80px; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="header-container">
+        <a href="/index.html" class="header-logo">AquaVoyage</a>
+        <nav class="header-nav">
+            <a href="/index.html" class="header-nav-link">Главная</a>
+            <a href="/event.html" class="header-nav-link">Экскурсии</a>
+            <a href="/rent.html" class="header-nav-link active">Аренда судов</a>
+            <a href="/help.html" class="header-nav-link">Помощь</a>
+        </nav>
+        <div class="header-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="header-cart-badge">0</span>
+        </div>
+    </div>
+</header>
+
+<main class="boat-container">
+    <div class="breadcrumbs">
+        <a href="/index.html">Главная</a> → <a href="/rent.html">Аренда судов</a> → Моторная яхта "Альбатрос"
+    </div>
+
+    <div class="boat-gallery">
+        <div class="main-photo" id="mainBoatPhoto" style="background-image: url('https://images.unsplash.com/photo-1524008757925-5024e639526e?w=1600&q=95')"></div>
+        <div class="gallery-thumbs">
+            <div class="thumb active" data-img="https://images.unsplash.com/photo-1524008757925-5024e639526e?w=1600&q=95"></div>
+            <div class="thumb" data-img="https://images.unsplash.com/photo-1517984033328-110d6e870561?w=1600&q=95"></div>
+            <div class="thumb" data-img="https://images.unsplash.com/photo-1552941776-991e5279a050?w=1600&q=95"></div>
+            <div class="thumb" data-img="https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1600&q=95"></div>
+            <div class="thumb" data-img="https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=1600&q=95"></div>
+        </div>
+    </div>
+
+    <div class="boat-main-info">
+        <div class="boat-details">
+            <h1>Моторная яхта "Альбатрос"</h1>
+            <span class="boat-type">Моторная яхта</span>
+
+            <div class="boat-meta">
+                <div class="meta-item"><i class="fas fa-users"></i> 12 человек</div>
+                <div class="meta-item"><i class="fas fa-tachometer-alt"></i> 35 км/ч</div>
+                <div class="meta-item"><i class="fas fa-user-cap"></i> Капитан включен</div>
+                <div class="meta-item"><i class="fas fa-calendar-check"></i> Доступно круглый год</div>
+            </div>
+
+            <div class="amenities">
+                <h2>Что доступно на борту:</h2>
+                <div class="amenities-list">
+                    <div class="amenity-item"><i class="fas fa-blanket"></i> Теплые пледы</div>
+                    <div class="amenity-item"><i class="fas fa-wine-glass-alt"></i> Бокалы для игристого</div>
+                    <div class="amenity-item"><i class="fas fa-toilet"></i> Туалет</div>
+                    <div class="amenity-item"><i class="fas fa-wine-bottle"></i> Бар на борту</div>
+                    <div class="amenity-item"><i class="fas fa-music"></i> Аудиосистема</div>
+                    <div class="amenity-item"><i class="fas fa-sun"></i> Солнечная палуба</div>
+                    <div class="amenity-item"><i class="fas fa-snowflake"></i> Кондиционер</div>
+                    <div class="amenity-item"><i class="fas fa-camera"></i> Фотозона</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="pricing-block">
+            <h3 class="pricing-title">Стоимость аренды</h3>
+            <div class="price-option active" data-duration="1h">
+                <span class="price-duration">1 час</span>
+                <span class="price-value">15 000 ₽</span>
+            </div>
+            <div class="price-option" data-duration="4h">
+                <span class="price-duration">4 часа</span>
+                <span class="price-value">50 000 ₽ <span style="font-size:12px; color:#666; font-weight:400;">(скидка 11%)</span></span>
+            </div>
+            <div class="price-option" data-duration="day">
+                <span class="price-duration">На день (8 часов)</span>
+                <span class="price-value">90 000 ₽ <span style="font-size:12px; color:#666; font-weight:400;">(скидка 25%)</span></span>
+            </div>
+            <button class="rent-btn" id="rentBtn">Оставить заявку на аренду</button>
+        </div>
+    </div>
+
+    <div class="boat-description">
+        <h2>О яхте "Альбатрос"</h2>
+        <p>Современная двухпалубная моторная яхта класса люкс, предназначенная для комфортных прогулок по каналам Санкт-Петербурга и Неве. Яхта оснащена всем необходимым для отдыха большой компании или романтического вечера вдвоем.</p>
+        <p>Нижняя палуба имеет просторный салон с мягкой мебелью, телевизором и мини-баром. Верхняя солнечная палуба предлагает панорамный вид на город и оборудована шезлонгами для отдыха под открытым небом.</p>
+        <p>Капитан с большим стажем управляет яхтой, а стажер поможет с организацией отдыха, обслуживанием заказов из бара и фотографированием.</p>
+    </div>
+</main>
+
+<div class="modal-overlay" id="rentModal">
+    <div class="modal-form">
+        <div class="close-modal" id="closeModal"><i class="fas fa-times"></i></div>
+        <h2 class="modal-title">Заявка на аренду яхты "Альбатрос"</h2>
+        <form id="rentForm">
+            <div class="form-group">
+                <label class="form-label" for="fullName">ФИО *</label>
+                <input type="text" class="form-input" id="fullName" required placeholder="Иванов Иван Иванович">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="phone">Контактный телефон *</label>
+                <input type="tel" class="form-input" id="phone" required placeholder="+7 (XXX) XXX-XX-XX">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="rentalDate">Дата аренды *</label>
+                <input type="date" class="form-input" id="rentalDate" required min="2024-05-01">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="rentalDuration">Длительность аренды *</label>
+                <select class="form-input" id="rentalDuration" required>
+                    <option value="1h">1 час — 15 000 ₽</option>
+                    <option value="4h">4 часа — 50 000 ₽</option>
+                    <option value="day">На день — 90 000 ₽</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="request">Дополнительные пожелания</label>
+                <textarea class="form-input form-textarea" id="request" placeholder="Например: нужен праздничный декор, заказать кейтеринг, фотосессия на борту..."></textarea>
+            </div>
+            <button type="submit" class="submit-btn">Отправить заявку</button>
+        </form>
+    </div>
+</div>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <h3>AquaVoyage</h3>
+                <p style="color:rgba(255,255,255,.7);font-size:14px;margin-bottom:16px">Лучшие водные экскурсии и аренда судов по Санкт-Петербургу</p>
+                <div style="display:flex;gap:16px;">
+                    <a href="#" class="footer-column a"><i class="fab fa-vk"></i></a>
+                    <a href="#" class="footer-column a"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="footer-column a"><i class="fab fa-telegram"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Навигация</h3>
+                <a href="/index.html">Главная</a><br>
+                <a href="/event.html">Экскурсии</a><br>
+                <a href="/rent.html">Аренда судов</a><br>
+                <a href="/help.html">Помощь</a>
+            </div>
+            <div class="footer-column">
+                <h3>Контакты</h3>
+                <div style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.8">
+                    <div><i class="fas fa-phone"></i> +7 (812) 123-45-67</div>
+                    <div><i class="fas fa-envelope"></i> info@aquavoyage.ru</div>
+                    <div><i class="fas fa-map-marker-alt"></i> Причал №5, Санкт-Петербург</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-copyright">© 2025 AquaVoyage. Все права защищены.</div>
+    </div>
+</footer>
+
+<script>
+    const thumbnails = document.querySelectorAll('.thumb');
+    const mainPhoto = document.getElementById('mainBoatPhoto');
+
+    thumbnails.forEach(thumb => {
+        thumb.addEventListener('click', () => {
+            thumbnails.forEach(t => t.classList.remove('active'));
+            thumb.classList.add('active');
+            mainPhoto.style.backgroundImage = `url(${thumb.dataset.img})`;
+        });
+    });
+
+    const priceOptions = document.querySelectorAll('.price-option');
+    const rentalDurationSelect = document.getElementById('rentalDuration');
+
+    priceOptions.forEach(option => {
+        option.addEventListener('click', () => {
+            priceOptions.forEach(o => o.classList.remove('active'));
+            option.classList.add('active');
+            rentalDurationSelect.value = option.dataset.duration;
+        });
+    });
+
+    const rentBtn = document.getElementById('rentBtn');
+    const rentModal = document.getElementById('rentModal');
+    const closeModal = document.getElementById('closeModal');
+
+    rentBtn.addEventListener('click', () => {
+        rentModal.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    });
+
+    closeModal.addEventListener('click', () => {
+        rentModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+    });
+
+    rentModal.addEventListener('click', (e) => {
+        if (e.target === rentModal) {
+            rentModal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+    });
+
+    document.getElementById('rentForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        alert('Заявка отправлена! Наш менеджер свяжется с вами в течение 15 минут.');
+        rentModal.classList.remove('active');
+        document.body.style.overflow = 'auto';
+        e.target.reset();
+    });
+
+    document.getElementById('phone').addEventListener('input', function(e) {
+        const x = e.target.value.replace(/\D/g, '').match(/(\d{0,1})(\d{0,3})(\d{0,3})(\d{0,2})(\d{0,2})/);
+        e.target.value = !x[2] ? x[1] : '+' + x[1] + ' (' + x[2] + (x[3] ? ') ' + x[3] : '') + (x[4] ? '-' + x[4] : '') + (x[5] ? '-' + x[5] : '');
+    });
+</script>
+</body>
+</html>

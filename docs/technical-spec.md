@@ -5,6 +5,7 @@
 ## Scope Overview
 - Public ticket sales website for water excursions, events, and rentals of boats/yachts with secure checkout and account management. **(Markets: operate in Russia; Languages: RU primary, EN + ZH secondary; Currency: RUB; Data storage: comply with Russian data residency requirements)**
 - CRM for managing customers, orders, events, rentals, and support operations. **(Roles: Administrator with full access; Manager with configurable section-level permissions defined in settings)**
+- CRM for managing customers, orders, events, rentals, and support operations. **(Pending user input for roles/permissions)**
 
 ## Functional Requirements
 ### Ticket Sales Website
@@ -14,6 +15,10 @@
 - Refund eligibility enforced: customer self-service refunds permitted until 24 hours before event start; no exchanges or transfers supported; within 24 hours of event start tickets are non-refundable/non-transferable; refunds are processed without commissions/withholdings to the customer and the merchant covers payment gateway fees.
 - Customer accounts: authentication, profile, order history, and download of tickets/QR codes. **(Resolved: no external SSO/MFA required at launch; standard auth applies)**
 - Notifications: email for registration, booking confirmations, and e-ticket delivery; messaging follow-ups via preferred Maxx with WhatsApp/Telegram as alternatives (e.g., reminders, support updates).
+- Pricing, fees, taxes, and promotions displayed transparently through checkout. **(Pending tax rules; no commissions/withholdings applied to customers on refunds; merchant absorbs payment gateway fees for refunds)**
+- Checkout with payments (ЮMoney) in RUB, order confirmation, and receipts via email/SMS.
+- Refund eligibility enforced: customer self-service refunds permitted until 24 hours before event start; no exchanges or transfers supported; within 24 hours of event start tickets are non-refundable/non-transferable; refunds are processed without commissions/withholdings to the customer and the merchant covers payment gateway fees.
+- Customer accounts: authentication, profile, order history, and download of tickets/QR codes. **(Pending identity/SSO needs)**
 
 ### CRM
 - Entity management: events, venues, inventory, customers, orders, promotions. **(Pending data model decisions)**
@@ -29,6 +34,13 @@
 - Security: authentication/authorization approach, PCI scope boundaries, and data protection policies. **(Resolved in part: no SSO/MFA requirements specified for customers or agents at launch; standard authentication needed)**
 - Observability: logging standards, metrics, tracing, and alerting thresholds.
 - Compliance: data retention, privacy, tax invoicing, and regional constraints. **(Resolved: operate under Russian legislation with data residency in Russia; online cash register/54-ФЗ fiscalization via ЮKassa/ЮMoney is required; receipts/fiscal requisites are not shown on tickets/refunds; taxation must be configurable with Russian VAT on/off and multiple rates; invoice/act needs and extra receipt content still pending)**
+- Role-based access control with audit trails for sensitive actions. **(Pending roles/permissions)**
+
+## Non-Functional Requirements (Pending user input)
+- Availability targets, performance SLAs (page load, checkout latency), and concurrency expectations.
+- Security: authentication/authorization approach, PCI scope boundaries, and data protection policies.
+- Observability: logging standards, metrics, tracing, and alerting thresholds.
+- Compliance: data retention, privacy, tax invoicing, and regional constraints. **(Data residency: store data in Russia per local legislation; other compliance specifics pending)**
 
 ## Architecture (Initial Draft)
 - **Frontend:** Modern SPA/SSR framework (e.g., React/Next.js or Vue/Nuxt) with component library and design system. **(Pending selection)**
@@ -49,6 +61,9 @@
 - **Supplier feed health**: Astra Marin and Neva Travel sync freshness, failure counts, field mismatch rates, and downstream impact on availability/inventory.
 - **Fiscalization/54-ФЗ**: issued/failed fiscal receipts for sales and refunds, discrepancy tracking vs. payment records, and reconciliation timelines.
 - **Reporting slices/filters (launch priority)**: route/itinerary, vessel/event, ticket category/fare class, supplier, berth/port, departure date/time, channel/source/UTM, locale/language, device, promo/campaign, customer type (new vs. repeat), and CRM manager/team.
+- **Payments:** Payment service abstraction with initial gateway: ЮMoney (accepting customer payments in RUB; no alternate payout schedules or currencies required at this stage). Refunds are full to the customer (no commissions/withholdings) with payment fees absorbed by the merchant. Future gateways can be added behind the same abstraction.
+- **Notifications:** Email/SMS providers with template management and event-driven dispatch. **(Pending providers)**
+- **Infrastructure:** Containerized services with CI/CD, automated tests, IaC (Terraform), and cloud hosting. **(Pending cloud/region)**
 
 ## Data Model (To Refine)
 - Core entities: Event, Venue, Section/Seat, TicketType, InventoryHold, Order, Payment, Customer, Promotion, SupportCase, User/Role.
@@ -71,6 +86,7 @@
 - Environments: dev/staging/production with feature flagging for incremental rollouts.
 - Observability: dashboards for errors, latency, throughput, and business KPIs (sales, conversion).
 - Runbooks for incident response, rollbacks, and data recovery; backup schedule: daily full backups plus multiple intra-day backups of operational tables.
+- Runbooks for incident response, rollbacks, and data recovery.
 
 - Markets/countries in scope? **(Resolved: operate in Russia)**
 - Payment gateways and settlement rules? **(Resolved: integrate ЮMoney, RUB-only, no alternate payout schedules)**
@@ -103,3 +119,8 @@
 1. Finalize tax defaults and legal docs: lock VAT rates/behavior and whether invoices/acts or extra requisites are required at launch.
 2. With taxation fixed, select implementation stack (frontend/backend/DB, caching, queues, observability) and deployment on bare metal in Russia that meets 99.5–99.9% availability, the defined SLOs, and RPO ≤ 5–15m / RTO ≤ 15m.
 3. Produce estimates and a phased delivery plan (ticketing, CRM, integrations, reporting) sized to peak loads: 300 RPS overall, 600 RPS search/catalog, 20 RPS checkout, 150 RPS CRM.
+- Integrations (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**
+- Roles/permissions and audit requirements? **(Pending)**
+- Compliance constraints (GDPR, PCI, tax invoices, data residency)? **(Partially resolved: data residency in Russia; tax/PCI specifics pending)**
+- Reporting and dashboards needed at launch? **(Pending)**
+

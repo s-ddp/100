@@ -21,6 +21,10 @@
 - Define payment service approach with initial integration to ЮMoney (RUB settlements; no alternate payout schedules needed) and required online-fiscalization via ЮKassa/ЮMoney (54-ФЗ compliant; receipts not embedded in tickets/refunds).
 - Capture refund/after-sales rules for tickets and rentals (refunds allowed until 24h before event start; no exchanges or transfers; sub-24h window is non-refundable/non-transferable; no commissions/withholdings from the customer, merchant covers payment fees on refunds).
 - Establish customer communications for registration, booking, and e-ticket delivery via email, plus set up web and cross-channel analytics foundations.
+- Establish system architecture and hosting strategy (cloud/region, high availability, backups).
+- Choose core stack for web app (frontend, backend, DB), CRM UI framework, and CI/CD pipeline.
+- Define payment service approach with initial integration to ЮMoney (RUB settlements; no alternate payout schedules needed).
+- Capture refund/after-sales rules for tickets and rentals (refunds allowed until 24h before event start; no exchanges or transfers; sub-24h window is non-refundable/non-transferable; no commissions/withholdings from the customer, merchant covers payment fees on refunds).
 
 ### Phase 2 — Core Ticketing
 - Build catalog management for events, venues, seating/sections, pricing tiers, and promotions.
@@ -43,11 +47,21 @@
 
 ### Phase 5 — Hardening & Launch
 - Performance testing (large peak traffic, seat maps) against SLOs: catalog p95 ≤ 250 ms/p99 ≤ 450 ms; search p95 ≤ 200 ms/p99 ≤ 400 ms; checkout p95 ≤ 600 ms/p99 ≤ 1200 ms; CRM API p95 ≤ 800 ms/p99 ≤ 1500 ms. Peak design loads: 300 RPS overall; 600 RPS search+catalog; 20 RPS checkout; 150 RPS CRM. Security review and observability (logging, metrics, tracing).
+- Integrate notifications (email/SMS) for confirmations, reminders, and support updates.
+
+### Phase 4 — Growth Features
+- Add analytics dashboards (sales, conversion, abandonment, channel performance).
+- Implement marketing tools (promo codes, campaigns, segmentation) and loyalty options.
+- Introduce access control/roles for operations, finance, and support teams.
+
+### Phase 5 — Hardening & Launch
+- Performance testing (traffic spikes, seat maps), security review, and observability (logging, metrics, tracing).
 - Data migration/imports from legacy systems if applicable.
 - Go-live checklist and runbooks for support and operations.
 
 ### Phase 6 — Post-Launch
 - Incident management processes and SLAs (to uphold the 99.5–99.9% availability target; recommend formalizing achievable SLOs/SLIs).
+- Incident management processes and SLAs.
 - Ongoing A/B tests, funnel optimization, and backlog grooming from feedback.
 
 ## Open Questions (to be resolved with stakeholders)
@@ -104,3 +118,13 @@
 1. Подтвердить стартовый набор ставок НДС (например, 0%, 10%, 20%) и дефолтное поведение “НДС нет/включён/выделен” для продуктов и аренды.
 2. Нужны ли счета/акты или другие юридические документы для B2B/арендных заказов, и как их выдавать (из CRM или автоматически)?
 3. Требуются ли дополнительные реквизиты в письмах/квитанциях помимо фискализации (например, реквизиты юрлица, договор, оферта)?
+4. What integrations are required (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**
+5. What refund, exchange, and transfer policies apply? **(Resolved: refunds allowed until 24h before event start; no exchanges or transfers; no commissions/withholdings from the customer, merchant covers payment fees on refunds; sub-24h window is non-refundable/non-transferable)**
+6. What operational roles should the CRM support, and what permissions are needed? **(Pending)**
+7. Are there compliance constraints (GDPR, PCI scope, tax invoicing, data residency)? **(Partially resolved: data residency in Russia; tax/PCI specifics pending)**
+8. What reporting and KPI dashboards are required at launch? **(Pending)**
+
+## Next Steps
+- Collect answers to open questions (see below for the first one).
+- Refine scope, milestones, and estimates based on confirmed requirements.
+- Finalize delivery plan with dependencies and timelines.

@@ -41,3 +41,6 @@ We will iterate on requirements by asking focused questions one at a time. Your 
 - Запустить локально: `docker run --rm -p 4000:4000 --env-file services/api/.env.example ticketing-api:local`
 - Для продакшена: загрузите реальный `.env`, пересоберите образ с тегом реестра и задеплойте на целевой bare metal сервер через ваш оркестратор (Ansible/systemd/compose).
 - Быстрый старт через Compose: `docker compose up --build api` (использует `services/api/.env.example`; обновите на реальный `.env` перед деплоем).
+
+## Collaboration Workflow
+We will iterate on requirements by asking focused questions one at a time. Your answers will be captured in the documents above to refine scope, milestones, and the technical plan.

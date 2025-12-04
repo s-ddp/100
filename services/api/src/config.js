@@ -24,6 +24,23 @@ function parsePort(value, fallback) {
   return fallback;
 }
 
+function parseVatRate(value, fallback) {
+  if (!value) return fallback;
+  if (typeof value === 'number') return value;
+  const trimmed = value.trim();
+  if (!trimmed) return fallback;
+
+  if (trimmed.endsWith('%')) {
+    const numeric = Number(trimmed.slice(0, -1));
+    if (Number.isFinite(numeric) && numeric >= 0) return numeric / 100;
+  }
+
+  const numeric = Number(trimmed);
+  if (Number.isFinite(numeric) && numeric >= 0 && numeric <= 1) return numeric;
+
+  return fallback;
+}
+
 export function loadConfig() {
   loadEnvFile();
 
@@ -33,5 +50,7 @@ export function loadConfig() {
     port: parsePort(process.env.PORT, 4000),
     serviceName: process.env.SERVICE_NAME || 'ticketing-api',
     logLevel: process.env.LOG_LEVEL || 'info',
+    vatDefaultRate: parseVatRate(process.env.VAT_DEFAULT_RATE, 0.2),
+    vatDefaultMode: process.env.VAT_DEFAULT_MODE || 'included',
   };
 }

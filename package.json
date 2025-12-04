@@ -2,10 +2,12 @@
   "name": "ticketing-monorepo",
   "private": true,
   "workspaces": [
-    "services/api"
+    "services/api",
+    "services/web"
   ],
   "scripts": {
     "start:api": "npm run start --workspace services/api",
+    "start:web": "npm run start --workspace services/web",
     "test:api": "npm run test --workspace services/api",
     "test": "npm run test:api"
   }

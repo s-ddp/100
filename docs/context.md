@@ -6,7 +6,7 @@ This snapshot consolidates the agreed requirements and pending decisions capture
 - **Offering**: Ticket sales for water excursions/events plus rentals (boats, yachts, boats) with adaptive seating (seat maps when required; general admission otherwise).
 - **Markets & Compliance**: Operate in Russia; data stored in Russia in line with local legislation. Online cash register/54-ФЗ via ЮKassa/ЮMoney; receipts/fiscal requisites are **not** embedded in tickets/refunds.
 - **Localization & Currency**: Languages — Russian (primary), English, Chinese; Currency — RUB only.
-- **Payments & Fiscalization**: ЮMoney for payments, RUB settlements only, no alternative payout schedules. Merchant covers payment gateway fees on refunds. Fiscalization handled via ЮKassa/ЮMoney for sales and refunds.
+- **Payments & Fiscalization**: ЮMoney for payments, RUB settlements only, no alternative payout schedules. Оплата всегда полной суммой (нет броней без оплаты и частичных оплат). Merchant covers payment gateway fees on refunds. Fiscalization handled via ЮKassa/ЮMoney for sales and refunds.
 - **Refund Policy**: Refunds allowed until 24h before event start; no exchanges or transfers; sub-24h window is non-refundable/non-transferable; no commissions/withholdings to customers.
 - **Customer Data**: Collect full name, email, and phone; no retention limit specified.
 - **Communications & Analytics**: Email for registration/booking/e-ticket delivery; messaging via preferred Maxx (WhatsApp/Telegram as alternatives). Web and cross-channel analytics with UTM tracking.
@@ -18,27 +18,26 @@ This snapshot consolidates the agreed requirements and pending decisions capture
 - **Resilience**: RPO ≤ 5–15 minutes; RTO ≤ 15 minutes. No secondary/DR site; backups retained indefinitely with manual cleanup.
 - **Taxation**: Configurable tax system with Russian VAT on/off and multiple VAT rates.
 
-## Pending Decisions
-- **Tax/Invoicing Details**: Confirm specific VAT rate set to ship with, whether invoices/acts are required, and any additional receipt/email requisites beyond fiscalization.
+## Resolved Tax/Invoicing Decisions
+- **VAT defaults**: Support Russian rates 0%, 10%, and 20% with a launch default of **20% VAT included**; allow `none/included/excluded` per product/rental.
+- **Invoices/acts**: Required for tickets and rentals; generate automatically after successful payment/confirmation and allow CRM-triggered regeneration/resend.
+- **Requisites**: Include юрлицо, ИНН/КПП, ОГРН, юр. адрес, банковские реквизиты (р/с, банк, БИК, к/с), контактные данные, и ссылка на оферту/договор во всех нефискальных документах/письмах.
 
 ## Immediate Next Steps
-- Confirm the launch VAT set (e.g., 0%, 10%, 20%) and default inclusion/exclusion behavior.
-- Decide on issuance of invoices/acts for rentals and B2B orders and whether creation happens automatically or via CRM.
-- Identify any extra requisites needed in customer communications beyond fiscalization.
+- Use the confirmed VAT defaults and document rules to finalize pricing, checkout, and document templates.
+- Apply the chosen stack (Next.js/React + TypeScript; NestJS on Node.js/TypeScript; PostgreSQL; Redis; RabbitMQ; observability via OpenTelemetry + Prometheus/Grafana for metrics, Loki for logs, Jaeger/Tempo for traces; self-hosted Matomo for web/cross-channel analytics) and stand up CI/CD plus bare-metal deployment in Russia.
+- Model the domain/schema (events/sailings, fares, seats, orders, payments, refunds, documents) and size the vertical slice against the agreed SLOs and RPS peaks.
 
 ## Action Plan (что делаем дальше)
-1. Закрыть налоговые вопросы: зафиксировать стартовые ставки НДС и дефолт «нет/включён/выделен», понять нужны ли счета/акты и доп. реквизиты.
-2. После подтверждения налогов — выбрать стек (фронтенд/бекенд/БД, кэш, очередь, observability) и схему деплоя на bare metal в РФ с учётом 99.5–99.9% SLA, SLO и RPO/RTO.
-3. Подготовить оценки и поэтапный план реализации (ticketing, CRM, интеграции, отчётность) под пиковые нагрузки: 300 RPS общие, 600 RPS поиск/каталог, 20 RPS чекаут, 150 RPS CRM.
+1. Применить выбранный стек (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; OpenTelemetry + Prometheus/Grafana/Loki/Jaeger; Matomo) и схему деплоя на bare metal в РФ с учётом 99.5–99.9% SLA, согласованных SLO и RPO/RTO.
+2. Подготовить оценки и поэтапный план реализации (ticketing, CRM, интеграции, отчётность) под пиковые нагрузки: 300 RPS общие, 600 RPS поиск/каталог, 20 RPS чекаут, 150 RPS CRM.
+3. Собрать вертикальный срез и расширять функциональность: каталог/поиск → выбор мест → ЮMoney checkout → e-ticket/email + счета/акты → CRM-вью + возврат ≥24h.
 
 ### Kickoff: что делать прямо сейчас
-- Утвердить стартовые VAT-настройки (ставки + дефолт) для продаж и аренды.
-- Зафиксировать базовый стек: React/Next.js + Node.js/TypeScript (NestJS/FastAPI), PostgreSQL, Redis, очередь (RabbitMQ/встроенный брокер), CI/CD и деплой контейнеров на bare metal в РФ (prod/stage/dev) с бэкапами.
+- Использовать зафиксированный стек: Next.js/React + TypeScript (frontend), NestJS на Node.js/TypeScript (backend), PostgreSQL (БД), Redis (кэш/блокировки), RabbitMQ (очередь), observability: OpenTelemetry + Prometheus/Grafana (метрики), Loki (логи), Jaeger/Tempo (трейсы), веб/сквозная аналитика: self-hosted Matomo. Развернуть prod/stage/dev на bare metal в РФ с бэкапами.
 - Подготовить контракты поставщиков (Astra Marin, Neva Travel) и sandbox ЮMoney/ЮKassa, смоделировать схемы рейсов/мест/цен/причалов.
-- Спроектировать доменную модель и миграции (рейс/событие, тариф/билет, места, заказ, оплата, клиент, возврат) с защитой от оверселла.
-- Собрать первый вертикальный срез: каталог → выбор рейса/мест → чек-аут (ЮMoney sandbox) → e-ticket/email → CRM-вью заказа + возврат ≥24h.
+- Спроектировать доменную модель и миграции (рейс/событие, тариф/билет, места, заказ, оплата, клиент, возврат, документы) с защитой от оверселла.
+- Собрать первый вертикальный срез: каталог → выбор рейса/мест → чек-аут (ЮMoney sandbox, полная оплата без броней/частичных оплат) → e-ticket/email + счета/акты → CRM-вью заказа + возврат ≥24h.
 
-## Next Questions (current batch)
-1. Подтвердить стартовый набор ставок НДС (например, 0%, 10%, 20%) и дефолтное поведение “НДС нет/включён/выделен” для продуктов и аренды.
-2. Нужны ли счета/акты или другие юридические документы для B2B/арендных заказов, и как их выдавать (из CRM или автоматически)?
-3. Требуются ли дополнительные реквизиты в письмах/квитанциях помимо фискализации (например, реквизиты юрлица, договор, оферта)?
+## Next Questions
+- Требуются ли дополнительные требования к SLA поддержки/CRM (p95/p99 для агентских операций, целевые времена ответов на обращения).

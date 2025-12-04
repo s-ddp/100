@@ -3,7 +3,7 @@
 > This specification will be completed iteratively as we collect requirements. Sections marked **Pending user input** will be updated once details are provided.
 
 ## Scope Overview
-- Public ticket sales website for water excursions, events, and rentals of boats/yachts with secure checkout and account management. **(Markets/countries pending; Languages: RU primary, EN + ZH secondary; Currency: RUB)**
+- Public ticket sales website for water excursions, events, and rentals of boats/yachts with secure checkout and account management. **(Markets: operate in Russia; Languages: RU primary, EN + ZH secondary; Currency: RUB; Data storage: comply with Russian data residency requirements)**
 - CRM for managing customers, orders, events, rentals, and support operations. **(Pending user input for roles/permissions)**
 
 ## Functional Requirements
@@ -23,7 +23,7 @@
 - Availability targets, performance SLAs (page load, checkout latency), and concurrency expectations.
 - Security: authentication/authorization approach, PCI scope boundaries, and data protection policies.
 - Observability: logging standards, metrics, tracing, and alerting thresholds.
-- Compliance: data retention, privacy, tax invoicing, and regional constraints (market/country scope pending).
+- Compliance: data retention, privacy, tax invoicing, and regional constraints. **(Data residency: store data in Russia per local legislation; other compliance specifics pending)**
 
 ## Architecture (Initial Draft)
 - **Frontend:** Modern SPA/SSR framework (e.g., React/Next.js or Vue/Nuxt) with component library and design system. **(Pending selection)**
@@ -54,13 +54,12 @@
 - Observability: dashboards for errors, latency, throughput, and business KPIs (sales, conversion).
 - Runbooks for incident response, rollbacks, and data recovery.
 
-## Open Questions
-- Markets/countries in scope? **(Pending)**
+- Markets/countries in scope? **(Resolved: operate in Russia)**
 - Payment gateways and settlement rules? **(Resolved: integrate ЮMoney, RUB-only, no alternate payout schedules)**
 - Seating model (reserved vs general admission)? **(Resolved: combined approach—enable seat maps when a vessel/event requires assigned seating; use general admission when not)**
 - Refund/exchange/transfer policies? **(Pending)**
 - Integrations (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**
 - Roles/permissions and audit requirements? **(Pending)**
-- Compliance constraints (GDPR, PCI, tax invoices, data residency)? **(Pending)**
+- Compliance constraints (GDPR, PCI, tax invoices, data residency)? **(Partially resolved: data residency in Russia; tax/PCI specifics pending)**
 - Reporting and dashboards needed at launch? **(Pending)**
 

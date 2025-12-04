@@ -5,12 +5,13 @@
 ## Objectives
 - Launch a customer-facing ticket sales website focused on water excursions, events, and rentals of boats/yachts.
 - Deliver an integrated CRM to manage events, customers, orders, rentals, and support workflows.
+- Operate within Russia with data residency/storage aligned to Russian legislation.
 
 ## Phases
 
 ### Phase 0 — Discovery (Pending user input)
 - Capture business goals, target audience, and success metrics.
-- Define supported markets (countries, currencies, languages) and compliance needs (tax, invoicing, data retention). **(Markets: focus on water excursions/events; Languages: RU primary, EN + ZH secondary; Currency: RUB)**
+- Define supported markets (countries, currencies, languages) and compliance needs (tax, invoicing, data retention). **(Markets: operate in Russia; Languages: RU primary, EN + ZH secondary; Currency: RUB; Data storage: comply with Russian data residency laws)**
 - Inventory existing systems to integrate (payment providers, email/SMS gateways, analytics, accounting/ERP).
 
 ### Phase 1 — Foundations
@@ -45,13 +46,13 @@
 - Ongoing A/B tests, funnel optimization, and backlog grooming from feedback.
 
 ## Open Questions (to be resolved with stakeholders)
-1. What markets/countries are in scope for launch and compliance? **(Pending)**
+1. What markets/countries are in scope for launch and compliance? **(Resolved: operate in Russia; data stored per Russian legislation)**
 2. Which payment providers and payout/settlement requirements do we have? **(Resolved: integrate ЮMoney for RUB payments; no alternate payout schedules/currencies required)**
 3. Do we need reserved seating maps, general admission, or both? **(Resolved: combined model—seat maps shown when the vessel/event requires assigned seating; general admission flows when seating is not applicable)**
 4. What integrations are required (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**
 5. What refund, exchange, and transfer policies apply? **(Pending)**
 6. What operational roles should the CRM support, and what permissions are needed? **(Pending)**
-7. Are there compliance constraints (GDPR, PCI scope, tax invoicing, data residency)? **(Pending)**
+7. Are there compliance constraints (GDPR, PCI scope, tax invoicing, data residency)? **(Partially resolved: data residency in Russia; tax/PCI specifics pending)**
 8. What reporting and KPI dashboards are required at launch? **(Pending)**
 
 ## Next Steps

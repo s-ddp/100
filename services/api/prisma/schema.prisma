@@ -1,0 +1,235 @@
+// ===============================
+// Prisma & DB Configuration
+// ===============================
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ===============================
+// 1. Судна (Vessels)
+// ===============================
+model Vessel {
+  id          Int           @id @default(autoincrement())
+  code        String        @unique
+  name        String
+  description String?
+  image       String?
+  createdAt   DateTime      @default(now())
+
+  decks       VesselDeck[]
+  events      Event[]
+}
+
+// ===============================
+// 2. Палубы (Decks)
+// ===============================
+model VesselDeck {
+  id            Int          @id @default(autoincrement())
+  vesselId      Int
+  deckNumber    Int
+  name          String?
+  backgroundSvg String?
+  createdAt     DateTime     @default(now())
+
+  vessel        Vessel       @relation(fields: [vesselId], references: [id])
+  areas         DeckArea[]
+}
+
+// ===============================
+// 3. Зоны/секции (Areas)
+// ===============================
+model DeckArea {
+  id        Int          @id @default(autoincrement())
+  deckId    Int
+  name      String
+  category  String?
+  color     String?
+  createdAt DateTime     @default(now())
+
+  deck      VesselDeck   @relation(fields: [deckId], references: [id])
+  seats     DeckSeat[]
+}
+
+// ===============================
+// 4. Места (Seats) – основной элемент seatmap
+// ===============================
+model DeckSeat {
+  id             Int        @id @default(autoincrement())
+  areaId         Int
+  seatCode       String     // напр. M1H – ID из AstraMarine
+  alias          String?
+  x              Int?
+  y              Int?
+  polygon        String?
+  rotation       Int?
+  ticketsPerSeat Int        @default(1)
+  createdAt      DateTime   @default(now())
+
+  area           DeckArea   @relation(fields: [areaId], references: [id])
+
+  seatLocks      SeatLock[]
+  orderItems     OrderItem[]
+}
+
+// ===============================
+// 5. Услуги (service) – из getServices
+// ===============================
+model Service {
+  id              String     @id        // напр. 000000001
+  name            String
+  noSeats         Boolean
+  freeSeating     Boolean
+  serviceType     String
+  durationMinutes Int?
+  createdAt       DateTime   @default(now())
+
+  events          Event[]
+}
+
+// ===============================
+// 6. Мероприятия/рейсы (Events)
+// ===============================
+model Event {
+  id             String        @id       // eventID из AstraMarine
+  serviceId      String
+  vesselId       Int?
+  name           String
+  datetime       DateTime?
+  duration       Int?
+  pierStart      String?
+  pierEnd        String?
+  noSeats        Boolean
+  freeSeating    Boolean
+  availableSeats Int?
+  createdAt      DateTime       @default(now())
+
+  service        Service        @relation(fields: [serviceId], references: [id])
+  vessel         Vessel?        @relation(fields: [vesselId], references: [id])
+  seatLocks      SeatLock[]
+  orders         Order[]
+  prices         EventPrice[]
+}
+
+// ===============================
+// 7. Категории мест — seatCategories
+// ===============================
+model SeatCategory {
+  id        String       @id          // seatCategoryID
+  name      String
+  createdAt DateTime     @default(now())
+
+  eventPrices EventPrice[]
+  orderItems  OrderItem[]
+}
+
+// ===============================
+// 8. Типы билетов
+// ===============================
+model TicketType {
+  id        String       @id
+  name      String
+  createdAt DateTime     @default(now())
+
+  eventPrices EventPrice[]
+  orderItems  OrderItem[]
+}
+
+// ===============================
+// 9. Цены на событие (кэш getSeatPrices)
+// ===============================
+model EventPrice {
+  id              Int          @id @default(autoincrement())
+  eventId         String
+  seatCategoryId  String?
+  ticketTypeId    String?
+  priceTypeId     String?
+  priceTypeName   String?
+  priceValue      Int?
+  hasMenu         Boolean?
+  menu            Json?
+  createdAt       DateTime     @default(now())
+
+  event           Event        @relation(fields: [eventId], references: [id])
+  seatCategory    SeatCategory? @relation(fields: [seatCategoryId], references: [id])
+  ticketType      TicketType?   @relation(fields: [ticketTypeId], references: [id])
+}
+
+// ===============================
+// 10. Блокировки мест (live booking)
+// ===============================
+model SeatLock {
+  id         Int       @id @default(autoincrement())
+  eventId    String
+  seatCode   String
+  sessionId  String
+  lockedAt   DateTime  @default(now())
+  expiresAt  DateTime
+
+  event      Event     @relation(fields: [eventId], references: [id])
+}
+
+// ===============================
+// 11. Заказы (локальные)
+// ===============================
+model Order {
+  id              Int        @id @default(autoincrement())
+  externalOrderId String?   // orderID из AstraMarine
+  eventId         String
+  sessionId       String?
+  email           String?
+  status          String      // pending / paid / canceled / error
+  amount          Int?
+  astraResponse   Json?
+  createdAt       DateTime    @default(now())
+
+  event           Event       @relation(fields: [eventId], references: [id])
+  items           OrderItem[]
+  payments        Payment[]
+}
+
+// ===============================
+// 12. Позиции заказа
+// ===============================
+model OrderItem {
+  id              Int          @id @default(autoincrement())
+  orderId         Int
+  seatCode        String?
+  ticketTypeId    String?
+  priceTypeId     String?
+  seatCategoryId  String?
+  quantity        Int
+  price           Int?
+
+  order           Order        @relation(fields: [orderId], references: [id])
+  ticketType      TicketType?  @relation(fields: [ticketTypeId], references: [id])
+  seatCategory    SeatCategory? @relation(fields: [seatCategoryId], references: [id])
+}
+
+// ===============================
+// 13. Платежи (ЮKassa)
+// ===============================
+model Payment {
+  id                Int       @id @default(autoincrement())
+  orderId           Int
+  yookassaPaymentId String?
+  status            String
+  amount            Int
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @default(now())
+
+  order             Order     @relation(fields: [orderId], references: [id])
+}
+
+// ===============================
+// 14. Кэш ответов AstraMarine
+// ===============================
+model AstraCache {
+  key       String    @id
+  value     Json?
+  updatedAt DateTime?
+}

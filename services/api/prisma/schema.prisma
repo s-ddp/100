@@ -11,225 +11,381 @@ generator client {
 }
 
 // ===============================
-// 1. Судна (Vessels)
+// Core supplier/catalog domain (from migrations 001_init.sql)
 // ===============================
+model Supplier {
+  id           String    @id
+  name         String
+  apiBaseUrl   String?   @map("api_base_url")
+  contactEmail String?   @map("contact_email")
+  metadata     Json?
+
+  vessels      Vessel[]
+  catalogItems CatalogItem[]
+
+  @@map("suppliers")
+}
+
 model Vessel {
-  id          Int           @id @default(autoincrement())
-  code        String        @unique
+  id          String    @id
+  supplierId  String?   @map("supplier_id")
   name        String
-  description String?
-  image       String?
-  createdAt   DateTime      @default(now())
+  capacity    Int?
+  seatingPlan Json?     @map("seating_plan")
+  metadata    Json?
 
-  decks       VesselDeck[]
-  events      Event[]
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  sailings    Sailing[]
+  waterDecks  WaterDeck[]
+  waterEvents WaterEvent[]
+
+  @@map("vessels")
+}
+
+model CatalogItem {
+  id              String   @id
+  supplierId      String?  @map("supplier_id")
+  type            String
+  title           String
+  description     String?
+  departurePort   String?  @map("departure_port")
+  departureTime   DateTime? @map("departure_time")
+  durationMinutes Int?     @map("duration_minutes")
+  language        String[]?
+  currency        String   @default("RUB")
+  vatMode         String   @map("vat_mode") @default("included")
+  vatRate         Decimal  @map("vat_rate") @db.Decimal(5, 4) @default("0.2000")
+  seatingRequired Boolean  @map("seating_required") @default(false)
+  metadata        Json?
+
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  fares      Fare[]
+  sailings   Sailing[]
+  orders     Order[]
+
+  @@map("catalog_items")
+}
+
+model Fare {
+  id            Int         @id @default(autoincrement())
+  catalogItemId String      @map("catalog_item_id")
+  code          String
+  name          String
+  price         Decimal     @db.Decimal(10, 2)
+  currency      String      @default("RUB")
+  vatMode       String      @map("vat_mode") @default("included")
+  vatRate       Decimal     @map("vat_rate") @db.Decimal(5, 4) @default("0.2000")
+
+  catalogItem CatalogItem @relation(fields: [catalogItemId], references: [id])
+
+  @@unique([catalogItemId, code])
+  @@map("fares")
+}
+
+model Sailing {
+  id            String    @id
+  catalogItemId String    @map("catalog_item_id")
+  vesselId      String?   @map("vessel_id")
+  departureTime DateTime  @map("departure_time")
+  arrivalTime   DateTime? @map("arrival_time")
+  capacity      Int?
+  seatingPlan   Json?     @map("seating_plan")
+  status        String    @default("scheduled")
+
+  catalogItem CatalogItem @relation(fields: [catalogItemId], references: [id])
+  vessel      Vessel?     @relation(fields: [vesselId], references: [id])
+  seats       Seat[]
+
+  @@map("sailings")
+}
+
+model Seat {
+  id        Int     @id @default(autoincrement())
+  sailingId String  @map("sailing_id")
+  seatNo    String? @map("seat_no")
+  zone      String?
+  status    String  @default("available")
+
+  sailing Sailing @relation(fields: [sailingId], references: [id])
+
+  @@map("seats")
+}
+
+model Customer {
+  id        String   @id
+  fullName  String   @map("full_name")
+  email     String
+  phone     String
+  locale    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  orders Order[]
+
+  @@map("customers")
+}
+
+model Order {
+  id             String   @id
+  customerId     String?  @map("customer_id")
+  catalogItemId  String?  @map("catalog_item_id")
+  fareCode       String?  @map("fare_code")
+  quantity       Int
+  gross          Decimal  @db.Decimal(10, 2)
+  net            Decimal  @db.Decimal(10, 2)
+  vatAmount      Decimal  @map("vat_amount") @db.Decimal(10, 2)
+  vatRate        Decimal  @map("vat_rate") @db.Decimal(5, 4)
+  vatMode        String   @map("vat_mode")
+  currency       String   @default("RUB")
+  status         String   @default("confirmed")
+  refundableUntil DateTime? @map("refundable_until")
+  seating        Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+  catalogItem CatalogItem? @relation(fields: [catalogItemId], references: [id])
+  payments    Payment[]
+  refunds     Refund[]
+  documents   Document[]
+
+  @@map("orders")
+}
+
+model Payment {
+  id        String   @id
+  orderId   String   @map("order_id")
+  provider  String
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  String   @default("RUB")
+  status    String
+  paidAt    DateTime? @map("paid_at")
+  raw       Json?
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+model Refund {
+  id        String   @id
+  orderId   String   @map("order_id")
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  String   @default("RUB")
+  status    String
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("refunds")
+}
+
+model Document {
+  id        String   @id
+  orderId   String   @map("order_id")
+  type      String
+  number    String
+  issuedAt  DateTime @default(now()) @map("issued_at")
+  payload   Json
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("documents")
 }
 
 // ===============================
-// 2. Палубы (Decks)
+// Water excursions / interactive seatmap domain (from migrations 002_water_schema.sql)
 // ===============================
-model VesselDeck {
-  id            Int          @id @default(autoincrement())
-  vesselId      Int
-  deckNumber    Int
+model WaterDeck {
+  id            Int        @id @default(autoincrement())
+  vesselId      String?    @map("vessel_id")
+  deckNumber    Int        @map("deck_number")
   name          String?
-  backgroundSvg String?
-  createdAt     DateTime     @default(now())
+  backgroundSvg String?    @map("background_svg")
+  createdAt     DateTime   @default(now()) @map("created_at")
 
-  vessel        Vessel       @relation(fields: [vesselId], references: [id])
-  areas         DeckArea[]
+  vessel Vessel?     @relation(fields: [vesselId], references: [id])
+  areas  WaterDeckArea[]
+
+  @@map("water_decks")
 }
 
-// ===============================
-// 3. Зоны/секции (Areas)
-// ===============================
-model DeckArea {
-  id        Int          @id @default(autoincrement())
-  deckId    Int
+model WaterDeckArea {
+  id        Int            @id @default(autoincrement())
+  deckId    Int            @map("deck_id")
   name      String
   category  String?
   color     String?
-  createdAt DateTime     @default(now())
+  createdAt DateTime       @default(now()) @map("created_at")
 
-  deck      VesselDeck   @relation(fields: [deckId], references: [id])
-  seats     DeckSeat[]
+  deck  WaterDeck    @relation(fields: [deckId], references: [id])
+  seats WaterDeckSeat[]
+
+  @@map("water_deck_areas")
 }
 
-// ===============================
-// 4. Места (Seats) – основной элемент seatmap
-// ===============================
-model DeckSeat {
+model WaterDeckSeat {
   id             Int        @id @default(autoincrement())
-  areaId         Int
-  seatCode       String     // напр. M1H – ID из AstraMarine
+  areaId         Int        @map("area_id")
+  seatCode       String     @map("seat_code")
   alias          String?
   x              Int?
   y              Int?
   polygon        String?
   rotation       Int?
-  ticketsPerSeat Int        @default(1)
-  createdAt      DateTime   @default(now())
+  ticketsPerSeat Int        @default(1) @map("tickets_per_seat")
+  createdAt      DateTime   @default(now()) @map("created_at")
 
-  area           DeckArea   @relation(fields: [areaId], references: [id])
+  area WaterDeckArea @relation(fields: [areaId], references: [id])
 
-  seatLocks      SeatLock[]
-  orderItems     OrderItem[]
+  @@map("water_deck_seats")
 }
 
-// ===============================
-// 5. Услуги (service) – из getServices
-// ===============================
-model Service {
-  id              String     @id        // напр. 000000001
+model WaterService {
+  id              String        @id
   name            String
-  noSeats         Boolean
-  freeSeating     Boolean
-  serviceType     String
-  durationMinutes Int?
-  createdAt       DateTime   @default(now())
+  noSeats         Boolean?      @map("no_seats")
+  freeSeating     Boolean?      @map("free_seating")
+  serviceType     String?       @map("service_type")
+  durationMinutes Int?          @map("duration_minutes")
+  createdAt       DateTime      @default(now()) @map("created_at")
 
-  events          Event[]
+  events WaterEvent[]
+
+  @@map("water_services")
 }
 
-// ===============================
-// 6. Мероприятия/рейсы (Events)
-// ===============================
-model Event {
-  id             String        @id       // eventID из AstraMarine
-  serviceId      String
-  vesselId       Int?
-  name           String
-  datetime       DateTime?
-  duration       Int?
-  pierStart      String?
-  pierEnd        String?
-  noSeats        Boolean
-  freeSeating    Boolean
-  availableSeats Int?
-  createdAt      DateTime       @default(now())
+model WaterEvent {
+  id             String         @id
+  serviceId      String?        @map("service_id")
+  vesselId       String?        @map("vessel_id")
+  name           String?
+  datetime       DateTime? @map("datetime")
+  duration       Int?           @map("duration_minutes")
+  pierStart      String?        @map("pier_start")
+  pierEnd        String?        @map("pier_end")
+  noSeats        Boolean?       @map("no_seats")
+  freeSeating    Boolean?       @map("free_seating")
+  availableSeats Int?           @map("available_seats")
+  createdAt      DateTime       @default(now()) @map("created_at")
 
-  service        Service        @relation(fields: [serviceId], references: [id])
-  vessel         Vessel?        @relation(fields: [vesselId], references: [id])
-  seatLocks      SeatLock[]
-  orders         Order[]
-  prices         EventPrice[]
+  service WaterService? @relation(fields: [serviceId], references: [id])
+  vessel  Vessel?       @relation(fields: [vesselId], references: [id])
+  locks   WaterSeatLock[]
+  orders  WaterOrder[]
+  prices  WaterEventPrice[]
+
+  @@map("water_events")
 }
 
-// ===============================
-// 7. Категории мест — seatCategories
-// ===============================
-model SeatCategory {
-  id        String       @id          // seatCategoryID
+model WaterSeatCategory {
+  id        String            @id
   name      String
-  createdAt DateTime     @default(now())
+  createdAt DateTime          @default(now()) @map("created_at")
 
-  eventPrices EventPrice[]
-  orderItems  OrderItem[]
+  prices WaterEventPrice[]
+  items  WaterOrderItem[]
+
+  @@map("water_seat_categories")
 }
 
-// ===============================
-// 8. Типы билетов
-// ===============================
-model TicketType {
-  id        String       @id
+model WaterTicketType {
+  id        String            @id
   name      String
-  createdAt DateTime     @default(now())
+  createdAt DateTime          @default(now()) @map("created_at")
 
-  eventPrices EventPrice[]
-  orderItems  OrderItem[]
+  prices WaterEventPrice[]
+  items  WaterOrderItem[]
+
+  @@map("water_ticket_types")
 }
 
-// ===============================
-// 9. Цены на событие (кэш getSeatPrices)
-// ===============================
-model EventPrice {
-  id              Int          @id @default(autoincrement())
-  eventId         String
-  seatCategoryId  String?
-  ticketTypeId    String?
-  priceTypeId     String?
-  priceTypeName   String?
-  priceValue      Int?
-  hasMenu         Boolean?
-  menu            Json?
-  createdAt       DateTime     @default(now())
+model WaterEventPrice {
+  id             Int               @id @default(autoincrement())
+  eventId        String            @map("event_id")
+  seatCategoryId String?           @map("seat_category_id")
+  ticketTypeId   String?           @map("ticket_type_id")
+  priceTypeId    String?           @map("price_type_id")
+  priceTypeName  String?           @map("price_type_name")
+  priceValue     Int?              @map("price_value")
+  hasMenu        Boolean?          @map("has_menu")
+  menu           Json?
+  createdAt      DateTime          @default(now()) @map("created_at")
 
-  event           Event        @relation(fields: [eventId], references: [id])
-  seatCategory    SeatCategory? @relation(fields: [seatCategoryId], references: [id])
-  ticketType      TicketType?   @relation(fields: [ticketTypeId], references: [id])
+  event        WaterEvent       @relation(fields: [eventId], references: [id])
+  seatCategory WaterSeatCategory? @relation(fields: [seatCategoryId], references: [id])
+  ticketType   WaterTicketType?   @relation(fields: [ticketTypeId], references: [id])
+
+  @@map("water_event_prices")
 }
 
-// ===============================
-// 10. Блокировки мест (live booking)
-// ===============================
-model SeatLock {
-  id         Int       @id @default(autoincrement())
-  eventId    String
-  seatCode   String
-  sessionId  String
-  lockedAt   DateTime  @default(now())
-  expiresAt  DateTime
+model WaterSeatLock {
+  id        Int       @id @default(autoincrement())
+  eventId   String    @map("event_id")
+  seatCode  String?   @map("seat_code")
+  sessionId String?   @map("session_id")
+  lockedAt  DateTime  @default(now()) @map("locked_at")
+  expiresAt DateTime? @map("expires_at")
 
-  event      Event     @relation(fields: [eventId], references: [id])
+  event WaterEvent @relation(fields: [eventId], references: [id])
+
+  @@index([eventId, seatCode])
+  @@index([expiresAt])
+  @@map("water_seat_locks")
 }
 
-// ===============================
-// 11. Заказы (локальные)
-// ===============================
-model Order {
-  id              Int        @id @default(autoincrement())
-  externalOrderId String?   // orderID из AstraMarine
-  eventId         String
-  sessionId       String?
-  email           String?
-  status          String      // pending / paid / canceled / error
-  amount          Int?
-  astraResponse   Json?
-  createdAt       DateTime    @default(now())
+model WaterOrder {
+  id             Int          @id @default(autoincrement())
+  externalOrderId String?     @map("external_order_id")
+  eventId        String?      @map("event_id")
+  sessionId      String?      @map("session_id")
+  email          String?
+  status         String?
+  amount         Int?
+  astraResponse  Json?        @map("astra_response")
+  createdAt      DateTime     @default(now()) @map("created_at")
 
-  event           Event       @relation(fields: [eventId], references: [id])
-  items           OrderItem[]
-  payments        Payment[]
+  event    WaterEvent?    @relation(fields: [eventId], references: [id])
+  items    WaterOrderItem[]
+  payments WaterPayment[]
+
+  @@map("water_orders")
 }
 
-// ===============================
-// 12. Позиции заказа
-// ===============================
-model OrderItem {
-  id              Int          @id @default(autoincrement())
-  orderId         Int
-  seatCode        String?
-  ticketTypeId    String?
-  priceTypeId     String?
-  seatCategoryId  String?
-  quantity        Int
-  price           Int?
+model WaterOrderItem {
+  id             Int              @id @default(autoincrement())
+  orderId        Int              @map("order_id")
+  seatCode       String?          @map("seat_code")
+  ticketTypeId   String?          @map("ticket_type_id")
+  priceTypeId    String?          @map("price_type_id")
+  seatCategoryId String?          @map("seat_category_id")
+  quantity       Int
+  price          Int?
 
-  order           Order        @relation(fields: [orderId], references: [id])
-  ticketType      TicketType?  @relation(fields: [ticketTypeId], references: [id])
-  seatCategory    SeatCategory? @relation(fields: [seatCategoryId], references: [id])
+  order        WaterOrder     @relation(fields: [orderId], references: [id])
+  ticketType   WaterTicketType? @relation(fields: [ticketTypeId], references: [id])
+  seatCategory WaterSeatCategory? @relation(fields: [seatCategoryId], references: [id])
+
+  @@map("water_order_items")
 }
 
-// ===============================
-// 13. Платежи (ЮKassa)
-// ===============================
-model Payment {
-  id                Int       @id @default(autoincrement())
-  orderId           Int
-  yookassaPaymentId String?
-  status            String
-  amount            Int
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now())
+model WaterPayment {
+  id               Int       @id @default(autoincrement())
+  orderId          Int       @map("order_id")
+  yookassaPaymentId String?  @map("yookassa_payment_id")
+  status           String?
+  amount           Int?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime? @map("updated_at")
 
-  order             Order     @relation(fields: [orderId], references: [id])
+  order WaterOrder @relation(fields: [orderId], references: [id])
+
+  @@map("water_payments")
 }
 
-// ===============================
-// 14. Кэш ответов AstraMarine
-// ===============================
-model AstraCache {
-  key       String    @id
+model WaterAstraCache {
+  key       String   @id
   value     Json?
-  updatedAt DateTime?
+  updatedAt DateTime? @map("updated_at")
+
+  @@map("water_astra_cache")
 }

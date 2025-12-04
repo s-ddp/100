@@ -7,6 +7,7 @@ This repository will house the roadmap and technical specification for a ticket 
 - [Technical Specification](docs/technical-spec.md)
 - [Context Snapshot](docs/context.md)
 - [Execution Tracker (5 workstreams)](docs/execution-tracker.md)
+- [Stub API endpoints](docs/api-stub.md)
 
 ## Local development (kickoff)
 - Dependencies: the starter API now uses only built-in Node.js modules, so `npm install` is optional and does **not** reach external registries. If your environment injects proxy settings that break installs, clear them with `npm config delete proxy && npm config delete https-proxy`.

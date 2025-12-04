@@ -5,7 +5,7 @@ export function createHealthRouter(config: AppConfig) {
   const router = Router();
   const basePayload = { service: config.serviceName, env: config.env };
 
-  router.get("/health", (_req, res) => {
+  router.get("/health", (_req: any, res: any) => {
     res.json({ ...basePayload, status: "ok", uptimeMs: Math.round(process.uptime() * 1000) });
   });
 

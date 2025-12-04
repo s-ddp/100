@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Аренда судов — AquaVoyage</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Roboto', sans-serif; }
+        body { background: #f8fafc; color: #212121; padding-top: 80px; }
+
+        .header { position: fixed; top: 0; left: 0; width: 100%; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.08); z-index: 100; padding: 16px 0; }
+        .header-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; display: flex; align-items: center; justify-content: space-between; }
+        .header-logo { font-size: 20px; font-weight: 700; color: #0055FB; text-decoration: none; }
+        .header-nav { display: flex; gap: 32px; align-items: center; }
+        .header-nav-link { font-size: 14px; font-weight: 500; color: #212121; transition: color 0.2s; text-decoration: none; }
+        .header-nav-link:hover { color: #0055FB; }
+        .header-cart { position: relative; font-size: 20px; color: #212121; cursor: pointer; }
+        .header-cart-badge { position: absolute; top: -8px; right: -8px; width: 18px; height: 18px; background: #FF6B00; color: #fff; font-size: 10px; font-weight: 500; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+
+        .rent-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        .page-header { margin: 40px 0 32px; }
+        .page-title { font-size: 32px; font-weight: 700; margin-bottom: 8px; }
+        .page-subtitle { font-size: 16px; color: #666; }
+
+        .filters-bar { background: #fff; border-radius: 12px; padding: 24px; box-shadow: 0 4px 12px rgba(0,0,0,0.08); margin-bottom: 32px; display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 24px; }
+        .filter-group { display: flex; flex-direction: column; gap: 8px; }
+        .filter-label { font-size: 14px; font-weight: 500; color: #212121; }
+        .filter-select { padding: 10px 12px; border: 1px solid #e5e7eb; border-radius: 8px; font-size: 14px; background: #fff; }
+        .filter-range { width: 100%; }
+        .range-value { font-size: 13px; color: #666; text-align: right; }
+        .filter-radio-group { display: flex; gap: 16px; flex-wrap: wrap; }
+        .radio-item { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #4b5563; cursor: pointer; }
+        .filter-reset { padding: 10px 20px; border: 1px solid #e5e7eb; border-radius: 8px; background: #fff; color: #666; font-size: 14px; cursor: pointer; transition: all 0.2s; }
+        .filter-reset:hover { border-color: #0055FB; color: #0055FB; }
+
+        .boats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 24px; margin-bottom: 64px; }
+        .boat-card { background: #fff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.08); transition: all 0.3s; cursor: pointer; }
+        .boat-card:hover { transform: translateY(-5px); box-shadow: 0 8px 20px rgba(0,0,0,0.12); }
+        .boat-img { height: 200px; background-size: cover; background-position: center; }
+        .boat-info { padding: 20px; }
+        .boat-title { font-size: 18px; font-weight: 600; margin-bottom: 8px; }
+        .boat-type { font-size: 13px; color: #0055FB; background: #f0f7ff; padding: 4px 10px; border-radius: 16px; display: inline-block; margin-bottom: 16px; }
+        .boat-meta { display: flex; gap: 16px; margin-bottom: 20px; font-size: 14px; color: #666; }
+        .boat-meta-item { display: flex; align-items: center; gap: 4px; }
+        .boat-price { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+        .rent-btn { width: 100%; padding: 12px; border: none; border-radius: 8px; background: #0055FB; color: #fff; font-size: 14px; font-weight: 500; cursor: pointer; transition: background 0.2s; }
+        .rent-btn:hover { background: #0044CC; }
+
+        .footer { background: #0F172A; color: #fff; padding: 80px 0 30px; }
+        .footer-container { max-width: 1400px; margin: 0 auto; padding: 0 24px; }
+        .footer-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 40px; margin-bottom: 40px; }
+        .footer-column h3 { font-size: 17px; margin-bottom: 20px; }
+        .footer-column a { color: rgba(255,255,255,.7); font-size: 14px; line-height: 2.2; text-decoration: none; }
+        .footer-column a:hover { color: #fff; }
+        .footer-copyright { border-top: 1px solid rgba(255,255,255,.1); padding-top: 24px; font-size: 12px; text-align: center; color: rgba(255,255,255,.5); }
+
+        @media (max-width: 768px) {
+            .header-nav { display: none; }
+            .filters-bar { grid-template-columns: 1fr; }
+        }
+    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+
+<header class="header">
+    <div class="header-container">
+        <a href="/index.html" class="header-logo">AquaVoyage</a>
+        <nav class="header-nav">
+            <a href="/index.html" class="header-nav-link">Главная</a>
+            <a href="/event.html" class="header-nav-link">Экскурсии</a>
+            <a href="/rent.html" class="header-nav-link active">Аренда судов</a>
+            <a href="/help.html" class="header-nav-link">Помощь</a>
+        </nav>
+        <div class="header-cart">
+            <i class="fas fa-shopping-cart"></i>
+            <span class="header-cart-badge">0</span>
+        </div>
+    </div>
+</header>
+
+<main class="rent-container">
+    <div class="page-header">
+        <h1 class="page-title">Аренда судов</h1>
+        <p class="page-subtitle">Выберите катер, яхту или гидроцикл для прогулки по каналам и Неве</p>
+    </div>
+
+    <div class="filters-bar">
+        <div class="filter-group">
+            <label class="filter-label">Тип судна</label>
+            <select class="filter-select" id="boatType">
+                <option value="all">Все типы</option>
+                <option value="catamaran">Катер</option>
+                <option value="motor-yacht">Моторная яхта</option>
+                <option value="sail-yacht">Парусная яхта</option>
+                <option value="jet-ski">Гидроцикл</option>
+            </select>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">Максимальное количество человек</label>
+            <input type="range" class="filter-range" id="capacityRange" min="1" max="20" value="20">
+            <span class="range-value" id="capacityValue">до 20 человек</span>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">Длительность аренды</label>
+            <div class="filter-radio-group">
+                <label class="radio-item">
+                    <input type="radio" name="duration" value="all" checked>
+                    <span>Любая</span>
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="duration" value="1h">
+                    <span>1 час</span>
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="duration" value="4h">
+                    <span>4 часа</span>
+                </label>
+                <label class="radio-item">
+                    <input type="radio" name="duration" value="day">
+                    <span>На день</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="filter-group">
+            <label class="filter-label">Цена за час</label>
+            <input type="range" class="filter-range" id="priceRange" min="2000" max="25000" step="1000" value="25000">
+            <span class="range-value" id="priceValue">до 25 000 ₽</span>
+        </div>
+
+        <div class="filter-group" style="align-self: flex-end;">
+            <button class="filter-reset" id="resetFilters">Сбросить фильтры</button>
+        </div>
+    </div>
+
+    <div class="boats-grid" id="boatsGrid">
+        <div class="boat-card" data-type="catamaran" data-capacity="6" data-price="5000">
+            <div class="boat-img" style="background-image: url('https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&q=95')"></div>
+            <div class="boat-info">
+                <h3 class="boat-title">Катер "Бриз"</h3>
+                <span class="boat-type">Катер</span>
+                <div class="boat-meta">
+                    <div class="boat-meta-item"><i class="fas fa-users"></i> 6 чел.</div>
+                    <div class="boat-meta-item"><i class="fas fa-tachometer-alt"></i> 50 км/ч</div>
+                </div>
+                <div class="boat-price">5 000 ₽ / час</div>
+                <button class="rent-btn">Арендовать →</button>
+            </div>
+        </div>
+
+        <div class="boat-card" data-type="motor-yacht" data-capacity="12" data-price="15000">
+            <div class="boat-img" style="background-image: url('https://images.unsplash.com/photo-1524008757925-5024e639526e?w=600&q=95')"></div>
+            <div class="boat-info">
+                <h3 class="boat-title">Моторная яхта "Альбатрос"</h3>
+                <span class="boat-type">Моторная яхта</span>
+                <div class="boat-meta">
+                    <div class="boat-meta-item"><i class="fas fa-users"></i> 12 чел.</div>
+                    <div class="boat-meta-item"><i class="fas fa-tachometer-alt"></i> 35 км/ч</div>
+                </div>
+                <div class="boat-price">15 000 ₽ / час</div>
+                <button class="rent-btn" onclick="window.location.href='/boat.html'">Подробнее →</button>
+            </div>
+        </div>
+
+        <div class="boat-card" data-type="sail-yacht" data-capacity="8" data-price="12000">
+            <div class="boat-img" style="background-image: url('https://images.unsplash.com/photo-1504487296300-9f7e8966e41e?w=600&q=95')"></div>
+            <div class="boat-info">
+                <h3 class="boat-title">Парусная яхта "Виктория"</h3>
+                <span class="boat-type">Парусная яхта</span>
+                <div class="boat-meta">
+                    <div class="boat-meta-item"><i class="fas fa-users"></i> 8 чел.</div>
+                    <div class="boat-meta-item"><i class="fas fa-anchor"></i> С капитаном</div>
+                </div>
+                <div class="boat-price">12 000 ₽ / час</div>
+                <button class="rent-btn">Арендовать →</button>
+            </div>
+        </div>
+
+        <div class="boat-card" data-type="jet-ski" data-capacity="2" data-price="3000">
+            <div class="boat-img" style="background-image: url('https://images.unsplash.com/photo-1564424224827-cd24b8915874?w=600&q=95')"></div>
+            <div class="boat-info">
+                <h3 class="boat-title">Гидроцикл "Спорт"</h3>
+                <span class="boat-type">Гидроцикл</span>
+                <div class="boat-meta">
+                    <div class="boat-meta-item"><i class="fas fa-users"></i> 2 чел.</div>
+                    <div class="boat-meta-item"><i class="fas fa-tachometer-alt"></i> 80 км/ч</div>
+                </div>
+                <div class="boat-price">3 000 ₽ / час</div>
+                <button class="rent-btn">Арендовать →</button>
+            </div>
+        </div>
+
+        <div class="boat-card" data-type="catamaran" data-capacity="10" data-price="8000">
+            <div class="boat-img" style="background-image: url('https://images.unsplash.com/photo-1552941776-991e5279a050?w=600&q=95')"></div>
+            <div class="boat-info">
+                <h3 class="boat-title">Катер "Лидер"</h3>
+                <span class="boat-type">Катер</span>
+                <div class="boat-meta">
+                    <div class="boat-meta-item"><i class="fas fa-users"></i> 10 чел.</div>
+                    <div class="boat-meta-item"><i class="fas fa-glass-martini-alt"></i> Бар на борту</div>
+                </div>
+                <div class="boat-price">8 000 ₽ / час</div>
+                <button class="rent-btn">Арендовать →</button>
+            </div>
+        </div>
+
+        <div class="boat-card" data-type="sail-yacht" data-capacity="6" data-price="10000">
+            <div class="boat-img" style="background-image: url('https://images.unsplash.com/photo-1517146911452-1d967b791682?w=600&q=95')"></div>
+            <div class="boat-info">
+                <h3 class="boat-title">Парусная яхта "Сокол"</h3>
+                <span class="boat-type">Парусная яхта</span>
+                <div class="boat-meta">
+                    <div class="boat-meta-item"><i class="fas fa-users"></i> 6 чел.</div>
+                    <div class="boat-meta-item"><i class="fas fa-sun"></i> Солнечная палуба</div>
+                </div>
+                <div class="boat-price">10 000 ₽ / час</div>
+                <button class="rent-btn">Арендовать →</button>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-grid">
+            <div class="footer-column">
+                <h3>AquaVoyage</h3>
+                <p style="color:rgba(255,255,255,.7);font-size:14px;margin-bottom:16px">Лучшие водные экскурсии и аренда судов по Санкт-Петербургу</p>
+                <div style="display:flex;gap:16px;">
+                    <a href="#" class="footer-column a"><i class="fab fa-vk"></i></a>
+                    <a href="#" class="footer-column a"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="footer-column a"><i class="fab fa-telegram"></i></a>
+                </div>
+            </div>
+            <div class="footer-column">
+                <h3>Навигация</h3>
+                <a href="/index.html">Главная</a><br>
+                <a href="/event.html">Экскурсии</a><br>
+                <a href="/rent.html">Аренда судов</a><br>
+                <a href="/help.html">Помощь</a>
+            </div>
+            <div class="footer-column">
+                <h3>Контакты</h3>
+                <div style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.8">
+                    <div><i class="fas fa-phone"></i> +7 (812) 123-45-67</div>
+                    <div><i class="fas fa-envelope"></i> info@aquavoyage.ru</div>
+                    <div><i class="fas fa-map-marker-alt"></i> Причал №5, Санкт-Петербург</div>
+                </div>
+            </div>
+        </div>
+        <div class="footer-copyright">© 2025 AquaVoyage. Все права защищены.</div>
+    </div>
+</footer>
+
+<script>
+    const capacityRange = document.getElementById('capacityRange');
+    const capacityValue = document.getElementById('capacityValue');
+    capacityRange.addEventListener('input', () => {
+        capacityValue.textContent = `до ${capacityRange.value} человек`;
+        filterBoats();
+    });
+
+    const priceRange = document.getElementById('priceRange');
+    const priceValue = document.getElementById('priceValue');
+    priceRange.addEventListener('input', () => {
+        const formatted = priceRange.value.replace(/\B(?=(\d{3})+(?!\d))/g, ' ');
+        priceValue.textContent = `до ${formatted} ₽`;
+        filterBoats();
+    });
+
+    function filterBoats() {
+        const selectedType = document.getElementById('boatType').value;
+        const maxCapacity = parseInt(capacityRange.value, 10);
+        const selectedDuration = document.querySelector('input[name="duration"]:checked').value;
+        const maxPrice = parseInt(priceRange.value, 10);
+
+        const boats = document.querySelectorAll('.boat-card');
+        boats.forEach(boat => {
+            const boatType = boat.dataset.type;
+            const boatCapacity = parseInt(boat.dataset.capacity, 10);
+            const boatPrice = parseInt(boat.dataset.price, 10);
+
+            const typeMatch = selectedType === 'all' || boatType === selectedType;
+            const capacityMatch = boatCapacity <= maxCapacity;
+            const priceMatch = boatPrice <= maxPrice;
+
+            if (typeMatch && capacityMatch && priceMatch) {
+                boat.style.display = 'block';
+            } else {
+                boat.style.display = 'none';
+            }
+        });
+    }
+
+    document.getElementById('resetFilters').addEventListener('click', () => {
+        document.getElementById('boatType').value = 'all';
+        capacityRange.value = 20;
+        capacityValue.textContent = 'до 20 человек';
+        document.querySelector('input[name="duration"][value="all"]').checked = true;
+        priceRange.value = 25000;
+        priceValue.textContent = 'до 25 000 ₽';
+        filterBoats();
+    });
+
+    document.addEventListener('DOMContentLoaded', filterBoats);
+
+    document.getElementById('boatType').addEventListener('change', filterBoats);
+    document.querySelectorAll('input[name="duration"]').forEach(radio => {
+        radio.addEventListener('change', filterBoats);
+    });
+</script>
+</body>
+</html>

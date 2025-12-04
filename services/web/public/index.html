@@ -1,0 +1,1209 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Билеты на водные экскурсии</title>
+    <style>
+        /* Общие стили */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background: #fff;
+            padding-top: 80px; /* Отступ для фиксированной шапки */
+        }
+
+        /* ============================================== */
+        /* Шапка сайта — фиксированная */
+        /* ============================================== */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            z-index: 100;
+            padding: 16px 0;
+        }
+
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .header-logo {
+            font-size: 20px;
+            font-weight: 700;
+            color: #0055FB;
+            text-decoration: none;
+        }
+
+        .header-nav {
+            display: flex;
+            gap: 32px;
+            align-items: center;
+        }
+
+        .header-nav-link {
+            font-size: 14px;
+            font-weight: 500;
+            color: #212121;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .header-nav-link:hover {
+            color: #0055FB;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+        }
+
+        .header-cart {
+            position: relative;
+            font-size: 20px;
+            color: #212121;
+            cursor: pointer;
+        }
+
+        .header-cart-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            width: 18px;
+            height: 18px;
+            background: #FF6B00;
+            color: #fff;
+            font-size: 10px;
+            font-weight: 500;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-tickets-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            background: #0055FB;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .header-tickets-btn:hover {
+            background: #0044CC;
+        }
+
+        /* Бургер-меню для мобильных — плейсхолдер */
+        .header-burger {
+            display: none;
+            font-size: 24px;
+            color: #212121;
+            cursor: pointer;
+        }
+
+        /* ============================================== */
+        /* Блок хитов продаж */
+        /* ============================================== */
+        .top-sales-block {
+            background: #F0F8FF;
+            padding: 40px 0;
+            margin-bottom: 24px;
+            border-bottom: 1px solid #e0e8f0;
+        }
+
+        .top-sales-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+            position: relative;
+        }
+
+        .top-sales-header {
+            margin-bottom: 20px;
+            padding: 0 8px;
+        }
+
+        .top-sales-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #212121;
+            margin-bottom: 4px;
+        }
+
+        .top-sales-subtitle {
+            font-size: 14px;
+            color: #666;
+        }
+
+        /* Стрелки для хитов продаж */
+        .top-sales-arrow {
+            position: absolute;
+            top: calc(50% + 20px);
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(255,255,255,0.95);
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s, background 0.2s;
+        }
+
+        .top-sales-arrow:hover {
+            background: #fff;
+        }
+
+        .top-sales-arrow-left {
+            left: 0;
+        }
+
+        .top-sales-arrow-right {
+            right: 0;
+        }
+
+        .top-sales-arrow:disabled {
+            opacity: 0.3;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* ============================================== */
+        /* Календарь */
+        /* ============================================== */
+        .yandex-afisha-calendar {
+            position: relative;
+            width: 100%;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            overflow: hidden;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .calendar-arrow {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: none;
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s;
+        }
+
+        .calendar-arrow-left {
+            left: 8px;
+        }
+
+        .calendar-arrow-right {
+            right: 8px;
+        }
+
+        .calendar-arrow:disabled {
+            opacity: 0.3;
+            cursor: default;
+        }
+
+        .calendar-dates-wrapper {
+            display: flex;
+            gap: 16px;
+            transition: transform 0.3s ease;
+        }
+
+        .month-group {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .month-title {
+            font-size: 12px;
+            font-weight: 400;
+            color: #999;
+            margin-left: 4px;
+        }
+
+        .days-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .day-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 2px;
+            min-width: 36px;
+        }
+
+        .day-weekday {
+            font-size: 10px;
+            font-weight: 400;
+            color: #666;
+        }
+
+        .day-weekday.weekend {
+            color: #E52E2E;
+        }
+
+        .day-number {
+            font-size: 14px;
+            font-weight: 500;
+            color: #000;
+        }
+
+        .day-number.past {
+            color: #999;
+        }
+
+        .day-number.active {
+            color: #0055FB;
+            font-weight: 700;
+        }
+
+        /* ============================================== */
+        /* Блоки экскурсий */
+        /* ============================================== */
+        .excursion-categories {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .category-block {
+            margin-bottom: 64px;
+            position: relative;
+        }
+
+        .category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 0 8px;
+        }
+
+        .category-title {
+            font-size: 22px;
+            font-weight: 500;
+            color: #212121;
+        }
+
+        .category-all-link {
+            font-size: 14px;
+            font-weight: 500;
+            color: #0055FB;
+            text-decoration: none;
+            transition: opacity 0.2s;
+        }
+
+        .category-all-link:hover {
+            opacity: 0.8;
+        }
+
+        /* Обертка карточек */
+        .excursion-cards-wrapper {
+            width: 100%;
+            overflow: hidden;
+        }
+
+        .excursion-cards-row {
+            display: flex;
+            gap: 24px;
+            transition: transform 0.3s ease;
+            will-change: transform;
+            min-width: max-content;
+        }
+
+        /* Карточка экскурсии */
+        .excursion-card {
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            transition: transform 0.2s, box-shadow 0.2s;
+            min-width: 300px;
+            max-width: 300px;
+            height: 400px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .excursion-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        }
+
+        /* Изображение в карточке */
+        .excursion-card-img {
+            height: 180px;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+            background-color: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 14px;
+        }
+
+        /* Бейдж */
+        .excursion-tag {
+            position: absolute;
+            top: 16px;
+            left: 16px;
+            padding: 6px 12px;
+            background: #FF6B00;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 500;
+            border-radius: 16px;
+            z-index: 5;
+        }
+
+        /* Контент карточки */
+        .excursion-card-content {
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .excursion-card-rating {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .excursion-card-title {
+            font-size: 18px;
+            font-weight: 500;
+            color: #212121;
+            margin-bottom: 8px;
+            line-height: 1.3;
+            min-height: 54px;
+        }
+
+        .excursion-card-meta {
+            display: flex;
+            gap: 12px;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+
+        .excursion-card-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #212121;
+            margin-bottom: 16px;
+        }
+
+        .excursion-book-btn {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            background: #0055FB;
+            color: #fff;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.2s, transform 0.1s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .excursion-book-btn:hover {
+            background: #0044CC;
+        }
+
+        .excursion-book-btn:active {
+            transform: scale(0.98);
+        }
+
+        /* Стрелки для карточек категорий */
+        .category-arrow {
+            position: absolute;
+            top: calc(50% + 20px);
+            transform: translateY(-50%);
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: rgba(255,255,255,0.95);
+            border-radius: 50%;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-size: 20px;
+            color: #666;
+            cursor: pointer;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: opacity 0.2s, background 0.2s;
+        }
+
+        .category-arrow:hover {
+            background: #fff;
+        }
+
+        .category-arrow-left {
+            left: 0;
+        }
+
+        .category-arrow-right {
+            right: 0;
+        }
+
+        .category-arrow:disabled {
+            opacity: 0.3;
+            cursor: default;
+            pointer-events: none;
+        }
+
+        /* ============================================== */
+        /* Подвал сайта */
+        /* ============================================== */
+        .footer {
+            background: #0F172A;
+            color: #fff;
+            padding: 60px 0 24px;
+        }
+
+        .footer-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .footer-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 32px;
+            margin-bottom: 40px;
+        }
+
+        .footer-column h3 {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .footer-column ul {
+            list-style: none;
+        }
+
+        .footer-column ul li {
+            margin-bottom: 12px;
+        }
+
+        .footer-column ul li a {
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-column ul li a:hover {
+            color: #fff;
+        }
+
+        .footer-contact-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 14px;
+            color: rgba(255,255,255,0.7);
+            margin-bottom: 12px;
+        }
+
+        .footer-socials {
+            display: flex;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .footer-social-link {
+            font-size: 20px;
+            color: rgba(255,255,255,0.7);
+            transition: color 0.2s;
+        }
+
+        .footer-social-link:hover {
+            color: #0055FB;
+        }
+
+        .footer-copyright {
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 24px;
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+            text-align: center;
+        }
+
+        /* ============================================== */
+        /* Адаптивность */
+        @media (max-width: 1024px) {
+            .header-nav {
+                display: none;
+            }
+
+            .header-burger {
+                display: block;
+            }
+
+            .excursion-card {
+                min-width: 260px;
+                max-width: 260px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .excursion-card {
+                min-width: 240px;
+                max-width: 240px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-tickets-btn {
+                display: none;
+            }
+
+            .excursion-card {
+                min-width: 220px;
+                max-width: 220px;
+            }
+        }
+    </style>
+    <!-- Шрифт Roboto -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <!-- Иконки Font Awesome (для корзины, соцсетей) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- ============================================== -->
+    <!-- Шапка сайта -->
+    <!-- ============================================== -->
+    <header class="header">
+        <div class="header-container">
+            <!-- Логотип -->
+            <a href="#" class="header-logo">AquaVoyage</a>
+
+            <!-- Навигация -->
+            <nav class="header-nav">
+                <a href="/index.html" class="header-nav-link">Главная</a>
+                <a href="#topSalesRow" class="header-nav-link">Хиты продаж</a>
+                <a href="/event.html" class="header-nav-link">Экскурсии</a>
+                <a href="/rent.html" class="header-nav-link">Аренда судов</a>
+                <a href="/help.html" class="header-nav-link">Помощь</a>
+            </nav>
+
+            <!-- Действия -->
+            <div class="header-actions">
+                <!-- Корзина -->
+                <div class="header-cart">
+                    <i class="fas fa-shopping-cart"></i>
+                    <span class="header-cart-badge">0</span>
+                </div>
+
+                <!-- Кнопка "Мои билеты" -->
+                <button class="header-tickets-btn">Мои билеты</button>
+
+                <!-- Бургер-меню для мобильных -->
+                <div class="header-burger">
+                    <i class="fas fa-bars"></i>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ============================================== -->
+    <!-- Блок хитов продаж -->
+    <!-- ============================================== -->
+    <div class="top-sales-block">
+        <div class="top-sales-container">
+            <div class="top-sales-header">
+                <h2 class="top-sales-title">Хиты продаж</h2>
+                <p class="top-sales-subtitle">Билеты раскупают за 48 часов</p>
+            </div>
+            <!-- Стрелки для переключения -->
+            <button class="top-sales-arrow top-sales-arrow-left" disabled>←</button>
+            <button class="top-sales-arrow top-sales-arrow-right">→</button>
+            <!-- Обертка карточек -->
+            <div class="excursion-cards-wrapper">
+                <div class="excursion-cards-row" id="topSalesRow">
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1050/600/400')">
+                            <span class="excursion-tag">Хит</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.97</div>
+                            <h3 class="excursion-card-title">Закат с живой музыкой по центральным каналам</h3>
+                            <div class="excursion-card-meta">
+                                <span>2 часа</span>
+                            </div>
+                            <div class="excursion-card-price">2 990 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1068/600/400')">
+                            <span class="excursion-tag">Хит</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.9</div>
+                            <h3 class="excursion-card-title">Закатное круиз по Неве</h3>
+                            <div class="excursion-card-meta">
+                                <span>2 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 500 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1036/600/400')">
+                            <span class="excursion-tag">Хит</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 5.0</div>
+                            <h3 class="excursion-card-title">Ночной круиз по каналам с ужинами</h3>
+                            <div class="excursion-card-meta">
+                                <span>3 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 500 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1061/600/400')">
+                            <span class="excursion-tag">Хит</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.7</div>
+                            <h3 class="excursion-card-title">Прогулка по Неве до Финского залива</h3>
+                            <div class="excursion-card-meta">
+                                <span>2.5 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 000 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1048/600/400')">
+                            <span class="excursion-tag">Хит</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.9</div>
+                            <h3 class="excursion-card-title">Детская экскурсия по каналам с мастер-классом</h3>
+                            <div class="excursion-card-meta">
+                                <span>1.5 часа</span>
+                            </div>
+                            <div class="excursion-card-price">2 200 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- Календарь -->
+    <!-- ============================================== -->
+    <div class="yandex-afisha-calendar">
+        <button class="calendar-arrow calendar-arrow-left" disabled>←</button>
+        <button class="calendar-arrow calendar-arrow-right">→</button>
+
+        <div class="calendar-dates-wrapper" id="calendarDates">
+            <!-- Ноябрь -->
+            <div class="month-group">
+                <div class="month-title">ноябрь</div>
+                <div class="days-row">
+                    <div class="day-item">
+                        <div class="day-weekday">пт</div>
+                        <div class="day-number past">28</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday weekend">сб</div>
+                        <div class="day-number past">29</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday weekend">вс</div>
+                        <div class="day-number past">30</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Декабрь -->
+            <div class="month-group">
+                <div class="month-title">декабрь</div>
+                <div class="days-row">
+                    <div class="day-item">
+                        <div class="day-weekday">пн</div>
+                        <div class="day-number">1</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday">вт</div>
+                        <div class="day-number">2</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday">ср</div>
+                        <div class="day-number">3</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday">чт</div>
+                        <div class="day-number">4</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday">пт</div>
+                        <div class="day-number">5</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday weekend">сб</div>
+                        <div class="day-number">6</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday weekend">вс</div>
+                        <div class="day-number">7</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday">пн</div>
+                        <div class="day-number">8</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday">вт</div>
+                        <div class="day-number">9</div>
+                    </div>
+                    <div class="day-item">
+                        <div class="day-weekday">ср</div>
+                        <div class="day-number">10</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================== -->
+    <!-- Блоки экскурсий по категориям -->
+    <!-- ============================================== -->
+    <section class="excursion-categories">
+        <!-- Реки и каналы -->
+        <div class="category-block">
+            <div class="category-header">
+                <h2 class="category-title">Реки и каналы</h2>
+                <a href="#" class="category-all-link">Посмотреть все →</a>
+            </div>
+            <button class="category-arrow category-arrow-left" disabled>←</button>
+            <button class="category-arrow category-arrow-right">→</button>
+            <div class="excursion-cards-wrapper">
+                <div class="excursion-cards-row">
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1036/600/400')">
+                            <span class="excursion-tag">Вечеринка</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 5.0</div>
+                            <h3 class="excursion-card-title">Ночной круиз по каналам с ужинами</h3>
+                            <div class="excursion-card-meta">
+                                <span>3 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 500 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1039/600/400')">
+                            <span class="excursion-tag">Исторический</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.9</div>
+                            <h3 class="excursion-card-title">Экскурсия по каналам с гидом-историком</h3>
+                            <div class="excursion-card-meta">
+                                <span>2.5 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 000 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1043/600/400')">
+                            <span class="excursion-tag">Фотосессия</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.8</div>
+                            <h3 class="excursion-card-title">Прогулка по каналам для фотографов</h3>
+                            <div class="excursion-card-meta">
+                                <span>2 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 500 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1048/600/400')">
+                            <span class="excursion-tag">Детский</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.9</div>
+                            <h3 class="excursion-card-title">Детская экскурсия по каналам с мастер-классом</h3>
+                            <div class="excursion-card-meta">
+                                <span>1.5 часа</span>
+                            </div>
+                            <div class="excursion-card-price">2 200 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1050/600/400')">
+                            <span class="excursion-tag">Закат</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.97</div>
+                            <h3 class="excursion-card-title">Закат с живой музыкой по центральным каналам</h3>
+                            <div class="excursion-card-meta">
+                                <span>2 часа</span>
+                            </div>
+                            <div class="excursion-card-price">2 990 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Нева и Финский залив -->
+        <div class="category-block">
+            <div class="category-header">
+                <h2 class="category-title">Нева и Финский залив</h2>
+                <a href="#" class="category-all-link">Посмотреть все →</a>
+            </div>
+            <button class="category-arrow category-arrow-left" disabled>←</button>
+            <button class="category-arrow category-arrow-right">→</button>
+            <div class="excursion-cards-wrapper">
+                <div class="excursion-cards-row">
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1061/600/400')">
+                            <span class="excursion-tag">Прогулка</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.7</div>
+                            <h3 class="excursion-card-title">Прогулка по Неве до Финского залива</h3>
+                            <div class="excursion-card-meta">
+                                <span>2.5 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 000 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1068/600/400')">
+                            <span class="excursion-tag">Закат</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.9</div>
+                            <h3 class="excursion-card-title">Закатное круиз по Неве</h3>
+                            <div class="excursion-card-meta">
+                                <span>2 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 500 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1071/600/400')">
+                            <span class="excursion-tag">Вино</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.8</div>
+                            <h3 class="excursion-card-title">Круиз по Неве с винотекой</h3>
+                            <div class="excursion-card-meta">
+                                <span>3 часа</span>
+                            </div>
+                            <div class="excursion-card-price">4 800 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                    <div class="excursion-card">
+                        <div class="excursion-card-img" style="background-image: url('https://picsum.photos/id/1074/600/400')">
+                            <span class="excursion-tag">Музыка</span>
+                        </div>
+                        <div class="excursion-card-content">
+                            <div class="excursion-card-rating">⭐ 4.9</div>
+                            <h3 class="excursion-card-title">Круиз по Неве с концертом музыки</h3>
+                            <div class="excursion-card-meta">
+                                <span>2.5 часа</span>
+                            </div>
+                            <div class="excursion-card-price">3 800 ₽</div>
+                            <button class="excursion-book-btn">Купить билет →</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ============================================== -->
+    <!-- Подвал сайта -->
+    <!-- ============================================== -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-grid">
+                <!-- Колонка 1: О компании -->
+                <div class="footer-column">
+                    <h3>AquaVoyage</h3>
+                    <p style="font-size: 14px; color: rgba(255,255,255,0.7); margin-bottom: 16px;">
+                        Лучшие водные экскурсии и круизы по Петербургу и окрестностям
+                    </p>
+                    <div class="footer-socials">
+                        <a href="#" class="footer-social-link"><i class="fab fa-vk"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-telegram"></i></a>
+                        <a href="#" class="footer-social-link"><i class="fab fa-whatsapp"></i></a>
+                    </div>
+                </div>
+
+                <!-- Колонка 2: Навигация -->
+                <div class="footer-column">
+                    <h3>Навигация</h3>
+                    <ul>
+                        <li><a href="#">Главная</a></li>
+                        <li><a href="#">Хиты продаж</a></li>
+                        <li><a href="#">Все экскурсии</a></li>
+                        <li><a href="#">О нас</a></li>
+                        <li><a href="#">Контакты</a></li>
+                        <li><a href="#">FAQ</a></li>
+                    </ul>
+                </div>
+
+                <!-- Колонка 3: Контакты -->
+                <div class="footer-column">
+                    <h3>Контакты</h3>
+                    <div class="footer-contact-item">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span>Санкт-Петербург, Причал №5</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="fas fa-phone"></i>
+                        <span>+7 (812) 123-45-67</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="fas fa-envelope"></i>
+                        <span>info@aquavoyage.ru</span>
+                    </div>
+                    <div class="footer-contact-item">
+                        <i class="fas fa-clock"></i>
+                        <span>Пн-Пт: 9:00-20:00, Сб-Вс: 10:00-18:00</span>
+                    </div>
+                </div>
+
+                <!-- Колонка 4: Полезные ссылки -->
+                <div class="footer-column">
+                    <h3>Полезное</h3>
+                    <ul>
+                        <li><a href="#">Правила покупки билетов</a></li>
+                        <li><a href="#">Политика конфиденциальности</a></li>
+                        <li><a href="#">Оплата и возврат</a></li>
+                        <li><a href="#">Акции и скидки</a></li>
+                        <li><a href="#">Подарочные сертификаты</a></li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Копирайт -->
+            <div class="footer-copyright">
+                © 2025 AquaVoyage. Все права защищены.
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // ==============================================
+        // Логика календаря
+        // ==============================================
+        const datesWrapper = document.getElementById('calendarDates');
+        const arrowLeft = document.querySelector('.calendar-arrow-left');
+        const arrowRight = document.querySelector('.calendar-arrow-right');
+        
+        const scrollStep = 300;
+        let currentOffset = 0;
+
+        function updateCalendarArrows() {
+            const maxOffset = datesWrapper.scrollWidth - datesWrapper.clientWidth;
+            arrowLeft.disabled = currentOffset <= 0;
+            arrowRight.disabled = currentOffset >= maxOffset;
+        }
+
+        arrowRight.addEventListener('click', () => {
+            const maxOffset = datesWrapper.scrollWidth - datesWrapper.clientWidth;
+            currentOffset = Math.min(currentOffset + scrollStep, maxOffset);
+            datesWrapper.style.transform = `translateX(-${currentOffset}px)`;
+            updateCalendarArrows();
+        });
+
+        arrowLeft.addEventListener('click', () => {
+            currentOffset = Math.max(currentOffset - scrollStep, 0);
+            datesWrapper.style.transform = `translateX(-${currentOffset}px)`;
+            updateCalendarArrows();
+        });
+
+        window.addEventListener('load', updateCalendarArrows);
+        window.addEventListener('resize', updateCalendarArrows);
+
+        // Кликабельность дней
+        document.querySelectorAll('.day-item').forEach(item => {
+            item.addEventListener('click', () => {
+                document.querySelectorAll('.day-number').forEach(num => num.classList.remove('active'));
+                item.querySelector('.day-number').classList.add('active');
+            });
+        });
+
+        // ==============================================
+        // Логика переключения хитов продаж
+        // ==============================================
+        function initTopSalesScroll() {
+            const topSalesRow = document.getElementById('topSalesRow');
+            const arrowLeft = document.querySelector('.top-sales-arrow-left');
+            const arrowRight = document.querySelector('.top-sales-arrow-right');
+            const cardsWrapper = document.querySelector('.top-sales-container .excursion-cards-wrapper');
+            
+            const cardWidthWithGap = 324;
+            const getVisibleCardsCount = () => {
+                if (window.innerWidth >= 1400) return 4;
+                if (window.innerWidth >= 1024) return 3;
+                if (window.innerWidth >= 768) return 2;
+                return 1;
+            };
+
+            const getScrollStep = () => cardWidthWithGap * getVisibleCardsCount();
+
+            function updateTopSalesArrows() {
+                const maxOffset = Math.max(0, topSalesRow.scrollWidth - cardsWrapper.clientWidth);
+                const currentOffset = Math.abs(parseFloat(topSalesRow.style.transform.replace('translateX(-', '').replace('px)', ''))) || 0;
+                
+                arrowLeft.disabled = currentOffset <= 0;
+                arrowRight.disabled = currentOffset >= maxOffset;
+            }
+
+            arrowRight.addEventListener('click', () => {
+                const maxOffset = Math.max(0, topSalesRow.scrollWidth - cardsWrapper.clientWidth);
+                const currentOffset = Math.abs(parseFloat(topSalesRow.style.transform.replace('translateX(-', '').replace('px)', ''))) || 0;
+                const newOffset = Math.min(currentOffset + getScrollStep(), maxOffset);
+                topSalesRow.style.transform = `translateX(-${newOffset}px)`;
+                updateTopSalesArrows();
+            });
+
+            arrowLeft.addEventListener('click', () => {
+                const currentOffset = Math.abs(parseFloat(topSalesRow.style.transform.replace('translateX(-', '').replace('px)', ''))) || 0;
+                const newOffset = Math.max(currentOffset - getScrollStep(), 0);
+                topSalesRow.style.transform = `translateX(-${newOffset}px)`;
+                updateTopSalesArrows();
+            });
+
+            window.addEventListener('load', updateTopSalesArrows);
+            window.addEventListener('resize', () => {
+                topSalesRow.style.transform = 'translateX(0)';
+                updateTopSalesArrows();
+            });
+        }
+
+        // ==============================================
+        // Логика переключения карточек в категориях
+        // ==============================================
+        function initCategoryScroll() {
+            const categoryBlocks = document.querySelectorAll('.category-block');
+
+            categoryBlocks.forEach(block => {
+                const cardsRow = block.querySelector('.excursion-cards-row');
+                const arrowLeft = block.querySelector('.category-arrow-left');
+                const arrowRight = block.querySelector('.category-arrow-right');
+                const cardsWrapper = block.querySelector('.excursion-cards-wrapper');
+                
+                const cardWidthWithGap = 324;
+                const getVisibleCardsCount = () => {
+                    if (window.innerWidth >= 1400) return 4;
+                    if (window.innerWidth >= 1024) return 3;
+                    if (window.innerWidth >= 768) return 2;
+                    return 1;
+                };
+
+                const getScrollStep = () => cardWidthWithGap * getVisibleCardsCount();
+
+                function updateCategoryArrows() {
+                    const maxOffset = Math.max(0, cardsRow.scrollWidth - cardsWrapper.clientWidth);
+                    const currentOffset = Math.abs(parseFloat(cardsRow.style.transform.replace('translateX(-', '').replace('px)', ''))) || 0;
+                    
+                    arrowLeft.disabled = currentOffset <= 0;
+                    arrowRight.disabled = currentOffset >= maxOffset;
+                }
+
+                arrowRight.addEventListener('click', () => {
+                    const maxOffset = Math.max(0, cardsRow.scrollWidth - cardsWrapper.clientWidth);
+                    const currentOffset = Math.abs(parseFloat(cardsRow.style.transform.replace('translateX(-', '').replace('px)', ''))) || 0;
+                    const newOffset = Math.min(currentOffset + getScrollStep(), maxOffset);
+                    cardsRow.style.transform = `translateX(-${newOffset}px)`;
+                    updateCategoryArrows();
+                });
+
+                arrowLeft.addEventListener('click', () => {
+                    const currentOffset = Math.abs(parseFloat(cardsRow.style.transform.replace('translateX(-', '').replace('px)', ''))) || 0;
+                    const newOffset = Math.max(currentOffset - getScrollStep(), 0);
+                    cardsRow.style.transform = `translateX(-${newOffset}px)`;
+                    updateCategoryArrows();
+                });
+
+                window.addEventListener('load', updateCategoryArrows);
+                window.addEventListener('resize', () => {
+                    cardsRow.style.transform = 'translateX(0)';
+                    updateCategoryArrows();
+                });
+            });
+        }
+
+        // Инициализируем все скроллы
+        initTopSalesScroll();
+        initCategoryScroll();
+    </script>
+</body>
+</html>

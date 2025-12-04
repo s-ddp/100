@@ -287,3 +287,112 @@ test('support cases include SLA deadlines', async () => {
     assert.equal(listBody.supportSla.firstResponseMinutes, config.supportSla.firstResponseMinutes);
   });
 });
+
+test('status endpoint and events list surface water domain metadata', async () => {
+  const config = loadConfig();
+  const handler = createRequestHandler(config, createLoggerWithLevel('fatal'));
+  await withServer(handler, async (baseUrl) => {
+    const status = await fetch(`${baseUrl}/status`);
+    assert.equal(status.status, 200);
+    const statusBody = await status.json();
+    assert.equal(statusBody.status, 'ok');
+
+    const eventsRes = await fetch(`${baseUrl}/events`);
+    assert.equal(eventsRes.status, 200);
+    const eventsBody = await eventsRes.json();
+    assert.ok(eventsBody.total >= 1);
+    const first = eventsBody.events?.[0];
+    assert.ok(first?.city);
+    assert.ok(first?.category);
+  });
+});
+
+test('water event detail exposes seat map and trips', async () => {
+  const config = loadConfig();
+  const handler = createRequestHandler(config, createLoggerWithLevel('fatal'));
+  await withServer(handler, async (baseUrl) => {
+    const res = await fetch(`${baseUrl}/events/event_moscow_river`);
+    assert.equal(res.status, 200);
+    const body = await res.json();
+    assert.ok(body.event.seatMap);
+    assert.ok(Array.isArray(body.event.trips));
+
+    const trips = await fetch(`${baseUrl}/events/event_moscow_river/trips`);
+    const tripsBody = await trips.json();
+    assert.ok(tripsBody.total >= 1);
+
+    const categories = await fetch(`${baseUrl}/events/event_moscow_river/categories`);
+    const categoriesBody = await categories.json();
+    assert.ok(categoriesBody.total >= 1);
+  });
+});
+
+test('seat booking enforces session ownership', async () => {
+  const config = loadConfig();
+  const handler = createRequestHandler(config, createLoggerWithLevel('fatal'));
+  await withServer(handler, async (baseUrl) => {
+    const hold = await fetch(`${baseUrl}/events/event_moscow_river/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionID: 's1', seatID: '1A', tripId: 'trip_moscow_evening' }),
+    });
+    assert.equal(hold.status, 201);
+
+    const conflict = await fetch(`${baseUrl}/events/event_moscow_river/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionID: 's2', seatID: '1A', tripId: 'trip_moscow_evening' }),
+    });
+    assert.equal(conflict.status, 409);
+
+    const wrongUnbook = await fetch(`${baseUrl}/events/event_moscow_river/unbook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionID: 'other', seatID: '1A', tripId: 'trip_moscow_evening' }),
+    });
+    assert.equal(wrongUnbook.status, 403);
+
+    const release = await fetch(`${baseUrl}/events/event_moscow_river/unbook`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionID: 's1', seatID: '1A', tripId: 'trip_moscow_evening' }),
+    });
+    assert.equal(release.status, 200);
+  });
+});
+
+test('seat orders mark seats as sold and allow confirmation', async () => {
+  const config = loadConfig();
+  const handler = createRequestHandler(config, createLoggerWithLevel('fatal'));
+  await withServer(handler, async (baseUrl) => {
+    const orderRes = await fetch(`${baseUrl}/orders`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        eventId: 'event_moscow_river',
+        tripId: 'trip_moscow_evening',
+        seats: ['1B', '2A'],
+        ticketTypeId: 'adult',
+        customer: { name: 'Seat Buyer', phone: '+79991112233' },
+      }),
+    });
+
+    assert.equal(orderRes.status, 201);
+    const { order } = await orderRes.json();
+    assert.equal(order.status, 'pending_payment');
+
+    const seatMapRes = await fetch(`${baseUrl}/trips/trip_moscow_evening/seatmap`);
+    const seatMapBody = await seatMapRes.json();
+    const soldSeats = seatMapBody.seatMap.areas.flatMap((area) => area.seats.filter((seat) => seat.status === 'sold'));
+    assert.ok(soldSeats.some((seat) => seat.id === '1B'));
+
+    const confirm = await fetch(`${baseUrl}/orders/${order.id}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ provider: 'mock', reference: 'test-payment' }),
+    });
+    assert.equal(confirm.status, 200);
+    const confirmBody = await confirm.json();
+    assert.equal(confirmBody.order.status, 'confirmed');
+  });
+});

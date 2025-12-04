@@ -7,6 +7,9 @@ This repository will house the roadmap and technical specification for a ticket 
 - [Technical Specification](docs/technical-spec.md)
 - [Context Snapshot](docs/context.md)
 - [Execution Tracker (5 workstreams)](docs/execution-tracker.md)
+- [Stub API endpoints](docs/api-stub.md)
+- [Water excursions API surface](docs/water-api.md)
+- [Water excursions DB schema](docs/water-db-schema.md)
 
 ## Local development (kickoff)
 - Dependencies: the starter API now uses only built-in Node.js modules, so `npm install` is optional and does **not** reach external registries. If your environment injects proxy settings that break installs, clear them with `npm config delete proxy && npm config delete https-proxy`.
@@ -31,7 +34,7 @@ We will iterate on requirements by asking focused questions one at a time. Your 
 - Все пять открытых направлений выведены в работу и зафиксированы в [Execution Tracker](docs/execution-tracker.md); compose-стек теперь включает PostgreSQL, Redis, RabbitMQ, Prometheus и Grafana для метрик, чтобы можно было развернуть bare-metal окружение целиком.
 - Использовать зафиксированные VAT настройки (0%/10%/20%, дефолт 20% включён; режимы `none/included/excluded`) и автоматическую выдачу счетов/актов: API уже рассчитывает VAT и отдаёт `/orders/:id/documents`, осталось интегрировать это в будущий фронт и CRM.
 - Применить выбранный стек под высокую нагрузку (frontend — Next.js/React + TypeScript; backend — NestJS на Node.js/TypeScript; БД — PostgreSQL; кэш/блокировки — Redis; очередь/фоновая обработка — RabbitMQ; observability — OpenTelemetry + Prometheus/Grafana для метрик, Loki для логов, Jaeger/Tempo для трассировок; веб-аналитика/сквозная — self-hosted Matomo с UTM/событиями) и подготовить CI/CD + деплой на bare metal в РФ — compose-скелет для локального развёртывания уже добавлен.
-- Спроектировать схему/миграции (рейс/событие, тариф/билет, места, заказ, оплата, возврат, документы) — первый SQL-миграционный файл `services/api/db/migrations/001_init.sql` добавлен; далее нужно связать его с мигратором NestJS/TypeORM или Prisma.
+- Спроектировать схему/миграции (рейс/событие, тариф/билет, места, заказ, оплата, возврат, документы) — первый SQL-миграционный файл `services/api/db/migrations/001_init.sql` добавлен; второй миграционный файл `services/api/db/migrations/002_water_schema.sql` фиксирует водный домен с палубами/зонами/местами, ценами, блокировками мест и оплатами; далее нужно связать его с мигратором NestJS/TypeORM или Prisma.
 
 ## Action Plan (предлагаемые шаги)
 1. Развернуть выбранный стек (Next.js/React + TypeScript; NestJS/Node.js + TypeScript; PostgreSQL; Redis; RabbitMQ; Prometheus/Grafana/Loki/Jaeger; Matomo) и схему развёртывания на bare metal в РФ.
@@ -52,5 +55,5 @@ We will iterate on requirements by asking focused questions one at a time. Your 
 - Запустить статический фронт: `docker run --rm -p 3000:3000 ticketing-web:local`
 - Для продакшена: загрузите реальный `.env`, пересоберите образ с тегом реестра и задеплойте на целевой bare metal сервер через ваш оркестратор (Ansible/systemd/compose).
 - Быстрый старт через Compose: `docker compose up --build` поднимает API, web, PostgreSQL, Redis, RabbitMQ, Prometheus и Grafana (использует `services/api/.env.example`; обновите на реальный `.env` перед деплоем). Метрики API доступны на `/metrics` и автоматически скрапятся Prometheus.
-- SQL-схема лежит в `services/api/db/migrations/001_init.sql`; примените её через любой мигратор (psql, Prisma, TypeORM) перед запуском прод-окружения.
+- SQL-схемы лежат в `services/api/db/migrations/001_init.sql` и `services/api/db/migrations/002_water_schema.sql`; примените их через любой мигратор (psql, Prisma, TypeORM) перед запуском прод-окружения. Для Prisma сгенерирован эквивалентный `services/api/prisma/schema.prisma`, готовый к запуску `npx prisma migrate dev --name init`.
 - CRM/SLA API точки: `/crm/orders` (листинг заказов + SLO p95/p99), `/crm/sla` (SLO/SLA цели), `/crm/support/cases` (создание и получение тикетов поддержки с дедлайнами первого ответа/резолва), плюс `/orders/:id/documents` для счетов/актов.

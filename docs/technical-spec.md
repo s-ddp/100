@@ -8,7 +8,7 @@
 
 ## Functional Requirements
 ### Ticket Sales Website
-- Browse/search events, view schedules, and select seats or general admission tickets. **(Pending seating policy details)**
+- Browse/search events, view schedules, and select seats or general admission tickets based on vessel/event configuration (seat maps shown only when assigned seating is required; otherwise default to general admission flows).
 - Pricing, fees, taxes, and promotions displayed transparently through checkout. **(Pending tax/fee rules)**
 - Checkout with payments (ЮMoney) in RUB, order confirmation, and receipts via email/SMS.
 - Customer accounts: authentication, profile, order history, and download of tickets/QR codes. **(Pending identity/SSO needs)**
@@ -35,6 +35,7 @@
 
 ## Data Model (To Refine)
 - Core entities: Event, Venue, Section/Seat, TicketType, InventoryHold, Order, Payment, Customer, Promotion, SupportCase, User/Role.
+- Seating configuration per vessel/event to declare whether assigned seating (with seat maps) or general admission applies.
 - Audit fields and soft-delete where appropriate.
 - Unique constraints to prevent overselling; reservation expirations for seat holds.
 
@@ -56,7 +57,7 @@
 ## Open Questions
 - Markets/countries in scope? **(Pending)**
 - Payment gateways and settlement rules? **(Resolved: integrate ЮMoney, RUB-only, no alternate payout schedules)**
-- Seating model (reserved vs general admission)? **(Pending)**
+- Seating model (reserved vs general admission)? **(Resolved: combined approach—enable seat maps when a vessel/event requires assigned seating; use general admission when not)**
 - Refund/exchange/transfer policies? **(Pending)**
 - Integrations (email/SMS, analytics, accounting/ERP, marketing)? **(Pending)**
 - Roles/permissions and audit requirements? **(Pending)**

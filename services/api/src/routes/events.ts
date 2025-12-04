@@ -2,6 +2,7 @@ import { Router } from "../vendor/express";
 import { astraClient } from "../core/astraClient";
 import { getPrismaClient } from "../core/prisma";
 import { waterEvents, waterSeatMaps, waterTrips, waterVessels } from "../water-data";
+import { emitSeatStatus } from "../ws/seatmapHub";
 
 export const eventsRouter = Router();
 
@@ -252,6 +253,8 @@ eventsRouter.post("/:eventId/seats/lock", async (req, res, next) => {
               },
             });
           }
+
+          emitSeatStatus(eventId, seatId, "selected");
         } else {
           failed.push({ seatId, reason: result.descriptionSeatBooked });
         }
@@ -286,6 +289,10 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
     const prisma = getPrismaClient();
 
     if (!Array.isArray(seats) || seats.length === 0) {
+      const lockedSeats = prisma
+        ? await (prisma as any).seatLock.findMany({ where: { eventId, sessionId } })
+        : [];
+
       await astraClient.cancelBookSeat({
         eventID: eventId,
         sessionID: sessionId,
@@ -298,6 +305,8 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
           where: { eventId, sessionId },
         });
       }
+
+      lockedSeats.forEach((lock: any) => emitSeatStatus(eventId, lock.seatCode, "free"));
 
       return res.json({ eventId, sessionId, unlockedAll: true });
     }
@@ -321,6 +330,7 @@ eventsRouter.post("/:eventId/seats/unlock", async (req, res, next) => {
               where: { eventId, sessionId, seatCode: seatId },
             });
           }
+          emitSeatStatus(eventId, seatId, "free");
         } else {
           failed.push({ seatId, reason: result.descriptionSeatBooked });
         }

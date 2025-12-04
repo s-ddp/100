@@ -72,6 +72,12 @@ declare module "node:http" {
   export type ServerResponse = any;
 }
 
+declare module "node:crypto" {
+  export function createHash(algo: string): any;
+}
+
+declare const Buffer: any;
+
 declare module "node:test" {
   const test: any;
   export default test;

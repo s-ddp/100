@@ -1,5 +1,6 @@
 import { astraClient } from "../core/astraClient";
 import { getPrismaClient } from "../core/prisma";
+import { emitSeatStatus } from "../ws/seatmapHub";
 
 export async function cleanExpiredSeatLocks() {
   const prisma = getPrismaClient();
@@ -26,6 +27,7 @@ export async function cleanExpiredSeatLocks() {
       await (prisma as any).seatLock.delete({ where: { id: lock.id } });
 
       console.log(`Released seat ${lock.seatCode} for event ${lock.eventId} (lock #${lock.id})`);
+      emitSeatStatus(lock.eventId, lock.seatCode, "free");
     } catch (err) {
       console.error(`Failed to release seat ${lock.seatCode} for event ${lock.eventId}:`, err);
     }

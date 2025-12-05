@@ -1,19 +1,23 @@
-FROM node:18
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Устанавливаем зависимости
 COPY package*.json ./
 RUN npm install
 
-# Копируем исходники
-COPY . .
+COPY tsconfig.json ./
+COPY src ./src
 
-# Открываем порт
+RUN npm run build
+
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --omit=dev
+
+COPY --from=builder /app/dist ./dist
+
 EXPOSE 4000
-
-# Для продакшена:
-# CMD ["npm", "start"]
-
-# Для разработки:
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]

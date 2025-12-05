@@ -3,17 +3,16 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Копируем package.json (без необходимости иметь package-lock.json)
+# Копируем package.json
 COPY package*.json ./
 
-# Устанавливаем зависимости через npm install (не ci)
+# Устанавливаем зависимости без lock-файла
 RUN npm install
 
-# Копируем исходники
 COPY tsconfig.json ./
 COPY src ./src
 
-# Компиляция TypeScript -> dist/
+# Компиляция в dist
 RUN npm run build
 
 
@@ -25,10 +24,10 @@ WORKDIR /app
 
 COPY package*.json ./
 
-# Установка только production зависимостей
+# Устанавливаем ТОЛЬКО продакшн зависимости
 RUN npm install --omit=dev
 
-# Копируем скомпилированный dist
+# Копируем собранный код
 COPY --from=builder /app/dist ./dist
 
 EXPOSE 4000

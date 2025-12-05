@@ -1,13 +1,12 @@
 [Unit]
-Description=Ticketing monorepo stack via docker compose
-Requires=docker.service
-After=docker.service
+Description=Ticketing monorepo autostart
+After=network.target
 
 [Service]
 Type=oneshot
+Environment=AUTO_UP_IN_SERVICE=1
 WorkingDirectory=__PROJECT_ROOT__
-ExecStart=/usr/bin/docker compose up -d --build
-ExecStop=/usr/bin/docker compose down
+ExecStart=/usr/bin/env bash __PROJECT_ROOT__/ops/auto-up.sh
 RemainAfterExit=yes
 TimeoutStartSec=0
 

@@ -6,11 +6,6 @@ ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")"/../.. && pwd)"
 SERVICE_SRC="$ROOT_DIR/ops/systemd/$SERVICE_NAME"
 SERVICE_DST="/etc/systemd/system/$SERVICE_NAME"
 
-if ! command -v docker >/dev/null 2>&1; then
-  echo "docker is required but was not found on PATH" >&2
-  exit 1
-fi
-
 if ! command -v sudo >/dev/null 2>&1; then
   echo "sudo is required to install the systemd unit" >&2
   exit 1
@@ -30,4 +25,4 @@ sudo systemctl daemon-reload
 sudo systemctl enable "$SERVICE_NAME"
 sudo systemctl restart "$SERVICE_NAME"
 
-echo "Systemd service installed and started. Containers will start automatically on boot."
+echo "Systemd service installed and started. Stack will start automatically on boot."

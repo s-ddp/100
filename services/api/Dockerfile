@@ -1,5 +1,5 @@
+# ---------- BUILDER ----------
 FROM node:20-alpine AS builder
-
 WORKDIR /app
 
 COPY package*.json ./
@@ -12,7 +12,7 @@ COPY src ./src
 
 RUN npm run build
 
-
+# ---------- RUNNER ----------
 FROM node:20-alpine AS runner
 WORKDIR /app
 
@@ -20,6 +20,8 @@ COPY package*.json ./
 RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
+COPY prisma ./prisma
 
-EXPOSE 4000
-CMD ["npm", "start"]
+ENV NODE_ENV=production
+
+CMD ["node", "dist/index.js"]

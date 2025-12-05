@@ -1,0 +1,436 @@
+// ===============================
+// Prisma & DB Configuration
+// ===============================
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ===============================
+// Core supplier/catalog domain (from migrations 001_init.sql)
+// ===============================
+model Supplier {
+  id           String    @id
+  name         String
+  apiBaseUrl   String?   @map("api_base_url")
+  contactEmail String?   @map("contact_email")
+  metadata     Json?
+
+  vessels      Vessel[]
+  catalogItems CatalogItem[]
+
+  @@map("suppliers")
+}
+
+model Vessel {
+  id          String    @id
+  supplierId  String?   @map("supplier_id")
+  name        String
+  capacity    Int?
+  seatingPlan Json?     @map("seating_plan")
+  metadata    Json?
+
+  supplier    Supplier? @relation(fields: [supplierId], references: [id])
+  sailings    Sailing[]
+  waterDecks  WaterDeck[]
+  waterEvents WaterEvent[]
+
+  @@map("vessels")
+}
+
+model CatalogItem {
+  id              String   @id
+  supplierId      String?  @map("supplier_id")
+  type            String
+  title           String
+  description     String?
+  departurePort   String?  @map("departure_port")
+  departureTime   DateTime? @map("departure_time")
+  durationMinutes Int?     @map("duration_minutes")
+  language        String[]?
+  currency        String   @default("RUB")
+  vatMode         String   @map("vat_mode") @default("included")
+  vatRate         Decimal  @map("vat_rate") @db.Decimal(5, 4) @default("0.2000")
+  seatingRequired Boolean  @map("seating_required") @default(false)
+  metadata        Json?
+
+  supplier   Supplier? @relation(fields: [supplierId], references: [id])
+  fares      Fare[]
+  sailings   Sailing[]
+  orders     Order[]
+
+  @@map("catalog_items")
+}
+
+model Fare {
+  id            Int         @id @default(autoincrement())
+  catalogItemId String      @map("catalog_item_id")
+  code          String
+  name          String
+  price         Decimal     @db.Decimal(10, 2)
+  currency      String      @default("RUB")
+  vatMode       String      @map("vat_mode") @default("included")
+  vatRate       Decimal     @map("vat_rate") @db.Decimal(5, 4) @default("0.2000")
+
+  catalogItem CatalogItem @relation(fields: [catalogItemId], references: [id])
+
+  @@unique([catalogItemId, code])
+  @@map("fares")
+}
+
+model Sailing {
+  id            String    @id
+  catalogItemId String    @map("catalog_item_id")
+  vesselId      String?   @map("vessel_id")
+  departureTime DateTime  @map("departure_time")
+  arrivalTime   DateTime? @map("arrival_time")
+  capacity      Int?
+  seatingPlan   Json?     @map("seating_plan")
+  status        String    @default("scheduled")
+
+  catalogItem CatalogItem @relation(fields: [catalogItemId], references: [id])
+  vessel      Vessel?     @relation(fields: [vesselId], references: [id])
+  seats       Seat[]
+
+  @@map("sailings")
+}
+
+model Seat {
+  id        Int     @id @default(autoincrement())
+  sailingId String  @map("sailing_id")
+  seatNo    String? @map("seat_no")
+  zone      String?
+  status    String  @default("available")
+
+  sailing Sailing @relation(fields: [sailingId], references: [id])
+
+  @@map("seats")
+}
+
+model Customer {
+  id        String   @id
+  fullName  String   @map("full_name")
+  email     String
+  phone     String
+  locale    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  orders Order[]
+
+  @@map("customers")
+}
+
+model Order {
+  id             String   @id
+  customerId     String?  @map("customer_id")
+  catalogItemId  String?  @map("catalog_item_id")
+  fareCode       String?  @map("fare_code")
+  quantity       Int
+  gross          Decimal  @db.Decimal(10, 2)
+  net            Decimal  @db.Decimal(10, 2)
+  vatAmount      Decimal  @map("vat_amount") @db.Decimal(10, 2)
+  vatRate        Decimal  @map("vat_rate") @db.Decimal(5, 4)
+  vatMode        String   @map("vat_mode")
+  currency       String   @default("RUB")
+  status         String   @default("confirmed")
+  refundableUntil DateTime? @map("refundable_until")
+  seating        Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+
+  customer    Customer?   @relation(fields: [customerId], references: [id])
+  catalogItem CatalogItem? @relation(fields: [catalogItemId], references: [id])
+  payments    Payment[]
+  refunds     Refund[]
+  documents   Document[]
+
+  @@map("orders")
+}
+
+model Payment {
+  id        String   @id
+  orderId   String   @map("order_id")
+  provider  String
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  String   @default("RUB")
+  status    String
+  paidAt    DateTime? @map("paid_at")
+  raw       Json?
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("payments")
+}
+
+model Refund {
+  id        String   @id
+  orderId   String   @map("order_id")
+  amount    Decimal  @db.Decimal(10, 2)
+  currency  String   @default("RUB")
+  status    String
+  reason    String?
+  createdAt DateTime @default(now()) @map("created_at")
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("refunds")
+}
+
+model Document {
+  id        String   @id
+  orderId   String   @map("order_id")
+  type      String
+  number    String
+  issuedAt  DateTime @default(now()) @map("issued_at")
+  payload   Json
+
+  order Order @relation(fields: [orderId], references: [id])
+
+  @@map("documents")
+}
+
+// ===============================
+// Water excursions / interactive seatmap domain (from migrations 002_water_schema.sql)
+// ===============================
+model WaterDeck {
+  id            Int        @id @default(autoincrement())
+  vesselId      String?    @map("vessel_id")
+  deckNumber    Int        @map("deck_number")
+  name          String?
+  backgroundSvg String?    @map("background_svg")
+  createdAt     DateTime   @default(now()) @map("created_at")
+
+  vessel Vessel?     @relation(fields: [vesselId], references: [id])
+  areas  WaterDeckArea[]
+
+  @@map("water_decks")
+}
+
+model WaterDeckArea {
+  id        Int            @id @default(autoincrement())
+  deckId    Int            @map("deck_id")
+  name      String
+  category  String?
+  color     String?
+  createdAt DateTime       @default(now()) @map("created_at")
+
+  deck  WaterDeck    @relation(fields: [deckId], references: [id])
+  seats WaterDeckSeat[]
+
+  @@map("water_deck_areas")
+}
+
+model WaterDeckSeat {
+  id             Int        @id @default(autoincrement())
+  areaId         Int        @map("area_id")
+  seatCode       String     @map("seat_code")
+  alias          String?
+  x              Int?
+  y              Int?
+  polygon        String?
+  rotation       Int?
+  ticketsPerSeat Int        @default(1) @map("tickets_per_seat")
+  createdAt      DateTime   @default(now()) @map("created_at")
+
+  area WaterDeckArea @relation(fields: [areaId], references: [id])
+
+  @@map("water_deck_seats")
+}
+
+model WaterService {
+  id              String        @id
+  name            String
+  noSeats         Boolean?      @map("no_seats")
+  freeSeating     Boolean?      @map("free_seating")
+  serviceType     String?       @map("service_type")
+  durationMinutes Int?          @map("duration_minutes")
+  createdAt       DateTime      @default(now()) @map("created_at")
+
+  events WaterEvent[]
+
+  @@map("water_services")
+}
+
+model WaterEvent {
+  id             String         @id
+  serviceId      String?        @map("service_id")
+  vesselId       String?        @map("vessel_id")
+  name           String?
+  datetime       DateTime? @map("datetime")
+  duration       Int?           @map("duration_minutes")
+  pierStart      String?        @map("pier_start")
+  pierEnd        String?        @map("pier_end")
+  noSeats        Boolean?       @map("no_seats")
+  freeSeating    Boolean?       @map("free_seating")
+  availableSeats Int?           @map("available_seats")
+  createdAt      DateTime       @default(now()) @map("created_at")
+
+  service WaterService? @relation(fields: [serviceId], references: [id])
+  vessel  Vessel?       @relation(fields: [vesselId], references: [id])
+  locks   WaterSeatLock[]
+  orders  WaterOrder[]
+  prices  WaterEventPrice[]
+
+  @@map("water_events")
+}
+
+model WaterSeatCategory {
+  id        String            @id
+  name      String
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  prices WaterEventPrice[]
+  items  WaterOrderItem[]
+
+  @@map("water_seat_categories")
+}
+
+model WaterTicketType {
+  id        String            @id
+  name      String
+  createdAt DateTime          @default(now()) @map("created_at")
+
+  prices WaterEventPrice[]
+  items  WaterOrderItem[]
+
+  @@map("water_ticket_types")
+}
+
+model WaterEventPrice {
+  id             Int               @id @default(autoincrement())
+  eventId        String            @map("event_id")
+  seatCategoryId String?           @map("seat_category_id")
+  ticketTypeId   String?           @map("ticket_type_id")
+  priceTypeId    String?           @map("price_type_id")
+  priceTypeName  String?           @map("price_type_name")
+  priceValue     Int?              @map("price_value")
+  hasMenu        Boolean?          @map("has_menu")
+  menu           Json?
+  createdAt      DateTime          @default(now()) @map("created_at")
+
+  event        WaterEvent       @relation(fields: [eventId], references: [id])
+  seatCategory WaterSeatCategory? @relation(fields: [seatCategoryId], references: [id])
+  ticketType   WaterTicketType?   @relation(fields: [ticketTypeId], references: [id])
+
+  @@map("water_event_prices")
+}
+
+model WaterSeatLock {
+  id        Int       @id @default(autoincrement())
+  eventId   String    @map("event_id")
+  seatCode  String?   @map("seat_code")
+  sessionId String?   @map("session_id")
+  lockedAt  DateTime  @default(now()) @map("locked_at")
+  expiresAt DateTime? @map("expires_at")
+
+  event WaterEvent @relation(fields: [eventId], references: [id])
+
+  @@index([eventId, seatCode])
+  @@index([expiresAt])
+  @@map("water_seat_locks")
+}
+
+model WaterOrder {
+  id             Int          @id @default(autoincrement())
+  externalOrderId String?     @map("external_order_id")
+  eventId        String?      @map("event_id")
+  sessionId      String?      @map("session_id")
+  email          String?
+  status         String?
+  amount         Int?
+  astraResponse  Json?        @map("astra_response")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  event    WaterEvent?    @relation(fields: [eventId], references: [id])
+  items    WaterOrderItem[]
+  payments WaterPayment[]
+
+  @@map("water_orders")
+}
+
+model WaterOrderItem {
+  id             Int              @id @default(autoincrement())
+  orderId        Int              @map("order_id")
+  seatCode       String?          @map("seat_code")
+  ticketTypeId   String?          @map("ticket_type_id")
+  priceTypeId    String?          @map("price_type_id")
+  seatCategoryId String?          @map("seat_category_id")
+  quantity       Int
+  price          Int?
+
+  order        WaterOrder     @relation(fields: [orderId], references: [id])
+  ticketType   WaterTicketType? @relation(fields: [ticketTypeId], references: [id])
+  seatCategory WaterSeatCategory? @relation(fields: [seatCategoryId], references: [id])
+
+  @@map("water_order_items")
+}
+
+model WaterPayment {
+  id               Int       @id @default(autoincrement())
+  orderId          Int       @map("order_id")
+  yookassaPaymentId String?  @map("yookassa_payment_id")
+  status           String?
+  amount           Int?
+  createdAt        DateTime  @default(now()) @map("created_at")
+  updatedAt        DateTime? @map("updated_at")
+
+  order WaterOrder @relation(fields: [orderId], references: [id])
+
+  @@map("water_payments")
+}
+
+model WaterAstraCache {
+  key       String   @id
+  value     Json?
+  updatedAt DateTime? @map("updated_at")
+
+  @@map("water_astra_cache")
+}
+
+// ===============================
+// CRM orders for water events (admin UI)
+// ===============================
+
+enum CrmOrderStatus {
+  PENDING
+  LOCKED
+  PAID
+  CANCELLED
+  EXPIRED
+}
+
+model CrmOrder {
+  id            String         @id @default(cuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  eventId       String
+  event         WaterEvent     @relation(fields: [eventId], references: [id])
+
+  customerName  String?
+  customerEmail String?
+  customerPhone String?
+
+  status        CrmOrderStatus @default(PENDING)
+  seats         CrmOrderSeat[]
+  totalPrice    Int            @default(0)
+
+  paymentId     String?
+  paymentStatus String?
+
+  @@map("crm_orders")
+}
+
+model CrmOrderSeat {
+  id       String   @id @default(cuid())
+  orderId  String
+  seatCode String
+  price    Int
+
+  order CrmOrder @relation(fields: [orderId], references: [id])
+
+  @@map("crm_order_seats")
+}

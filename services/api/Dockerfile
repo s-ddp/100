@@ -1,10 +1,19 @@
-FROM node:20-alpine
-WORKDIR /usr/src/app
-ENV NODE_ENV=production
+FROM node:18
 
-COPY package.json ./package.json
-COPY src ./src
-COPY .env.example ./.env.example
+WORKDIR /app
 
+# Устанавливаем зависимости
+COPY package*.json ./
+RUN npm install
+
+# Копируем исходники
+COPY . .
+
+# Открываем порт
 EXPOSE 4000
-CMD ["node", "src/index.js"]
+
+# Для продакшена:
+# CMD ["npm", "start"]
+
+# Для разработки:
+CMD ["npm", "run", "dev"]

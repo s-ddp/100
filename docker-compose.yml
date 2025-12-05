@@ -1,13 +1,17 @@
 version: "3.9"
 services:
-  api:
-    build:
-      context: ./services/api
+  ticketing-api:
+    build: ./services/api
     image: ticketing-api:local
     env_file:
       - services/api/.env.example
     ports:
       - "4000:4000"
+    volumes:
+      - ./services/api:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
     restart: unless-stopped
     depends_on:
       - postgres

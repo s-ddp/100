@@ -44,6 +44,8 @@ declare module "cors" {
 }
 
 declare module "@prisma/client" {
+  export type CrmOrderStatus = "PENDING" | "LOCKED" | "PAID" | "CANCELLED" | "EXPIRED";
+
   export class PrismaClient {
     event: { findUnique(args: any): Promise<any> };
     seatLock: { create(args: any): Promise<any>; deleteMany(args: any): Promise<any> };
@@ -53,6 +55,17 @@ declare module "@prisma/client" {
       update(args: any): Promise<any>;
     };
     orderItem: { create(args: any): Promise<any> };
+    waterSeatLock: {
+      findFirst(args: any): Promise<any>;
+      deleteMany(args: any): Promise<any>;
+      findMany(args: any): Promise<any>;
+    };
+    crmOrder: {
+      findMany(args: any): Promise<any>;
+      findUnique(args: any): Promise<any>;
+      create(args: any): Promise<any>;
+      update(args: any): Promise<any>;
+    };
     $disconnect(): Promise<void>;
   }
 }
@@ -72,8 +85,13 @@ declare module "node:http" {
   export type ServerResponse = any;
 }
 
+declare module "crypto" {
+  export function randomUUID(): string;
+}
+
 declare module "node:crypto" {
   export function createHash(algo: string): any;
+  export function randomUUID(): string;
 }
 
 declare const Buffer: any;

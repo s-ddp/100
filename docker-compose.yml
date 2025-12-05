@@ -1,11 +1,13 @@
-version: "3.9"
 services:
   api:
     build:
-      context: ./services/api
+      context: .
+      dockerfile: services/api/Dockerfile
     image: ticketing-api:local
     env_file:
       - services/api/.env.example
+    environment:
+      DATABASE_URL: postgresql://ticketing:ticketing@postgres:5432/ticketing
     ports:
       - "4000:4000"
     restart: unless-stopped
@@ -13,9 +15,11 @@ services:
       - postgres
       - redis
       - rabbitmq
+
   web:
     build:
-      context: ./services/web
+      context: .
+      dockerfile: services/web/Dockerfile
     image: ticketing-web:local
     environment:
       NEXT_PUBLIC_API_URL: http://api:4000
@@ -24,6 +28,7 @@ services:
     depends_on:
       - api
     restart: unless-stopped
+
   postgres:
     image: postgres:15
     environment:
@@ -33,17 +38,20 @@ services:
     ports:
       - "5432:5432"
     restart: unless-stopped
+
   redis:
     image: redis:7
     ports:
       - "6379:6379"
     restart: unless-stopped
+
   rabbitmq:
     image: rabbitmq:3-management
     ports:
       - "5672:5672"
       - "15672:15672"
     restart: unless-stopped
+
   prometheus:
     image: prom/prometheus:v2.52.0
     volumes:
@@ -51,6 +59,7 @@ services:
     ports:
       - "9090:9090"
     restart: unless-stopped
+
   grafana:
     image: grafana/grafana:10.4.2
     ports:

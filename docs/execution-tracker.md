@@ -28,7 +28,7 @@ Status board for the five outstanding workstreams. Use this to coordinate the en
 ## 4) Vertical Slice (Catalog → Seat Map → Checkout → Docs → CRM) — In Progress
 - **Goal**: Deliver a sandbox flow: catalog/search → selection/seat map → ЮMoney checkout (full payment) → e-ticket/email + auto invoices/acts → CRM order view with 24h refund enforcement.
 - **Immediate actions**:
-  - CRM order listing now available at `/crm/orders` (with SLO context) and document payloads at `/orders/:id/documents`; wire these into the front-end CRM view.
+  - Admin CRM now exposes `/admin/orders` (filters, status updates, cancel with seat unlock) plus Next.js pages `/admin/orders` and `/admin/orders/:id`.
   - Integrate ЮMoney sandbox with fiscalization hooks and refund API honoring cutoff; reuse `/metrics` for basic health dashboards.
   - Surface SLA flags and refund controls in CRM while persisting orders/documents to PostgreSQL.
 - **Owner**: Full-stack.
@@ -40,3 +40,11 @@ Status board for the five outstanding workstreams. Use this to coordinate the en
   - Add dashboards/alerts in Grafana for CRM API latency/error rates and support queue times.
   - Reflect SLAs in runbooks and customer/agent-facing expectations.
 - **Owner**: Product + Engineering.
+
+## 6) Interactive Seatmap — Implemented (MVP, ready for integration)
+- **Goal**: Deliver interactive seat maps for water events with live status, locking, and pricing integration.
+- **Notes**: API exposes layout, seat statuses, ticket types, prices, lock/unlock endpoints, plus WebSocket broadcast. Next.js seatmap UI consumes these and shows totals.
+
+## 7) Provider Integration (AstraMarine) — Ready (pending credentials/testing)
+- **Goal**: Run against the real AstraMarine API instead of stubs.
+- **Notes**: `astraClient` supports stub/real modes; set `ASTRA_USE_STUB=false`, `ASTRA_BASE_URL`, and `ASTRA_AUTH` to enable live calls. Awaiting real credentials and end-to-end verification.

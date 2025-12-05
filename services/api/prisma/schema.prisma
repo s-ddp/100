@@ -389,3 +389,48 @@ model WaterAstraCache {
 
   @@map("water_astra_cache")
 }
+
+// ===============================
+// CRM orders for water events (admin UI)
+// ===============================
+
+enum CrmOrderStatus {
+  PENDING
+  LOCKED
+  PAID
+  CANCELLED
+  EXPIRED
+}
+
+model CrmOrder {
+  id            String         @id @default(cuid())
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  eventId       String
+  event         WaterEvent     @relation(fields: [eventId], references: [id])
+
+  customerName  String?
+  customerEmail String?
+  customerPhone String?
+
+  status        CrmOrderStatus @default(PENDING)
+  seats         CrmOrderSeat[]
+  totalPrice    Int            @default(0)
+
+  paymentId     String?
+  paymentStatus String?
+
+  @@map("crm_orders")
+}
+
+model CrmOrderSeat {
+  id       String   @id @default(cuid())
+  orderId  String
+  seatCode String
+  price    Int
+
+  order CrmOrder @relation(fields: [orderId], references: [id])
+
+  @@map("crm_order_seats")
+}

@@ -1,10 +1,8 @@
 version: "3.9"
 name: ticketing
 services:
-  api:
-    build:
-      context: .
-      dockerfile: services/api/Dockerfile
+  ticketing-api:
+    build: ./services/api
     image: ticketing-api:local
     environment:
       HOST: 0.0.0.0
@@ -16,6 +14,11 @@ services:
       RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     ports:
       - "4000:4000"
+    volumes:
+      - ./services/api:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
     restart: unless-stopped
     depends_on:
       - postgres

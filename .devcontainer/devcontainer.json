@@ -3,7 +3,7 @@
   "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
   "remoteUser": "node",
   "workspaceFolder": "/workspaces/100",
-  "postCreateCommand": "npm ci --workspaces --include-workspace-root=false",
+  "postCreateCommand": "npm install --workspaces --include-workspace-root=false",
   "customizations": {
     "vscode": {
       "settings": {

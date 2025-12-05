@@ -1,19 +1,18 @@
-FROM node:18
+FROM node:20-alpine
 
 WORKDIR /app
 
-# Устанавливаем зависимости
+# Копируем package.json и lock-файл
 COPY package*.json ./
+
+# Устанавливаем зависимости
 RUN npm install
 
 # Копируем исходники
 COPY . .
 
-# Открываем порт
+# Открываем порт API
 EXPOSE 4000
 
-# Для продакшена:
-# CMD ["npm", "start"]
-
-# Для разработки:
+# Запуск в dev режиме (ts-node или nodemon)
 CMD ["npm", "run", "dev"]

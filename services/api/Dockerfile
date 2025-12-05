@@ -8,8 +8,8 @@ COPY package*.json ./
 # Устанавливаем зависимости
 RUN npm install
 
-# Копируем исходники
-COPY . .
+COPY tsconfig.json ./
+COPY src ./src
 
 # Открываем порт API
 EXPOSE 4000

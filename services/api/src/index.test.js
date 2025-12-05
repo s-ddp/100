@@ -361,6 +361,39 @@ test('seat booking enforces session ownership', async () => {
   });
 });
 
+test('expired seat holds are cleaned up before returning seat status', async () => {
+  const config = loadConfig();
+  const seatReservations = new Map();
+  const handler = createRequestHandler(config, createLoggerWithLevel('fatal'), { seatReservations });
+
+  await withServer(handler, async (baseUrl) => {
+    const eventId = 'event_moscow_river';
+    const tripId = 'trip_moscow_evening';
+    const seatId = '1A';
+
+    const hold = await fetch(`${baseUrl}/events/${eventId}/book`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ sessionID: 'expiring', seatID: seatId, tripId }),
+    });
+    assert.equal(hold.status, 201);
+
+    let seatsRes = await fetch(`${baseUrl}/events/${eventId}/seats?tripId=${tripId}`);
+    let seatsBody = await seatsRes.json();
+    let seat = seatsBody.seats.find((entry) => entry.id === seatId);
+    assert.equal(seat.status, 'reserved');
+
+    const key = `${eventId}:${tripId}:${seatId}`;
+    const existing = seatReservations.get(key);
+    seatReservations.set(key, { ...existing, holdExpiresAt: new Date(Date.now() - 60 * 1000).toISOString() });
+
+    seatsRes = await fetch(`${baseUrl}/events/${eventId}/seats?tripId=${tripId}`);
+    seatsBody = await seatsRes.json();
+    seat = seatsBody.seats.find((entry) => entry.id === seatId);
+    assert.notEqual(seat.status, 'reserved');
+  });
+});
+
 test('seat orders mark seats as sold and allow confirmation', async () => {
   const config = loadConfig();
   const handler = createRequestHandler(config, createLoggerWithLevel('fatal'));

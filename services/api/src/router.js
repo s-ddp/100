@@ -194,6 +194,18 @@ export function createRequestHandler(config, logger, options = {}) {
     return `${eventId}:${tripId || 'na'}:${seatId}`;
   }
 
+  function cleanupExpiredReservations() {
+    const now = Date.now();
+    for (const [key, reservation] of seatReservations.entries()) {
+      if (reservation.status !== 'reserved') continue;
+
+      const expiresAt = reservation.holdExpiresAt ? new Date(reservation.holdExpiresAt).getTime() : null;
+      if (expiresAt && expiresAt <= now) {
+        seatReservations.delete(key);
+      }
+    }
+  }
+
   function buildSeatStatus(seatMap, eventId, tripId) {
     if (!seatMap) return null;
     return {
@@ -240,6 +252,7 @@ export function createRequestHandler(config, logger, options = {}) {
 
   return async (req, res) => {
     try {
+      cleanupExpiredReservations();
       metrics.requests += 1;
       const url = new URL(req.url || '/', `http://${req.headers.host || 'localhost'}`);
       const path = url.pathname;

@@ -13,6 +13,7 @@ import {
   seatReservations,
 } from "../core/waterStore";
 import { emitSeatStatus } from "../ws/seatmapHub";
+import { CRM_ORDER_STATUS } from "../services/crmOrdersService";
 
 export const ordersRouter = Router();
 
@@ -46,6 +47,7 @@ ordersRouter.post("/", async (req, res, next) => {
       }
 
       let total = 0;
+      const pricedSeats: { seatId: string; price: number }[] = [];
       const updatedSeats: string[] = [];
 
       for (const seatId of seats) {
@@ -69,6 +71,7 @@ ordersRouter.post("/", async (req, res, next) => {
         }
 
         total += priceInfo.price;
+        pricedSeats.push({ seatId, price: priceInfo.price });
         updatedSeats.push(seatId);
       }
 
@@ -81,6 +84,29 @@ ordersRouter.post("/", async (req, res, next) => {
         sessionId: sessionID,
       });
       order.totals.gross = total;
+
+      const prisma = getPrismaClient();
+      if (prisma) {
+        try {
+          const crmOrder = await (prisma as any).crmOrder.create({
+            data: {
+              eventId: event.id,
+              customerName: customer.name,
+              customerEmail: customer.email ?? null,
+              customerPhone: customer.phone,
+              status: CRM_ORDER_STATUS.LOCKED,
+              totalPrice: Math.round(total),
+              seats: {
+                create: pricedSeats.map((entry) => ({ seatCode: entry.seatId, price: Math.round(entry.price) })),
+              },
+            },
+            include: { seats: true, event: true },
+          });
+          order.crmOrderId = crmOrder.id;
+        } catch (dbError) {
+          console.warn("Failed to persist CRM order", dbError);
+        }
+      }
 
       updatedSeats.forEach((seatId) => {
         const key = reservationKey(event.id, trip?.id ?? tripId, seatId);
@@ -227,7 +253,7 @@ ordersRouter.post("/:id/confirm", async (req, res, next) => {
   }
 });
 
-ordersRouter.post("/:id", (req, res, next) => {
+ordersRouter.post("/:id", async (req, res, next) => {
   const { id } = req.params ?? {};
   if (!id) {
     return res.status(400).json({ error: "id is required" });
@@ -236,6 +262,17 @@ ordersRouter.post("/:id", (req, res, next) => {
   const seatOrder = seatOrders.find((entry) => entry.id === id);
   if (seatOrder) {
     seatOrder.status = "confirmed";
+    const prisma = getPrismaClient();
+    if (prisma && seatOrder.crmOrderId) {
+      try {
+        await (prisma as any).crmOrder.update({
+          where: { id: seatOrder.crmOrderId },
+          data: { status: CRM_ORDER_STATUS.PAID },
+        });
+      } catch (dbError) {
+        console.warn("Failed to mark CRM order as paid", dbError);
+      }
+    }
     return res.json({ order: seatOrder, provider: req.body?.provider ?? "mock", reference: req.body?.reference });
   }
 

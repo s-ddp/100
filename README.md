@@ -57,3 +57,33 @@ We will iterate on requirements by asking focused questions one at a time. Your 
 - Быстрый старт через Compose: `docker compose up --build` поднимает API, web, PostgreSQL, Redis, RabbitMQ, Prometheus и Grafana (использует `services/api/.env.example`; обновите на реальный `.env` перед деплоем). Метрики API доступны на `/metrics` и автоматически скрапятся Prometheus.
 - SQL-схемы лежат в `services/api/db/migrations/001_init.sql` и `services/api/db/migrations/002_water_schema.sql`; примените их через любой мигратор (psql, Prisma, TypeORM) перед запуском прод-окружения. Для Prisma сгенерирован эквивалентный `services/api/prisma/schema.prisma`, готовый к запуску `npx prisma migrate dev --name init`.
 - CRM/SLA API точки: `/crm/orders` (листинг заказов + SLO p95/p99), `/crm/sla` (SLO/SLA цели), `/crm/support/cases` (создание и получение тикетов поддержки с дедлайнами первого ответа/резолва), плюс `/orders/:id/documents` для счетов/актов.
+
+### Автозапуск фронтенда и бэкенда при старте машины
+- Контейнеры API (`api`) и фронтенда (`web`) в compose-файле уже имеют `restart: unless-stopped`, поэтому после первого запуска они автоматически поднимутся при перезагрузке Docker.
+- Чтобы запуск `docker compose up -d` выполнялся при загрузке ОС, добавлен systemd unit: `ops/systemd/ticketing-compose.service`.
+- Установить и включить автозапуск (требуются `docker` и `sudo`):
+  1. Выполните `./ops/systemd/install-autostart.sh` из корня репозитория.
+  2. Скрипт сгенерирует unit с рабочей директорией проекта, положит его в `/etc/systemd/system`, выполнит `daemon-reload`, `enable` и сразу стартанёт сервис.
+  3. После этого весь стек (PostgreSQL, Redis, RabbitMQ, API и фронтенд) будет автоматически подниматься при каждой перезагрузке, без ручных команд.
+
+### Быстрый запуск проекта вручную
+**Без Docker (только Node.js):**
+1. `npm install` — поставить зависимости монорепозитория.
+2. В одном терминале: `npm run start:api` — команда сама соберёт TypeScript в `dist/` и запустит API на `http://localhost:4000`.
+3. В другом терминале: `npm run start:web` — перед стартом автоматически выполнит `next build` и поднимет фронтенд на `http://localhost:3000`.
+
+**Через Docker Compose (весь стек + автозапуск):**
+1. Убедитесь, что установлены `docker` и `docker compose`.
+2. Запустите `docker compose up --build -d` — поднимет PostgreSQL, Redis, RabbitMQ, API и фронтенд (compose-файл совместим с v2+).
+3. Проверьте работу:
+   - API: `curl http://localhost:4000/health`
+   - Фронтенд: откройте `http://localhost:3000`
+4. Чтобы включить автозапуск после перезагрузки ОС: выполните `./ops/systemd/install-autostart.sh`.
+
+### Работа из VS Code Dev Containers
+- Добавлен devcontainer (Node 20) с единым `postCreateCommand`, который устанавливает все зависимости монорепозитория через `npm ci --workspaces --include-workspace-root=false`. В стандартном окне «Reopen in Container» прогресс этого шага отображается как «Running npm install…»; чтобы убедиться, что установка идёт, откройте **View Creation Log** (Cmd/Ctrl + Shift + P → «View Creation Log»).
+- Если процесс кажется зависшим, отмените его (Ctrl+C) и повторите команду «Dev Containers: Rebuild Without Cache» — установка зависимостей воспроизводимая и завершится после скачивания npm-пакетов.
+- Если при открытии контейнера в VS Code виден пустой экран/нет файлов, выполните:
+  1. Убедитесь, что контейнер поднялся (статус в левом нижнем углу «Dev Container: ticketing-monorepo»). Нажмите «View Creation Log», чтобы проверить отсутствие ошибок монтирования.
+  2. Откройте командную палитру и выберите «Dev Containers: Open Folder in Container…», после чего укажите путь `/workspaces/100` (он проброшен внутрь контейнера и совпадает с рабочей директорией, заданной в devcontainer).
+  3. В терминале контейнера выполните `ls` — если код на месте, установите зависимости вручную командой `npm ci --workspaces --include-workspace-root=false` и продолжайте работу.

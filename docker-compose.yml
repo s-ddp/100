@@ -1,13 +1,19 @@
+version: "3.9"
+name: ticketing
 services:
   api:
     build:
       context: .
       dockerfile: services/api/Dockerfile
     image: ticketing-api:local
-    env_file:
-      - services/api/.env.example
     environment:
+      HOST: 0.0.0.0
+      PORT: 4000
+      SERVICE_NAME: ticketing-api
+      LOG_LEVEL: info
       DATABASE_URL: postgresql://ticketing:ticketing@postgres:5432/ticketing
+      REDIS_URL: redis://redis:6379
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     ports:
       - "4000:4000"
     restart: unless-stopped

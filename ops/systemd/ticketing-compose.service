@@ -1,0 +1,14 @@
+[Unit]
+Description=Ticketing monorepo autostart
+After=network.target
+
+[Service]
+Type=oneshot
+Environment=AUTO_UP_IN_SERVICE=1
+WorkingDirectory=__PROJECT_ROOT__
+ExecStart=/usr/bin/env bash __PROJECT_ROOT__/ops/auto-up.sh
+RemainAfterExit=yes
+TimeoutStartSec=0
+
+[Install]
+WantedBy=multi-user.target

@@ -57,3 +57,35 @@ We will iterate on requirements by asking focused questions one at a time. Your 
 - Быстрый старт через Compose: `docker compose up --build` поднимает API, web, PostgreSQL, Redis, RabbitMQ, Prometheus и Grafana (использует `services/api/.env.example`; обновите на реальный `.env` перед деплоем). Метрики API доступны на `/metrics` и автоматически скрапятся Prometheus.
 - SQL-схемы лежат в `services/api/db/migrations/001_init.sql` и `services/api/db/migrations/002_water_schema.sql`; примените их через любой мигратор (psql, Prisma, TypeORM) перед запуском прод-окружения. Для Prisma сгенерирован эквивалентный `services/api/prisma/schema.prisma`, готовый к запуску `npx prisma migrate dev --name init`.
 - CRM/SLA API точки: `/crm/orders` (листинг заказов + SLO p95/p99), `/crm/sla` (SLO/SLA цели), `/crm/support/cases` (создание и получение тикетов поддержки с дедлайнами первого ответа/резолва), плюс `/orders/:id/documents` для счетов/актов.
+
+### Автозапуск фронтенда и бэкенда при старте машины/контейнера
+- Контейнеры API (`api`) и фронтенда (`web`) в compose-файле уже имеют `restart: unless-stopped`, поэтому после первого запуска они автоматически поднимутся при перезагрузке Docker.
+- Новый скрипт `ops/auto-up.sh` сам решает, как поднять стек без ручных команд:
+  - если доступны `systemd` и `sudo`, он поставит и включит unit `ops/systemd/ticketing-compose.service`, который на **каждой перезагрузке ОС** выполняет `ops/auto-up.sh` и держит стек запущенным;
+  - если есть Docker, но нет systemd, он выполнит `docker compose up -d --build` напрямую;
+  - если Docker недоступен, он переключится на npm-фоллбэк: скачает портативный Node.js 20.18 (или возьмёт заранее скачанный архив из `ops/cache/`; доступны переменные `NODE_MIRROR_PRIMARY`/`NODE_MIRROR_FALLBACK` для прокси/зеркала), установит зависимости (если нужно), соберёт и запустит API (`npm run start --workspace services/api`) и фронтенд (`npm run start --workspace services/web`) в фоне, положив логи в `ops/logs/`.
+- Devcontainer автоматически вызывает `bash ops/auto-up.sh` на каждом старте, поэтому после распаковки репозитория в контейнере фронтенд и бэкенд поднимутся сами — даже без Docker.
+- Чтобы включить автозапуск на bare metal после распаковки кода, достаточно один раз выполнить `ops/auto-up.sh` (или `./ops/systemd/install-autostart.sh` вручную, если нужен только systemd путь) — дальше systemd будет поднимать стек при каждом ребуте через тот же скрипт, включая npm-фоллбэк при отсутствии Docker.
+
+### Быстрый запуск проекта вручную
+**Без Docker (только Node.js):**
+1. `npm install --workspaces --include-workspace-root=false` — поставить зависимости монорепозитория и сгенерировать свежий `package-lock.json`.
+2. В одном терминале: `npm run start:api` — команда сама соберёт TypeScript в `dist/` и запустит API на `http://localhost:4000`.
+3. В другом терминале: `npm run start:web` — перед стартом автоматически выполнит `next build` и поднимет фронтенд на `http://localhost:3000`.
+4. Или одним шагом: `bash ops/start-local.sh` — сам скачает (или использует `ops/cache/node-v20.18.0-<platform>.tar.xz`, если интернет закрыт) портативный Node.js, учитывая прокси/зеркала из `NODE_MIRROR_PRIMARY` и `NODE_MIRROR_FALLBACK`, установит зависимости (при необходимости), соберёт и запустит оба сервиса в фоне, положив логи в `ops/logs/`.
+
+**Через Docker Compose (весь стек + автозапуск):**
+1. Убедитесь, что установлены `docker` и `docker compose`.
+2. Запустите `docker compose up --build -d` — поднимет PostgreSQL, Redis, RabbitMQ, API и фронтенд (compose-файл совместим с v2+).
+3. Проверьте работу:
+   - API: `curl http://localhost:4000/health`
+   - Фронтенд: откройте `http://localhost:3000`
+4. Чтобы включить автозапуск после перезагрузки ОС: выполните `./ops/systemd/install-autostart.sh`.
+
+### Работа из VS Code Dev Containers
+- Добавлен devcontainer (Node 20) с единым `postCreateCommand`, который устанавливает все зависимости монорепозитория через `npm install --workspaces --include-workspace-root=false` (создаст новый `package-lock.json`, если его ещё нет). В стандартном окне «Reopen in Container» прогресс этого шага отображается как «Running npm install…»; чтобы убедиться, что установка идёт, откройте **View Creation Log** (Cmd/Ctrl + Shift + P → «View Creation Log»).
+- Если процесс кажется зависшим, отмените его (Ctrl+C) и повторите команду «Dev Containers: Rebuild Without Cache» — установка зависимостей воспроизводимая и завершится после скачивания npm-пакетов.
+- Если при открытии контейнера в VS Code виден пустой экран/нет файлов, выполните:
+  1. Убедитесь, что контейнер поднялся (статус в левом нижнем углу «Dev Container: ticketing-monorepo»). Нажмите «View Creation Log», чтобы проверить отсутствие ошибок монтирования.
+  2. Откройте командную палитру и выберите «Dev Containers: Open Folder in Container…», после чего укажите путь `/workspaces/100` (он проброшен внутрь контейнера и совпадает с рабочей директорией, заданной в devcontainer).
+  3. В терминале контейнера выполните `ls` — если код на месте, установите зависимости вручную командой `npm install --workspaces --include-workspace-root=false` и продолжайте работу. Если нужен lock-файл, эта же команда сгенерирует новый.

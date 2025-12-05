@@ -58,13 +58,13 @@ We will iterate on requirements by asking focused questions one at a time. Your 
 - SQL-схемы лежат в `services/api/db/migrations/001_init.sql` и `services/api/db/migrations/002_water_schema.sql`; примените их через любой мигратор (psql, Prisma, TypeORM) перед запуском прод-окружения. Для Prisma сгенерирован эквивалентный `services/api/prisma/schema.prisma`, готовый к запуску `npx prisma migrate dev --name init`.
 - CRM/SLA API точки: `/crm/orders` (листинг заказов + SLO p95/p99), `/crm/sla` (SLO/SLA цели), `/crm/support/cases` (создание и получение тикетов поддержки с дедлайнами первого ответа/резолва), плюс `/orders/:id/documents` для счетов/актов.
 
-### Автозапуск фронтенда и бэкенда при старте машины
+### Автозапуск фронтенда и бэкенда при старте машины/контейнера
 - Контейнеры API (`api`) и фронтенда (`web`) в compose-файле уже имеют `restart: unless-stopped`, поэтому после первого запуска они автоматически поднимутся при перезагрузке Docker.
-- Чтобы запуск `docker compose up -d` выполнялся при загрузке ОС, добавлен systemd unit: `ops/systemd/ticketing-compose.service`.
-- Установить и включить автозапуск (требуются `docker` и `sudo`):
-  1. Выполните `./ops/systemd/install-autostart.sh` из корня репозитория.
-  2. Скрипт сгенерирует unit с рабочей директорией проекта, положит его в `/etc/systemd/system`, выполнит `daemon-reload`, `enable` и сразу стартанёт сервис.
-  3. После этого весь стек (PostgreSQL, Redis, RabbitMQ, API и фронтенд) будет автоматически подниматься при каждой перезагрузке, без ручных команд.
+- Новый скрипт `ops/auto-up.sh` сам решает, как поднять стек без ручных команд:
+  - если доступны `systemd` и `sudo`, он поставит и включит unit `ops/systemd/ticketing-compose.service`, который на **каждой перезагрузке ОС** выполняет `docker compose up -d --build` и держит стэк запущенным;
+  - в окружениях без systemd (Codespaces/devcontainers) он просто выполнит `docker compose up -d --build` напрямую.
+- Devcontainer автоматически вызывает `bash ops/auto-up.sh` на каждом старте, поэтому после распаковки репозитория в контейнере фронтенд и бэкенд поднимутся сами.
+- Чтобы включить автозапуск на bare metal после распаковки кода, достаточно один раз выполнить `ops/auto-up.sh` (или `./ops/systemd/install-autostart.sh` вручную, если нужен только systemd путь) — дальше systemd будет поднимать стек при каждом ребуте.
 
 ### Быстрый запуск проекта вручную
 **Без Docker (только Node.js):**

@@ -4,6 +4,7 @@
   "remoteUser": "node",
   "workspaceFolder": "/workspaces/100",
   "postCreateCommand": "npm install --workspaces --include-workspace-root=false",
+  "postStartCommand": "bash ops/auto-up.sh",
   "customizations": {
     "vscode": {
       "settings": {

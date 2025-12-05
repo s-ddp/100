@@ -30,6 +30,9 @@ services:
       context: ./services/web
       dockerfile: Dockerfile
     image: ticketing-web:local
+    volumes:
+      - ./services/web:/app
+      - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://ticketing-api:4000
       NODE_ENV: development

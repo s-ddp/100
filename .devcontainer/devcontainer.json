@@ -1,0 +1,17 @@
+{
+  "name": "ticketing-monorepo",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:20",
+  "postCreateCommand": "npm ci --workspaces --include-workspace-root=false",
+  "customizations": {
+    "vscode": {
+      "settings": {
+        "npm.exclude": ["**/node_modules/**"],
+        "files.trimTrailingWhitespace": true
+      },
+      "extensions": [
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

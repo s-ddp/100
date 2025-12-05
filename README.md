@@ -79,3 +79,7 @@ We will iterate on requirements by asking focused questions one at a time. Your 
    - API: `curl http://localhost:4000/health`
    - Фронтенд: откройте `http://localhost:3000`
 4. Чтобы включить автозапуск после перезагрузки ОС: выполните `./ops/systemd/install-autostart.sh`.
+
+### Работа из VS Code Dev Containers
+- Добавлен devcontainer (Node 20) с единым `postCreateCommand`, который устанавливает все зависимости монорепозитория через `npm ci --workspaces --include-workspace-root=false`. В стандартном окне «Reopen in Container» прогресс этого шага отображается как «Running npm install…»; чтобы убедиться, что установка идёт, откройте **View Creation Log** (Cmd/Ctrl + Shift + P → «View Creation Log»).
+- Если процесс кажется зависшим, отмените его (Ctrl+C) и повторите команду «Dev Containers: Rebuild Without Cache» — установка зависимостей воспроизводимая и завершится после скачивания npm-пакетов.

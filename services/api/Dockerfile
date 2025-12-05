@@ -3,6 +3,8 @@ FROM node:20-alpine AS builder
 WORKDIR /app
 
 COPY package*.json ./
+
+# Устанавливаем зависимости
 RUN npm install
 
 COPY tsconfig.json ./

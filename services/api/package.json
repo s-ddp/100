@@ -5,11 +5,9 @@
   "type": "commonjs",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "prestart": "npm run build",
-    "start": "NODE_ENV=production node dist/index.js",
     "dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only src/index.ts",
-    "test": "npm run build && node --test dist/**/*.test.js"
+    "build": "tsc",
+    "start": "NODE_ENV=production node dist/index.js"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",

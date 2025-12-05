@@ -1,8 +1,6 @@
 services:
-  api:
-    build:
-      context: .
-      dockerfile: services/api/Dockerfile
+  ticketing-api:
+    build: ./services/api
     image: ticketing-api:local
     env_file:
       - services/api/.env.example
@@ -10,6 +8,11 @@ services:
       DATABASE_URL: postgresql://ticketing:ticketing@postgres:5432/ticketing
     ports:
       - "4000:4000"
+    volumes:
+      - ./services/api:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
     restart: unless-stopped
     depends_on:
       - postgres

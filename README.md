@@ -83,3 +83,7 @@ We will iterate on requirements by asking focused questions one at a time. Your 
 ### Работа из VS Code Dev Containers
 - Добавлен devcontainer (Node 20) с единым `postCreateCommand`, который устанавливает все зависимости монорепозитория через `npm ci --workspaces --include-workspace-root=false`. В стандартном окне «Reopen in Container» прогресс этого шага отображается как «Running npm install…»; чтобы убедиться, что установка идёт, откройте **View Creation Log** (Cmd/Ctrl + Shift + P → «View Creation Log»).
 - Если процесс кажется зависшим, отмените его (Ctrl+C) и повторите команду «Dev Containers: Rebuild Without Cache» — установка зависимостей воспроизводимая и завершится после скачивания npm-пакетов.
+- Если при открытии контейнера в VS Code виден пустой экран/нет файлов, выполните:
+  1. Убедитесь, что контейнер поднялся (статус в левом нижнем углу «Dev Container: ticketing-monorepo»). Нажмите «View Creation Log», чтобы проверить отсутствие ошибок монтирования.
+  2. Откройте командную палитру и выберите «Dev Containers: Open Folder in Container…», после чего укажите путь `/workspaces/100` (он проброшен внутрь контейнера и совпадает с рабочей директорией, заданной в devcontainer).
+  3. В терминале контейнера выполните `ls` — если код на месте, установите зависимости вручную командой `npm ci --workspaces --include-workspace-root=false` и продолжайте работу.

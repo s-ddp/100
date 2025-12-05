@@ -30,6 +30,7 @@ export interface WaterSeatOrder {
   ticketTypeId: string;
   totals: { gross: number; currency: string; vatRate: number; vatMode: string };
   customer: { name: string; phone: string; email?: string };
+  crmOrderId?: string;
 }
 
 export const seatReservations = new Map<string, SeatReservation>();

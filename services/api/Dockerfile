@@ -1,8 +1,7 @@
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# Копируем package.json и lock-файл
 COPY package*.json ./
 
 # Устанавливаем зависимости
@@ -11,8 +10,16 @@ RUN npm install
 COPY tsconfig.json ./
 COPY src ./src
 
-# Открываем порт API
-EXPOSE 4000
+RUN npm run build
 
-# Запуск в dev режиме (ts-node или nodemon)
-CMD ["npm", "run", "dev"]
+
+FROM node:20-alpine AS runner
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install --omit=dev
+
+COPY --from=builder /app/dist ./dist
+
+EXPOSE 4000
+CMD ["npm", "start"]

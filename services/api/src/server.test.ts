@@ -6,6 +6,23 @@ import { createApp } from "./app";
 import { loadConfig } from "./config/env";
 import { resetWaterState } from "./core/waterStore";
 
+type StatusResponse = { status: string; service: string };
+type EventSummary = { id: string; datetime: string };
+type EventsResponse = { events: EventSummary[] };
+type SeatLayout = { eventId: string; levels?: unknown[] };
+type LockResponse = { locked: string[] };
+type TicketType = { ticketTypeID: string };
+type TicketTypesResponse = { ticketTypes: TicketType[] };
+type PricesResponse = { prices: unknown[] };
+type WaterEventDetail = { event: { seatMap: unknown; trips: unknown[] } };
+type CountResponse = { total: number };
+type SeatMapResponse = { seatMap: { areas: { seats: { id: string; status: string }[] }[] } };
+type OrderResponse = { order: { id: string; status: string } };
+
+async function parseJson<T>(res: { json(): Promise<unknown> }): Promise<T> {
+  return (await res.json()) as T;
+}
+
 async function withServer(fn: (baseUrl: string) => Promise<void>) {
   const app = createApp(loadConfig());
   const server = app.listen ? app.listen(0, "127.0.0.1") : http.createServer(app).listen(0, "127.0.0.1");
@@ -27,7 +44,7 @@ test("status endpoint responds with ok", async () => {
   await withServer(async (baseUrl) => {
     const res = await fetch(`${baseUrl}/status`);
     assert.equal(res.status, 200);
-    const body = await res.json();
+    const body = await parseJson<StatusResponse>(res);
     assert.equal(body.status, "ok");
     assert.equal(body.service, "ticketing-api");
   });
@@ -37,7 +54,7 @@ test("events list returns stubbed excursions", async () => {
   await withServer(async (baseUrl) => {
     const res = await fetch(`${baseUrl}/events`);
     assert.equal(res.status, 200);
-    const body = await res.json();
+    const body = await parseJson<EventsResponse>(res);
     assert.ok(Array.isArray(body.events));
     assert.ok(body.events.length >= 1);
     const first = body.events[0];
@@ -49,12 +66,12 @@ test("events list returns stubbed excursions", async () => {
 test("seat layout and locking work via fixtures", async () => {
   await withServer(async (baseUrl) => {
     const eventsRes = await fetch(`${baseUrl}/events`);
-    const { events } = await eventsRes.json();
+    const { events } = await parseJson<EventsResponse>(eventsRes);
     const targetEvent = events[0];
 
     const layoutRes = await fetch(`${baseUrl}/events/${targetEvent.id}/seat-layout`);
     assert.equal(layoutRes.status, 200);
-    const layout = await layoutRes.json();
+    const layout = await parseJson<SeatLayout>(layoutRes);
     assert.equal(layout.eventId, targetEvent.id);
     assert.ok(layout.levels?.length >= 1);
 
@@ -65,7 +82,7 @@ test("seat layout and locking work via fixtures", async () => {
     });
 
     assert.equal(lockRes.status, 200);
-    const locked = await lockRes.json();
+    const locked = await parseJson<LockResponse>(lockRes);
     assert.ok(Array.isArray(locked.locked));
   });
 });
@@ -73,12 +90,12 @@ test("seat layout and locking work via fixtures", async () => {
 test("ticket types and prices resolve for an event", async () => {
   await withServer(async (baseUrl) => {
     const eventsRes = await fetch(`${baseUrl}/events`);
-    const { events } = await eventsRes.json();
+    const { events } = await parseJson<EventsResponse>(eventsRes);
     const targetEvent = events[0];
 
     const typesRes = await fetch(`${baseUrl}/events/${targetEvent.id}/ticket-types`);
     assert.equal(typesRes.status, 200);
-    const { ticketTypes } = await typesRes.json();
+    const { ticketTypes } = await parseJson<TicketTypesResponse>(typesRes);
     assert.ok(Array.isArray(ticketTypes));
     assert.ok(ticketTypes.length > 0);
 
@@ -87,7 +104,7 @@ test("ticket types and prices resolve for an event", async () => {
       `${baseUrl}/events/${targetEvent.id}/prices?ticketTypeId=${encodeURIComponent(firstType.ticketTypeID)}`,
     );
     assert.equal(pricesRes.status, 200);
-    const { prices } = await pricesRes.json();
+    const { prices } = await parseJson<PricesResponse>(pricesRes);
     assert.ok(Array.isArray(prices));
   });
 });
@@ -97,16 +114,16 @@ test("water event detail exposes seat map and trips", async () => {
   await withServer(async (baseUrl) => {
     const res = await fetch(`${baseUrl}/events/event_moscow_river`);
     assert.equal(res.status, 200);
-    const body = await res.json();
+    const body = await parseJson<WaterEventDetail>(res);
     assert.ok(body.event.seatMap);
     assert.ok(Array.isArray(body.event.trips));
 
     const trips = await fetch(`${baseUrl}/events/event_moscow_river/trips`);
-    const tripsBody = await trips.json();
+    const tripsBody = await parseJson<CountResponse>(trips);
     assert.ok(tripsBody.total >= 1);
 
     const categories = await fetch(`${baseUrl}/events/event_moscow_river/categories`);
-    const categoriesBody = await categories.json();
+    const categoriesBody = await parseJson<CountResponse>(categories);
     assert.ok(categoriesBody.total >= 1);
   });
 });
@@ -160,11 +177,11 @@ test("seat orders mark seats as sold and allow confirmation", async () => {
     });
 
     assert.equal(orderRes.status, 201);
-    const { order } = await orderRes.json();
+    const { order } = await parseJson<OrderResponse>(orderRes);
     assert.equal(order.status, "pending_payment");
 
     const seatMapRes = await fetch(`${baseUrl}/trips/trip_moscow_evening/seatmap`);
-    const seatMapBody = await seatMapRes.json();
+    const seatMapBody = await parseJson<SeatMapResponse>(seatMapRes);
     const soldSeats = seatMapBody.seatMap.areas.flatMap((area: any) => area.seats.filter((seat: any) => seat.status === "sold"));
     assert.ok(soldSeats.some((seat: any) => seat.id === "1B"));
 
@@ -174,7 +191,7 @@ test("seat orders mark seats as sold and allow confirmation", async () => {
       body: JSON.stringify({ provider: "mock", reference: "test-payment" }),
     });
     assert.equal(confirm.status, 200);
-    const confirmBody = await confirm.json();
+    const confirmBody = await parseJson<OrderResponse>(confirm);
     assert.equal(confirmBody.order.status, "confirmed");
   });
 });

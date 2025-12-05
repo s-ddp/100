@@ -8,6 +8,7 @@ import { tripsRouter } from "./routes/trips";
 import { adminOrdersRouter } from "./routes/adminOrders";
 import { paymentsRouter } from "./routes/payments";
 import { errorHandler } from "./middleware/error-handler";
+import seatmapRouter from "./modules/seatmap/seatmap.routes";
 
 export function createApp(config: AppConfig) {
   const app = express();
@@ -20,6 +21,7 @@ export function createApp(config: AppConfig) {
     res.json({ service: config.serviceName, env: config.env, status: "ok" });
   });
 
+  app.use("/api", seatmapRouter);
   app.use("/events", eventsRouter);
   app.use("/orders", ordersRouter);
   app.use("/trips", tripsRouter);

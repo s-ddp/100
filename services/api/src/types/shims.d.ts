@@ -48,7 +48,13 @@ declare module "@prisma/client" {
 
   export class PrismaClient {
     event: { findUnique(args: any): Promise<any> };
-    seatLock: { create(args: any): Promise<any>; deleteMany(args: any): Promise<any> };
+    seatLock: {
+      create(args: any): Promise<any>;
+      createMany(args: any): Promise<any>;
+      findMany(args: any): Promise<any>;
+      delete(args: any): Promise<any>;
+      deleteMany(args: any): Promise<any>;
+    };
     order: {
       create(args: any): Promise<any>;
       findUnique(args: any): Promise<any>;
@@ -56,6 +62,8 @@ declare module "@prisma/client" {
     };
     orderItem: { create(args: any): Promise<any> };
     waterSeatLock: {
+      create(args: any): Promise<any>;
+      createMany(args: any): Promise<any>;
       findFirst(args: any): Promise<any>;
       deleteMany(args: any): Promise<any>;
       findMany(args: any): Promise<any>;

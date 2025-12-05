@@ -17,6 +17,17 @@ services:
       - redis
       - rabbitmq
 
+  seatlock-worker:
+    build:
+      context: ./services/api
+    image: ticketing-api:local
+    env_file:
+      - ./services/api/.env.docker
+    command: ["node", "dist/workers/seatLockCleaner.js"]
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
   web:
     build:
       context: ./services/web

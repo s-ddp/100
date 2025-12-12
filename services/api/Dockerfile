@@ -1,25 +1,29 @@
-FROM node:20-alpine
-
-# Рабочая директория
+# ---------- builder ----------
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-# 1. Устанавливаем зависимости
-COPY package*.json ./
+ENV NODE_ENV=development
 
-# Устанавливаем зависимости
+COPY package*.json ./
 RUN npm install
 
-# 2. Копируем исходники и конфиг
 COPY tsconfig.json ./
-COPY prisma ./prisma
 COPY src ./src
+COPY prisma ./prisma
 
-# 3. Собираем TypeScript -> dist
 RUN npm run build
 
-# Прод окружение
-ENV NODE_ENV=production
-EXPOSE 4000
+# ---------- runner ----------
+FROM node:20-alpine AS runner
+WORKDIR /app
 
-# 4. Запускаем уже собранный JS
-CMD ["npm", "start"]
+ENV NODE_ENV=production
+
+COPY package*.json ./
+RUN npm install --omit=dev
+
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/prisma ./prisma
+
+EXPOSE 4000
+CMD ["node", "dist/index.js"]

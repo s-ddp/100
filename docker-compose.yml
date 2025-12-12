@@ -5,6 +5,7 @@ services:
   ticketing-api:
     build:
       context: ./services/api
+      dockerfile: Dockerfile
     image: ticketing-api:local
     env_file:
       - ./services/api/.env.docker
@@ -20,6 +21,7 @@ services:
   seatlock-worker:
     build:
       context: ./services/api
+      dockerfile: Dockerfile
     image: ticketing-api:local
     env_file:
       - ./services/api/.env.docker
@@ -38,7 +40,6 @@ services:
       - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://ticketing-api:4000
-      NODE_ENV: development
     ports:
       - "3000:3000"
     depends_on:

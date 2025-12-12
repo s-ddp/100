@@ -3,7 +3,7 @@ import { getPrismaClient } from "../../core/prisma";
 
 type SeatStatus = "available" | "locked" | "booked";
 
-export async function getSeatmapForEvent(eventId: number) {
+export async function getSeatmapForEvent(eventId: string) {
   const prisma = getPrismaClient();
   if (!prisma) {
     throw new Error("Prisma client is not configured");
@@ -21,14 +21,15 @@ export async function getSeatmapForEvent(eventId: number) {
   const locks = await (prisma as any).seatLock.findMany({
     where: {
       eventId,
-      expiresAt: {
+      lockedUntil: {
         gt: new Date(),
       },
+      status: "LOCKED",
     },
   });
 
   const lockedSeatIds = new Set((locks ?? []).map((lock: any) => lock.seatId));
-  const bookedSeatIds = new Set<number>();
+  const bookedSeatIds = new Set<string>();
 
   const seatsWithStatus = (seatMap.seats ?? []).map((seat: any) => {
     let status: SeatStatus = "available";
@@ -55,8 +56,8 @@ export async function getSeatmapForEvent(eventId: number) {
 }
 
 export async function acquireSeatLocks(params: {
-  eventId: number;
-  seatIds: number[];
+  eventId: string;
+  seatIds: string[];
   sessionId: string;
   ttlMinutes?: number;
 }) {
@@ -72,9 +73,10 @@ export async function acquireSeatLocks(params: {
     where: {
       eventId,
       seatId: { in: seatIds },
-      expiresAt: {
+      lockedUntil: {
         gt: now,
       },
+      status: "LOCKED",
     },
   });
 
@@ -91,8 +93,9 @@ export async function acquireSeatLocks(params: {
     data: seatIds.map((seatId) => ({
       eventId,
       seatId,
-      sessionId,
-      expiresAt,
+      bySessionId: sessionId,
+      lockedUntil: expiresAt,
+      status: "LOCKED",
     })),
   });
 
@@ -100,8 +103,8 @@ export async function acquireSeatLocks(params: {
 }
 
 export async function releaseSeatLocks(params: {
-  eventId: number;
-  seatIds: number[];
+  eventId: string;
+  seatIds: string[];
   sessionId: string;
 }) {
   const prisma = getPrismaClient();
@@ -115,7 +118,7 @@ export async function releaseSeatLocks(params: {
     where: {
       eventId,
       seatId: { in: seatIds },
-      sessionId,
+      bySessionId: sessionId,
     },
   });
 

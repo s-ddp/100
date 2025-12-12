@@ -1,4 +1,4 @@
-import YooKassa from "yookassa";
+import YooKassa from "../shims/yookassa.js";
 
 interface CreatePaymentParams {
   orderId: string;

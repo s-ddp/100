@@ -175,35 +175,18 @@ ordersRouter.post("/", async (req, res, next) => {
     }
 
     const prisma = getPrismaClient();
+    const amountCents = Math.round((astraResp.orderAmount ?? 0) * 100);
     const order = prisma
       ? await (prisma as any).order.create({
           data: {
-            externalOrderId: orderID,
             eventId,
-            sessionId,
-            email,
-            status: "pending",
-            amount: astraResp.orderAmount ?? null,
-            astraResponse: astraResp,
+            status: "PENDING",
+            totalAmount: amountCents,
+            currency: "RUB",
+            customerEmail: email,
           },
         })
       : null;
-
-    if (prisma && Array.isArray(astraResp.orderedSeats)) {
-      for (const seat of astraResp.orderedSeats) {
-        await (prisma as any).orderItem.create({
-          data: {
-            orderId: order.id,
-            seatCode: seat.seatID ?? null,
-            ticketTypeId: seat.ticketTypeID ?? null,
-            priceTypeId: seat.priceTypeID ?? null,
-            seatCategoryId: seat.seatCategoryID ?? null,
-            quantity: seat.quantityOfTickets ?? 1,
-            price: seat.price ?? null,
-          },
-        });
-      }
-    }
 
     res.status(201).json({
       id: order?.id ?? null,

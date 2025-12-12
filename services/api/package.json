@@ -8,7 +8,7 @@
     "dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only --esm src/index.ts",
     "build": "tsc",
     "start": "NODE_ENV=production NODE_OPTIONS=--experimental-specifier-resolution=node node dist/index.js",
-    "test": "TS_NODE_TRANSPILE_ONLY=1 NODE_OPTIONS=--experimental-specifier-resolution=node node --loader ts-node/esm --test src/index.test.js src/server.test.ts"
+    "test": "NODE_OPTIONS=--experimental-specifier-resolution=node node --test src/index.test.js src/server.test.js"
   },
   "dependencies": {
     "@prisma/client": "^5.20.0",
@@ -22,7 +22,7 @@
     "nodemailer": "^6.9.13",
     "pdfkit": "^0.15.0",
     "pino": "^9.1.0",
-    "yookassa": "^3.1.0"
+    "@appigram/yookassa-node": "^1.1.11"
   },
   "imports": {
     "axios": "./src/shims/axios.js",
@@ -30,7 +30,7 @@
     "pdfkit": "./src/shims/pdfkit.js",
     "amqplib": "./src/shims/amqplib.js",
     "node-cron": "./src/shims/node-cron.js",
-    "yookassa": "./src/shims/yookassa.js"
+    "@appigram/yookassa-node": "./src/shims/yookassa.js"
   },
   "devDependencies": {
     "ts-node-dev": "^2.0.0",

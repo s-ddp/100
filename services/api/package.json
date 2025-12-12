@@ -22,7 +22,7 @@
     "nodemailer": "^6.9.13",
     "pdfkit": "^0.15.0",
     "pino": "^9.1.0",
-    "yookassa": "^3.1.0"
+    "@appigram/yookassa-node": "^1.1.11"
   },
   "imports": {
     "axios": "./src/shims/axios.js",
@@ -30,7 +30,7 @@
     "pdfkit": "./src/shims/pdfkit.js",
     "amqplib": "./src/shims/amqplib.js",
     "node-cron": "./src/shims/node-cron.js",
-    "yookassa": "./src/shims/yookassa.js"
+    "@appigram/yookassa-node": "./src/shims/yookassa.js"
   },
   "devDependencies": {
     "ts-node-dev": "^2.0.0",

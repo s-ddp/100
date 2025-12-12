@@ -34,6 +34,7 @@ model Event {
   seatPrices  SeatPrice[]
   ticketTypes TicketType[]
   trips       Trip[]
+  seatMap     SeatMap?
 
   createdAt   DateTime      @default(now())
 }
@@ -80,16 +81,72 @@ model SeatPrice {
 }
 
 // ------------------------------
+// Схема мест и отдельные места
+// ------------------------------
+model SeatMap {
+  id        String   @id @default(uuid())
+  eventId   String   @unique
+  event     Event    @relation(fields: [eventId], references: [id])
+
+  schemaJson Json
+
+  seats     Seat[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Seat {
+  id         String   @id @default(uuid())
+  seatMapId  String
+  seatMap    SeatMap  @relation(fields: [seatMapId], references: [id])
+
+  externalId String?
+  label      String
+  row        String?
+  section    String?
+  priceZone  String?
+  basePrice  Decimal? @db.Decimal(10, 2)
+
+  isActive   Boolean  @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([seatMapId])
+  @@index([externalId])
+  @@index([section])
+}
+
+// ------------------------------
 // Блокировка мест (для seatmap)
 // ------------------------------
 model SeatLock {
-  id        String   @id @default(uuid())
-  eventId   String
-  seatId    String
-  userId    String?
-  expiresAt DateTime
+  id               String   @id @default(uuid())
+  eventId          String
+  seatId           String
+  seat             Seat     @relation(fields: [seatId], references: [id])
+  sessionId        String
+  expiresAt        DateTime
+  externalBookingId String?
+
+  createdAt DateTime @default(now())
 
   @@index([eventId])
+  @@index([seatId])
+  @@index([expiresAt])
+}
+
+model WaterSeatLock {
+  id        String   @id @default(uuid())
+  eventId   String
+  seatCode  String
+  sessionId String
+  lockedAt  DateTime @default(now())
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([eventId])
+  @@index([seatCode])
   @@index([expiresAt])
 }
 

@@ -5,9 +5,9 @@
   "type": "module",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "NODE_ENV=development ts-node-dev --respawn --transpile-only --esm src/index.ts",
+    "dev": "ts-node-dev src/index.ts",
     "build": "tsc",
-    "start": "NODE_ENV=production NODE_OPTIONS=--experimental-specifier-resolution=node node dist/index.js",
+    "start": "node dist/index.js",
     "test": "NODE_OPTIONS=--experimental-specifier-resolution=node node --test src/index.test.js src/server.test.js"
   },
   "dependencies": {

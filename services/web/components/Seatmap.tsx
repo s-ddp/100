@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 type SeatStatus = 'available' | 'locked' | 'booked';
 
 interface Seat {
-  id: string;
+  id: number;
   label: string;
   row?: string | null;
   section?: string | null;
@@ -15,21 +15,21 @@ interface Seat {
 }
 
 interface SeatmapResponse {
-  eventId: string;
-  seatMapId: string;
+  eventId: number;
+  seatMapId: number;
   schemaJson: any;
   seats: Seat[];
 }
 
 interface SeatmapProps {
-  eventId: string;
+  eventId: number;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:4000';
 
 export function Seatmap({ eventId }: SeatmapProps) {
   const [data, setData] = useState<SeatmapResponse | null>(null);
-  const [selectedSeats, setSelectedSeats] = useState<string[]>([]);
+  const [selectedSeats, setSelectedSeats] = useState<number[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 

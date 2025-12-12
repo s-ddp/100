@@ -3,7 +3,7 @@ import { getPrismaClient } from "../../core/prisma";
 
 type SeatStatus = "available" | "locked" | "booked";
 
-export async function getSeatmapForEvent(eventId: string) {
+export async function getSeatmapForEvent(eventId: number) {
   const prisma = getPrismaClient();
   if (!prisma) {
     throw new Error("Prisma client is not configured");
@@ -28,7 +28,7 @@ export async function getSeatmapForEvent(eventId: string) {
   });
 
   const lockedSeatIds = new Set((locks ?? []).map((lock: any) => lock.seatId));
-  const bookedSeatIds = new Set<string>();
+  const bookedSeatIds = new Set<number>();
 
   const seatsWithStatus = (seatMap.seats ?? []).map((seat: any) => {
     let status: SeatStatus = "available";
@@ -55,8 +55,8 @@ export async function getSeatmapForEvent(eventId: string) {
 }
 
 export async function acquireSeatLocks(params: {
-  eventId: string;
-  seatIds: string[];
+  eventId: number;
+  seatIds: number[];
   sessionId: string;
   ttlMinutes?: number;
 }) {
@@ -100,8 +100,8 @@ export async function acquireSeatLocks(params: {
 }
 
 export async function releaseSeatLocks(params: {
-  eventId: string;
-  seatIds: string[];
+  eventId: number;
+  seatIds: number[];
   sessionId: string;
 }) {
   const prisma = getPrismaClient();

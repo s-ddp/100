@@ -24,7 +24,7 @@ model User {
 
 // Мероприятие (например: экскурсия, концерт, рейс теплохода)
 model Event {
-  id          String        @id @default(uuid())
+  id          Int           @id @default(autoincrement())
   title       String
   description String?
   date        DateTime
@@ -42,7 +42,7 @@ model Event {
 // Рейс/Маршрут для водных прогулок
 model Trip {
   id        String   @id @default(uuid())
-  eventId   String
+  eventId   Int
   event     Event    @relation(fields: [eventId], references: [id])
 
   boatName  String?
@@ -55,7 +55,7 @@ model Trip {
 // Типы билетов (входной, VIP, детский и т.п.)
 model TicketType {
   id        String   @id @default(uuid())
-  eventId   String
+  eventId   Int
   event     Event    @relation(fields: [eventId], references: [id])
 
   name      String
@@ -67,7 +67,7 @@ model TicketType {
 // Цены по местам (seatmap)
 model SeatPrice {
   id        String   @id @default(uuid())
-  eventId   String
+  eventId   Int
   event     Event    @relation(fields: [eventId], references: [id])
 
   seatId    String      // напр. “A12” или “deck1-zone3-seat15”
@@ -84,8 +84,8 @@ model SeatPrice {
 // Схема мест и отдельные места
 // ------------------------------
 model SeatMap {
-  id        String   @id @default(uuid())
-  eventId   String   @unique
+  id        Int      @id @default(autoincrement())
+  eventId   Int      @unique
   event     Event    @relation(fields: [eventId], references: [id])
 
   schemaJson Json
@@ -96,8 +96,8 @@ model SeatMap {
 }
 
 model Seat {
-  id         String   @id @default(uuid())
-  seatMapId  String
+  id         Int      @id @default(autoincrement())
+  seatMapId  Int
   seatMap    SeatMap  @relation(fields: [seatMapId], references: [id])
 
   externalId String?
@@ -121,12 +121,12 @@ model Seat {
 // Блокировка мест (для seatmap)
 // ------------------------------
 model SeatLock {
-  id               String   @id @default(uuid())
-  eventId          String
-  seatId           String
-  seat             Seat     @relation(fields: [seatId], references: [id])
-  sessionId        String
-  expiresAt        DateTime
+  id                Int      @id @default(autoincrement())
+  eventId           Int
+  seatId            Int
+  seat              Seat     @relation(fields: [seatId], references: [id])
+  sessionId         String
+  expiresAt         DateTime
   externalBookingId String?
 
   createdAt DateTime @default(now())
@@ -156,7 +156,7 @@ model Order {
   userId      String?
   user        User?        @relation(fields: [userId], references: [id])
 
-  eventId     String
+  eventId     Int
   event       Event        @relation(fields: [eventId], references: [id])
 
   tripId      String?
@@ -165,10 +165,30 @@ model Order {
   status      OrderStatus  @default(PENDING)
   totalAmount Decimal       @db.Decimal(10,2)
 
+  customerName  String?
+  customerPhone String?
+  customerEmail String?
+
   items       OrderItem[]
   payment     Payment?
+  seats       OrderSeat[]
 
   createdAt   DateTime @default(now())
+}
+
+model OrderSeat {
+  id        Int      @id @default(autoincrement())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  seatId    Int
+  seat      Seat     @relation(fields: [seatId], references: [id])
+
+  price     Decimal? @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([seatId])
 }
 
 // Позиции заказа — выбранные места или билеты
@@ -180,7 +200,7 @@ model OrderItem {
   ticketTypeId String?
   ticketType   TicketType? @relation(fields: [ticketTypeId], references: [id])
 
-  seatId     String?
+  seatId     Int?
   price      Decimal    @db.Decimal(10, 2)
 
   createdAt  DateTime   @default(now())

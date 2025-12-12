@@ -9,8 +9,8 @@ const router = Router();
 
 router.get("/events/:id/seatmap", async (req, res) => {
   try {
-    const eventId = req.params.id;
-    if (!eventId) {
+    const eventId = Number(req.params.id);
+    if (!Number.isInteger(eventId)) {
       return res.status(400).json({ error: "Invalid event id" });
     }
 
@@ -24,8 +24,12 @@ router.get("/events/:id/seatmap", async (req, res) => {
 
 router.post("/events/:id/seat-lock/acquire", async (req, res) => {
   try {
-    const eventId = req.params.id;
+    const eventId = Number(req.params.id);
     const { seatIds, ttlMinutes } = req.body ?? {};
+
+    if (!Number.isInteger(eventId)) {
+      return res.status(400).json({ error: "Invalid event id" });
+    }
 
     if (!Array.isArray(seatIds) || seatIds.length === 0) {
       return res.status(400).json({ error: "seatIds is required" });
@@ -33,10 +37,17 @@ router.post("/events/:id/seat-lock/acquire", async (req, res) => {
 
     const sessionId =
       (req as any).session?.id || req.headers["x-session-id"]?.toString() || "anonymous";
+    const parsedSeatIds = seatIds
+      .map((id: any) => Number(id))
+      .filter((id: number) => Number.isFinite(id));
+
+    if (!parsedSeatIds.length) {
+      return res.status(400).json({ error: "seatIds must be numeric" });
+    }
 
     const result = await acquireSeatLocks({
       eventId,
-      seatIds: seatIds.map((id: any) => String(id)),
+      seatIds: parsedSeatIds,
       sessionId,
       ttlMinutes,
     });
@@ -54,8 +65,12 @@ router.post("/events/:id/seat-lock/acquire", async (req, res) => {
 
 router.post("/events/:id/seat-lock/release", async (req, res) => {
   try {
-    const eventId = req.params.id;
+    const eventId = Number(req.params.id);
     const { seatIds } = req.body ?? {};
+
+    if (!Number.isInteger(eventId)) {
+      return res.status(400).json({ error: "Invalid event id" });
+    }
 
     if (!Array.isArray(seatIds) || seatIds.length === 0) {
       return res.status(400).json({ error: "seatIds is required" });
@@ -64,9 +79,17 @@ router.post("/events/:id/seat-lock/release", async (req, res) => {
     const sessionId =
       (req as any).session?.id || req.headers["x-session-id"]?.toString() || "anonymous";
 
+    const parsedSeatIds = seatIds
+      .map((id: any) => Number(id))
+      .filter((id: number) => Number.isFinite(id));
+
+    if (!parsedSeatIds.length) {
+      return res.status(400).json({ error: "seatIds must be numeric" });
+    }
+
     const result = await releaseSeatLocks({
       eventId,
-      seatIds: seatIds.map((id: any) => String(id)),
+      seatIds: parsedSeatIds,
       sessionId,
     });
 

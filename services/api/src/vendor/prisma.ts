@@ -2,9 +2,19 @@ const seatMaps: any[] = [];
 const seats: any[] = [];
 const seatLocks: any[] = [];
 const waterSeatLocks: any[] = [];
+const orders: any[] = [];
+const orderSeats: any[] = [];
+const payments: any[] = [];
 
-function ensureId(value?: any) {
-  return value ?? `id-${Math.random().toString(16).slice(2)}`;
+let seatMapCounter = 0;
+let seatCounter = 0;
+let seatLockCounter = 0;
+let orderCounter = 0;
+let orderSeatCounter = 0;
+
+function ensureNumericId(value: any, counterRef: () => number) {
+  if (value !== undefined && value !== null) return value;
+  return counterRef();
 }
 
 export class PrismaClient {
@@ -23,7 +33,10 @@ export class PrismaClient {
       return found;
     },
     create: async (args: any) => {
-      const entry = { id: ensureId(args?.data?.id), ...args.data };
+      const entry = {
+        id: ensureNumericId(args?.data?.id, () => ++seatMapCounter),
+        ...args.data,
+      };
       seatMaps.push(entry);
       return entry;
     },
@@ -40,7 +53,9 @@ export class PrismaClient {
     },
     createMany: async (args: any) => {
       const data = Array.isArray(args?.data) ? args.data : [];
-      data.forEach((entry) => seats.push({ id: ensureId(entry.id), ...entry }));
+      data.forEach((entry) =>
+        seats.push({ id: ensureNumericId(entry.id, () => ++seatCounter), ...entry }),
+      );
       return { count: data.length };
     },
   };
@@ -50,6 +65,7 @@ export class PrismaClient {
       const where = args?.where ?? {};
       return seatLocks.filter((lock) => {
         if (where.eventId && lock.eventId !== where.eventId) return false;
+        if (where.seatId && lock.seatId !== where.seatId) return false;
         if (Array.isArray(where.seatId?.in) && !where.seatId.in.includes(lock.seatId)) return false;
         if (where.expiresAt?.gt && !(lock.expiresAt > where.expiresAt.gt)) return false;
         if (where.expiresAt?.lt && !(lock.expiresAt < where.expiresAt.lt)) return false;
@@ -58,7 +74,9 @@ export class PrismaClient {
     },
     createMany: async (args: any) => {
       const data = Array.isArray(args?.data) ? args.data : [];
-      data.forEach((entry) => seatLocks.push({ id: ensureId(entry.id), ...entry }));
+      data.forEach((entry) =>
+        seatLocks.push({ id: ensureNumericId(entry.id, () => ++seatLockCounter), ...entry }),
+      );
       return { count: data.length };
     },
     deleteMany: async (args: any) => {
@@ -111,13 +129,15 @@ export class PrismaClient {
       });
     },
     create: async (args: any) => {
-      const entry = { id: ensureId(args?.data?.id), ...args.data };
+      const entry = { id: args?.data?.id ?? `id-${Math.random().toString(16).slice(2)}`, ...args.data };
       waterSeatLocks.push(entry);
       return entry;
     },
     createMany: async (args: any) => {
       const data = Array.isArray(args?.data) ? args.data : [];
-      data.forEach((entry) => waterSeatLocks.push({ id: ensureId(entry.id), ...entry }));
+      data.forEach((entry) =>
+        waterSeatLocks.push({ id: entry.id ?? `id-${Math.random().toString(16).slice(2)}`, ...entry }),
+      );
       return { count: data.length };
     },
     deleteMany: async (args: any) => {
@@ -138,11 +158,80 @@ export class PrismaClient {
   };
 
   order = {
-    create: async (args?: any) => ({ id: Date.now(), ...(args?.data ?? {}) }),
-    findUnique: async (_args?: any) => null,
-    update: async (_args?: any) => ({}),
+    create: async (args?: any) => {
+      const entry = { id: args?.data?.id ?? `order-${++orderCounter}`, ...(args?.data ?? {}) };
+      orders.push(entry);
+      return entry;
+    },
+    findUnique: async (args?: any) => {
+      const id = args?.where?.id;
+      const order = orders.find((o) => o.id === id) ?? null;
+      if (order && args?.include?.seats) {
+        const seatsForOrder = orderSeats.filter((seat) => seat.orderId === order.id);
+        return { ...order, seats: seatsForOrder };
+      }
+      return order ?? null;
+    },
+    findMany: async (args?: any) => {
+      const where = args?.where ?? {};
+      return orders.filter((order) => {
+        if (where.id && order.id !== where.id) return false;
+        if (Array.isArray(where.id?.in) && !where.id.in.includes(order.id)) return false;
+        if (where.status && Array.isArray(where.status?.in) && !where.status.in.includes(order.status)) return false;
+        if (where.status && typeof where.status === "string" && order.status !== where.status) return false;
+        return true;
+      });
+    },
+    update: async (args?: any) => {
+      const id = args?.where?.id;
+      const idx = orders.findIndex((order) => order.id === id);
+      if (idx === -1) throw new Error("Order not found");
+      orders[idx] = { ...orders[idx], ...(args?.data ?? {}) };
+      return orders[idx];
+    },
   };
   orderItem = { create: async (_args?: any) => ({}) };
+  orderSeat = {
+    createMany: async (args?: any) => {
+      const data = Array.isArray(args?.data) ? args.data : [];
+      data.forEach((entry) =>
+        orderSeats.push({ id: ensureNumericId(entry.id, () => ++orderSeatCounter), ...entry }),
+      );
+      return { count: data.length };
+    },
+    findMany: async (args?: any) => {
+      const where = args?.where ?? {};
+      const includeOrder = Boolean(args?.include?.order);
+      return orderSeats
+        .filter((seat) => {
+          if (where.seatId && seat.seatId !== where.seatId) return false;
+          if (Array.isArray(where.seatId?.in) && !where.seatId.in.includes(seat.seatId)) return false;
+          if (where.orderId && seat.orderId !== where.orderId) return false;
+          return true;
+        })
+        .map((seat) => {
+          if (includeOrder) {
+            const order = orders.find((o) => o.id === seat.orderId) ?? null;
+            return { ...seat, order };
+          }
+          return seat;
+        });
+    },
+  };
+  payment = {
+    create: async (args?: any) => {
+      const entry = { id: args?.data?.id ?? `payment-${Math.random().toString(16).slice(2)}`, ...(args?.data ?? {}) };
+      payments.push(entry);
+      return entry;
+    },
+    update: async (args?: any) => {
+      const id = args?.where?.id;
+      const idx = payments.findIndex((payment) => payment.id === id);
+      if (idx === -1) throw new Error("Payment not found");
+      payments[idx] = { ...payments[idx], ...(args?.data ?? {}) };
+      return payments[idx];
+    },
+  };
   async $disconnect() {
     return;
   }

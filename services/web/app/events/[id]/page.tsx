@@ -5,7 +5,11 @@ interface Props {
 }
 
 export default function EventPage({ params }: Props) {
-  const eventId = params.id;
+  const eventId = Number(params.id);
+
+  if (!Number.isInteger(eventId)) {
+    return <div className="max-w-4xl mx-auto py-8">Некорректный идентификатор события</div>;
+  }
 
   return (
     <div className="max-w-4xl mx-auto py-8 space-y-6">

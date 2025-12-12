@@ -9,7 +9,6 @@ RUN npm install
 
 COPY tsconfig.json ./
 COPY src ./src
-COPY prisma ./prisma
 
 RUN npm run build
 
@@ -23,7 +22,5 @@ COPY package.json ./
 RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/prisma ./prisma
 
-EXPOSE 4000
 CMD ["node", "dist/index.js"]

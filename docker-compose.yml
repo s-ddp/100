@@ -5,6 +5,7 @@ services:
   ticketing-api:
     build:
       context: ./services/api
+      dockerfile: Dockerfile
     image: ticketing-api:local
     env_file:
       - ./services/api/.env.docker
@@ -19,11 +20,12 @@ services:
 
   seatlock-worker:
     build:
-      context: ./services/api
-    image: ticketing-api:local
+      context: ./services/seatlock-worker
+      dockerfile: Dockerfile
+    image: seatlock-worker:local
     env_file:
       - ./services/api/.env.docker
-    command: ["node", "dist/workers/seatLockCleanup.js"]
+    command: npm start
     depends_on:
       - postgres
     restart: unless-stopped
@@ -38,7 +40,6 @@ services:
       - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://ticketing-api:4000
-      NODE_ENV: development
     ports:
       - "3000:3000"
     depends_on:

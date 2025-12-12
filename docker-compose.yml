@@ -20,12 +20,12 @@ services:
 
   seatlock-worker:
     build:
-      context: ./services/api
+      context: ./services/seatlock-worker
       dockerfile: Dockerfile
-    image: ticketing-api:local
+    image: seatlock-worker:local
     env_file:
       - ./services/api/.env.docker
-    command: ["node", "dist/workers/seatLockCleanup.js"]
+    command: npm start
     depends_on:
       - postgres
     restart: unless-stopped

@@ -16,9 +16,14 @@ import {
 } from "../core/waterStore";
 import { waterEvents, waterSeatPrices, waterSeatMaps, waterTrips, waterVessels } from "../water-data";
 import { emitSeatStatus } from "../ws/seatmapHub";
+import { getAvailableSeats, getPrices, getTicketTypes } from "../controllers/events.controller";
 
 export const eventsRouter = Router();
 const seatLockTtlMs = Number(process.env.SEAT_LOCK_TTL_MS ?? 10 * 60 * 1000);
+
+eventsRouter.get("/:id/ticket-types", getTicketTypes);
+eventsRouter.get("/:id/prices", getPrices);
+eventsRouter.get("/:id/available-seats", getAvailableSeats);
 
 eventsRouter.get("/", async (req, res, next) => {
   try {

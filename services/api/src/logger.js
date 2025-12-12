@@ -26,6 +26,7 @@ function createLogger(levelName = 'info') {
   };
 }
 
+export const logger = createLogger('info');
 export function createLoggerWithLevel(levelName) {
   return createLogger(levelName);
 }

@@ -32,6 +32,7 @@ yookassaCallbackRouter.post("/", async (req, res) => {
     }
 
     if (status === "succeeded") {
+      const totalAmountRub = Number(order.totalAmount ?? 0) / 100;
       const updatedOrder = await (prisma as any).order.update({
         where: { id: orderId },
         data: { status: "PAID" },
@@ -51,7 +52,7 @@ yookassaCallbackRouter.post("/", async (req, res) => {
         type: "order_paid",
         orderId: updatedOrder.id,
         eventId: updatedOrder.eventId,
-        totalAmount: updatedOrder.totalAmount,
+        totalAmount: totalAmountRub,
         customerName: updatedOrder.customerName,
         customerPhone: updatedOrder.customerPhone,
         customerEmail: updatedOrder.customerEmail,

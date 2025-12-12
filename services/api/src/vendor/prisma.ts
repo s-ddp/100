@@ -4,6 +4,7 @@ const seatLocks: any[] = [];
 const waterSeatLocks: any[] = [];
 const orders: any[] = [];
 const orderSeats: any[] = [];
+const orderLogs: any[] = [];
 const payments: any[] = [];
 
 let seatMapCounter = 0;
@@ -11,6 +12,7 @@ let seatCounter = 0;
 let seatLockCounter = 0;
 let orderCounter = 0;
 let orderSeatCounter = 0;
+let orderLogCounter = 0;
 
 function ensureNumericId(value: any, counterRef: () => number) {
   if (value !== undefined && value !== null) return value;
@@ -67,17 +69,42 @@ export class PrismaClient {
         if (where.eventId && lock.eventId !== where.eventId) return false;
         if (where.seatId && lock.seatId !== where.seatId) return false;
         if (Array.isArray(where.seatId?.in) && !where.seatId.in.includes(lock.seatId)) return false;
-        if (where.expiresAt?.gt && !(lock.expiresAt > where.expiresAt.gt)) return false;
-        if (where.expiresAt?.lt && !(lock.expiresAt < where.expiresAt.lt)) return false;
+        const lockUntil = lock.lockedUntil ?? lock.expiresAt;
+        if (where.lockedUntil?.gt && !(lockUntil > where.lockedUntil.gt)) return false;
+        if (where.lockedUntil?.lt && !(lockUntil < where.lockedUntil.lt)) return false;
+        if (where.expiresAt?.gt && !(lockUntil > where.expiresAt.gt)) return false;
+        if (where.expiresAt?.lt && !(lockUntil < where.expiresAt.lt)) return false;
+        if (where.status && lock.status !== where.status) return false;
         return true;
       });
     },
     createMany: async (args: any) => {
       const data = Array.isArray(args?.data) ? args.data : [];
       data.forEach((entry) =>
-        seatLocks.push({ id: ensureNumericId(entry.id, () => ++seatLockCounter), ...entry }),
+        seatLocks.push({
+          id: ensureNumericId(entry.id, () => ++seatLockCounter),
+          status: entry.status ?? "LOCKED",
+          lockedUntil: entry.lockedUntil ?? entry.expiresAt,
+          bySessionId: entry.bySessionId ?? entry.sessionId,
+          ...entry,
+        }),
       );
       return { count: data.length };
+    },
+    updateMany: async (args: any) => {
+      const where = args?.where ?? {};
+      const data = args?.data ?? {};
+      let count = 0;
+      seatLocks.forEach((lock, idx) => {
+        const lockUntil = lock.lockedUntil ?? lock.expiresAt;
+        if (where.eventId && lock.eventId !== where.eventId) return;
+        if (where.seatId && lock.seatId !== where.seatId) return;
+        if (where.status && lock.status !== where.status) return;
+        if (where.lockedUntil?.lt && !(lockUntil < where.lockedUntil.lt)) return;
+        seatLocks[idx] = { ...lock, ...data };
+        count += 1;
+      });
+      return { count };
     },
     deleteMany: async (args: any) => {
       const where = args?.where ?? {};
@@ -86,7 +113,8 @@ export class PrismaClient {
         if (ids.size && ids.has(lock.id)) return true;
         if (where.eventId && lock.eventId !== where.eventId) return false;
         if (Array.isArray(where.seatId?.in) && !where.seatId.in.includes(lock.seatId)) return false;
-        if (where.sessionId && lock.sessionId !== where.sessionId) return false;
+        if (where.sessionId && lock.bySessionId !== where.sessionId) return false;
+        if (where.bySessionId && lock.bySessionId !== where.bySessionId) return false;
         return !ids.size && (!where.seatId?.in || where.seatId.in.includes(lock.seatId));
       });
       const deleteIds = new Set(toRemove.map((l) => l.id));
@@ -95,6 +123,14 @@ export class PrismaClient {
         if (deleteIds.has(seatLocks[i].id)) seatLocks.splice(i, 1);
       }
       return { count: before - seatLocks.length };
+    },
+    update: async (args: any) => {
+      const where = args?.where ?? {};
+      const data = args?.data ?? {};
+      const idx = seatLocks.findIndex((lock) => lock.id === where.id);
+      if (idx === -1) throw new Error("SeatLock not found");
+      seatLocks[idx] = { ...seatLocks[idx], ...data };
+      return seatLocks[idx];
     },
     delete: async (args: any) => {
       const id = args?.where?.id;
@@ -158,36 +194,98 @@ export class PrismaClient {
   };
 
   order = {
+    count: async (args?: any) => {
+      const where = args?.where ?? {};
+      return orders.filter((order) => {
+        if (where.status && order.status !== where.status) return false;
+        if (where.createdAt?.gte && !(order.createdAt >= where.createdAt.gte)) return false;
+        if (where.createdAt?.lte && !(order.createdAt <= where.createdAt.lte)) return false;
+        return true;
+      }).length;
+    },
     create: async (args?: any) => {
-      const entry = { id: args?.data?.id ?? `order-${++orderCounter}`, ...(args?.data ?? {}) };
+      const entry = {
+        id: args?.data?.id ?? `order-${++orderCounter}`,
+        createdAt: args?.data?.createdAt ?? new Date(),
+        updatedAt: args?.data?.updatedAt ?? new Date(),
+        currency: args?.data?.currency ?? "RUB",
+        ...(args?.data ?? {}),
+      };
       orders.push(entry);
       return entry;
     },
     findUnique: async (args?: any) => {
       const id = args?.where?.id;
       const order = orders.find((o) => o.id === id) ?? null;
-      if (order && args?.include?.seats) {
-        const seatsForOrder = orderSeats.filter((seat) => seat.orderId === order.id);
-        return { ...order, seats: seatsForOrder };
+      if (order) {
+        const payload: any = { ...order };
+        if (args?.include?.seats) {
+          const seatsForOrder = orderSeats.filter((seat) => seat.orderId === order.id);
+          payload.seats = seatsForOrder;
+        }
+        if (args?.include?.logs) {
+          const sortedLogs = orderLogs
+            .filter((log) => log.orderId === order.id)
+            .sort((a, b) => (b.createdAt as any) - (a.createdAt as any));
+          payload.logs = sortedLogs;
+        }
+        if (args?.include?.items) {
+          payload.items = [];
+        }
+        if (args?.include?.event) {
+          payload.event = null;
+        }
+        return payload;
       }
       return order ?? null;
     },
     findMany: async (args?: any) => {
       const where = args?.where ?? {};
-      return orders.filter((order) => {
+      let result = orders.filter((order) => {
         if (where.id && order.id !== where.id) return false;
         if (Array.isArray(where.id?.in) && !where.id.in.includes(order.id)) return false;
         if (where.status && Array.isArray(where.status?.in) && !where.status.in.includes(order.status)) return false;
         if (where.status && typeof where.status === "string" && order.status !== where.status) return false;
+        if (where.createdAt?.gte && !(order.createdAt >= where.createdAt.gte)) return false;
+        if (where.createdAt?.lte && !(order.createdAt <= where.createdAt.lte)) return false;
         return true;
       });
+
+      if (args?.orderBy?.createdAt === "desc") {
+        result = result.sort((a, b) => (b.createdAt as any) - (a.createdAt as any));
+      }
+      if (typeof args?.skip === "number" || typeof args?.take === "number") {
+        const start = args.skip ?? 0;
+        const end = args.take ? start + args.take : undefined;
+        result = result.slice(start, end);
+      }
+      if (args?.include?.seats) {
+        return result.map((order) => ({
+          ...order,
+          seats: orderSeats.filter((seat) => seat.orderId === order.id),
+          items: args.include?.items ? [] : undefined,
+          event: args.include?.event ? null : undefined,
+        }));
+      }
+      return result;
     },
     update: async (args?: any) => {
       const id = args?.where?.id;
       const idx = orders.findIndex((order) => order.id === id);
       if (idx === -1) throw new Error("Order not found");
-      orders[idx] = { ...orders[idx], ...(args?.data ?? {}) };
+      orders[idx] = { ...orders[idx], ...(args?.data ?? {}), updatedAt: new Date() };
       return orders[idx];
+    },
+  };
+  orderLog = {
+    create: async (args?: any) => {
+      const entry = {
+        id: args?.data?.id ?? `orderLog-${++orderLogCounter}`,
+        createdAt: args?.data?.createdAt ?? new Date(),
+        ...args?.data,
+      };
+      orderLogs.push(entry);
+      return entry;
     },
   };
   orderItem = { create: async (_args?: any) => ({}) };

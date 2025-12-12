@@ -54,12 +54,14 @@ createOrderRouter.post("/", async (req, res) => {
     }
 
     const totalAmount = await calculateOrderAmount(eventId, seatIds);
+    const amountRub = totalAmount / 100;
 
     const order = await (prisma as any).order.create({
       data: {
         eventId,
-        status: "WAITING_FOR_PAYMENT",
+        status: "PENDING",
         totalAmount,
+        currency: "RUB",
         customerName: customer.name,
         customerPhone: customer.phone,
         customerEmail: customer.email,
@@ -74,7 +76,7 @@ createOrderRouter.post("/", async (req, res) => {
 
     const payment = await yookassaCreatePayment({
       orderId: order.id,
-      amount: totalAmount,
+      amount: amountRub,
       description: `Оплата заказа #${order.id}`,
     });
 
@@ -85,7 +87,7 @@ createOrderRouter.post("/", async (req, res) => {
         provider: "yookassa",
         status: "WAITING",
         externalId: (payment as any).id,
-        amount: totalAmount,
+        amount: amountRub,
       },
     });
 

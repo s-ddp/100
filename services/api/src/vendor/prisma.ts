@@ -67,17 +67,42 @@ export class PrismaClient {
         if (where.eventId && lock.eventId !== where.eventId) return false;
         if (where.seatId && lock.seatId !== where.seatId) return false;
         if (Array.isArray(where.seatId?.in) && !where.seatId.in.includes(lock.seatId)) return false;
-        if (where.expiresAt?.gt && !(lock.expiresAt > where.expiresAt.gt)) return false;
-        if (where.expiresAt?.lt && !(lock.expiresAt < where.expiresAt.lt)) return false;
+        const lockUntil = lock.lockedUntil ?? lock.expiresAt;
+        if (where.lockedUntil?.gt && !(lockUntil > where.lockedUntil.gt)) return false;
+        if (where.lockedUntil?.lt && !(lockUntil < where.lockedUntil.lt)) return false;
+        if (where.expiresAt?.gt && !(lockUntil > where.expiresAt.gt)) return false;
+        if (where.expiresAt?.lt && !(lockUntil < where.expiresAt.lt)) return false;
+        if (where.status && lock.status !== where.status) return false;
         return true;
       });
     },
     createMany: async (args: any) => {
       const data = Array.isArray(args?.data) ? args.data : [];
       data.forEach((entry) =>
-        seatLocks.push({ id: ensureNumericId(entry.id, () => ++seatLockCounter), ...entry }),
+        seatLocks.push({
+          id: ensureNumericId(entry.id, () => ++seatLockCounter),
+          status: entry.status ?? "LOCKED",
+          lockedUntil: entry.lockedUntil ?? entry.expiresAt,
+          bySessionId: entry.bySessionId ?? entry.sessionId,
+          ...entry,
+        }),
       );
       return { count: data.length };
+    },
+    updateMany: async (args: any) => {
+      const where = args?.where ?? {};
+      const data = args?.data ?? {};
+      let count = 0;
+      seatLocks.forEach((lock, idx) => {
+        const lockUntil = lock.lockedUntil ?? lock.expiresAt;
+        if (where.eventId && lock.eventId !== where.eventId) return;
+        if (where.seatId && lock.seatId !== where.seatId) return;
+        if (where.status && lock.status !== where.status) return;
+        if (where.lockedUntil?.lt && !(lockUntil < where.lockedUntil.lt)) return;
+        seatLocks[idx] = { ...lock, ...data };
+        count += 1;
+      });
+      return { count };
     },
     deleteMany: async (args: any) => {
       const where = args?.where ?? {};
@@ -86,7 +111,8 @@ export class PrismaClient {
         if (ids.size && ids.has(lock.id)) return true;
         if (where.eventId && lock.eventId !== where.eventId) return false;
         if (Array.isArray(where.seatId?.in) && !where.seatId.in.includes(lock.seatId)) return false;
-        if (where.sessionId && lock.sessionId !== where.sessionId) return false;
+        if (where.sessionId && lock.bySessionId !== where.sessionId) return false;
+        if (where.bySessionId && lock.bySessionId !== where.bySessionId) return false;
         return !ids.size && (!where.seatId?.in || where.seatId.in.includes(lock.seatId));
       });
       const deleteIds = new Set(toRemove.map((l) => l.id));
@@ -95,6 +121,14 @@ export class PrismaClient {
         if (deleteIds.has(seatLocks[i].id)) seatLocks.splice(i, 1);
       }
       return { count: before - seatLocks.length };
+    },
+    update: async (args: any) => {
+      const where = args?.where ?? {};
+      const data = args?.data ?? {};
+      const idx = seatLocks.findIndex((lock) => lock.id === where.id);
+      if (idx === -1) throw new Error("SeatLock not found");
+      seatLocks[idx] = { ...seatLocks[idx], ...data };
+      return seatLocks[idx];
     },
     delete: async (args: any) => {
       const id = args?.where?.id;

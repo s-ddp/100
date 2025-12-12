@@ -2,7 +2,7 @@ import { getPrismaClient } from "../core/prisma";
 
 const ACTIVE_ORDER_STATUSES = ["PAID", "WAITING_FOR_PAYMENT"];
 
-export async function checkSeatAvailable(eventId: number, seatId: number) {
+export async function checkSeatAvailable(eventId: string, seatId: string) {
   const prisma = getPrismaClient();
   if (!prisma) {
     throw new Error("Prisma client is not configured");
@@ -13,9 +13,10 @@ export async function checkSeatAvailable(eventId: number, seatId: number) {
     where: {
       eventId,
       seatId,
-      expiresAt: {
+      lockedUntil: {
         gt: now,
       },
+      status: "LOCKED",
     },
   });
 

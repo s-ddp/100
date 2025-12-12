@@ -6,7 +6,6 @@
     "build": "npx tsc",
     "start": "node dist/index.js"
   },
-  "dependencies": {},
   "devDependencies": {
     "@types/node": "^20.11.30",
     "typescript": "^5.4.0"

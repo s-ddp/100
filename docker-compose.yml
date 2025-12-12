@@ -23,7 +23,7 @@ services:
     image: ticketing-api:local
     env_file:
       - ./services/api/.env.docker
-    command: ["node", "dist/workers/seatLockCleaner.js"]
+    command: ["node", "dist/workers/seatLockCleanup.js"]
     depends_on:
       - postgres
     restart: unless-stopped

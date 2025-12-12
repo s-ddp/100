@@ -2,6 +2,7 @@ import { Router } from "../../vendor/express";
 import { getPrismaClient } from "../../core/prisma";
 import { checkSeatAvailable } from "../../services/seatmap";
 import { yookassaCreatePayment } from "../../services/yookassa";
+import { calculateOrderAmount } from "../../services/pricing";
 
 export const createOrderRouter = Router();
 
@@ -33,7 +34,9 @@ createOrderRouter.post("/", async (req, res) => {
       return res.status(400).json({ error: "customer name, phone, and email are required" });
     }
 
-    const seats = await (prisma as any).seat.findMany({ where: { id: { in: seatIds } } });
+    const seats = await (prisma as any).seat.findMany({
+      where: { id: { in: seatIds }, seatMap: { eventId } },
+    });
     if (seats.length !== seatIds.length) {
       return res.status(404).json({ error: "Some seats were not found" });
     }
@@ -50,10 +53,7 @@ createOrderRouter.post("/", async (req, res) => {
       return res.status(409).json({ error: "Seats are not available", seats: unavailable });
     }
 
-    const totalAmount = seats.reduce((sum: number, seat: any) => {
-      const price = Number(seat.basePrice ?? 0);
-      return sum + price;
-    }, 0);
+    const totalAmount = await calculateOrderAmount(eventId, seatIds);
 
     const order = await (prisma as any).order.create({
       data: {
@@ -63,15 +63,13 @@ createOrderRouter.post("/", async (req, res) => {
         customerName: customer.name,
         customerPhone: customer.phone,
         customerEmail: customer.email,
+        seats: {
+          create: seats.map((seat: any) => ({
+            seatId: seat.id,
+            price: seat.basePrice ?? null,
+          })),
+        },
       },
-    });
-
-    await (prisma as any).orderSeat.createMany({
-      data: seats.map((seat: any) => ({
-        orderId: order.id,
-        seatId: seat.id,
-        price: seat.basePrice ?? null,
-      })),
     });
 
     const payment = await yookassaCreatePayment({

@@ -1,7 +1,7 @@
 import { createApp } from "./app";
 import { loadConfig } from "./config/env";
 import { logger } from "./logger";
-import { startSeatLockCleaner } from "./workers/seatLockCleaner";
+import { startSeatLockCleanupWorker } from "./workers/seatLockCleanup";
 import { registerSeatmapBroadcaster } from "./ws/seatmapHub";
 import { createSeatmapWSServer } from "./ws/seatmapServer";
 
@@ -17,7 +17,7 @@ async function bootstrap() {
     const wsServer = createSeatmapWSServer(server);
     registerSeatmapBroadcaster(wsServer.broadcastSeatChange);
 
-    startSeatLockCleaner(15000);
+    startSeatLockCleanupWorker();
   } else {
     logger.error("Unable to start server: listen is not available");
   }

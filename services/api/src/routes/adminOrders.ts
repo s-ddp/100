@@ -1,68 +1,182 @@
 import { Router } from "../vendor/express";
-import {
-  cancelOrder,
-  createOrder,
-  getOrderById,
-  listOrders,
-  updateOrderStatus,
-} from "../services/crmOrdersService";
-import { CrmOrderStatus } from "../services/crmOrdersService";
-import { requireRole } from "../utils/authz";
+import { prisma } from "../utils/prisma";
 
 export const adminOrdersRouter = Router();
 
-adminOrdersRouter.use(requireRole(["admin", "manager"]));
-
 adminOrdersRouter.get("/", async (req, res) => {
   try {
-    const orders = await listOrders({
-      status: req.query.status as string | undefined,
-      eventId: req.query.eventId as string | undefined,
-      email: req.query.email as string | undefined,
-      phone: req.query.phone as string | undefined,
-      dateFrom: req.query.dateFrom as string | undefined,
-      dateTo: req.query.dateTo as string | undefined,
+    const { status, dateFrom, dateTo, page = "1", pageSize = "20" } = req.query as {
+      status?: string;
+      dateFrom?: string;
+      dateTo?: string;
+      page?: string;
+      pageSize?: string;
+    };
+
+    const pageNum = Math.max(parseInt(page || "1", 10), 1);
+    const sizeNum = Math.min(Math.max(parseInt(pageSize || "20", 10), 1), 100);
+
+    const where: Record<string, any> = {};
+
+    if (status) {
+      where.status = status.toUpperCase();
+    }
+
+    if (dateFrom || dateTo) {
+      where.createdAt = {};
+      if (dateFrom) {
+        where.createdAt.gte = new Date(dateFrom);
+      }
+      if (dateTo) {
+        const end = new Date(dateTo);
+        end.setHours(23, 59, 59, 999);
+        where.createdAt.lte = end;
+      }
+    }
+
+    const [total, orders] = await Promise.all([
+      prisma.order.count({ where }),
+      prisma.order.findMany({
+        where,
+        orderBy: { createdAt: "desc" },
+        skip: (pageNum - 1) * sizeNum,
+        take: sizeNum,
+        include: {
+          items: true,
+          event: { select: { id: true, title: true } },
+        },
+      }),
+    ]);
+
+    res.json({
+      data: orders.map((order) => ({
+        id: order.id,
+        status: order.status,
+        createdAt: order.createdAt,
+        totalAmount: order.totalAmount,
+        currency: order.currency,
+        customerName: order.customerName,
+        customerPhone: order.customerPhone,
+        customerEmail: order.customerEmail,
+        event: order.event,
+        seats: order.items.filter((item) => item.seatId).map((item) => item.seatId as string),
+      })),
+      pagination: {
+        total,
+        page: pageNum,
+        pageSize: sizeNum,
+        totalPages: Math.ceil(total / sizeNum),
+      },
     });
-    res.json({ orders });
-  } catch (e: any) {
-    res.status(400).json({ error: e?.message ?? "Failed to list orders" });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-adminOrdersRouter.get("/:orderId", async (req, res) => {
+adminOrdersRouter.get("/:id", async (req, res) => {
   try {
-    const order = await getOrderById(req.params.orderId);
-    if (!order) return res.status(404).json({ error: "Order not found" });
-    res.json({ order });
-  } catch (e: any) {
-    res.status(400).json({ error: e?.message ?? "Failed to load order" });
+    const { id } = req.params as { id: string };
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: true,
+        event: { select: { id: true, title: true } },
+        logs: { orderBy: { createdAt: "desc" } },
+      },
+    });
+
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    res.json({
+      id: order.id,
+      status: order.status,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      totalAmount: order.totalAmount,
+      currency: order.currency,
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      customerEmail: order.customerEmail,
+      items: order.items.map((item) => ({
+        id: item.id,
+        ticketTypeId: item.ticketTypeId,
+        seatId: item.seatId,
+        price: item.price,
+      })),
+      logs: order.logs,
+      event: order.event,
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-adminOrdersRouter.post("/", async (req, res) => {
+adminOrdersRouter.post("/:id/status", async (req, res) => {
   try {
-    const order = await createOrder(req.body);
-    res.status(201).json({ order });
-  } catch (e: any) {
-    res.status(400).json({ error: e?.message ?? "Failed to create order" });
+    const { id } = req.params as { id: string };
+    const { status } = req.body as { status?: string };
+
+    const allowed = ["PENDING", "PAID", "CANCELLED", "REFUNDED"];
+    const newStatus = status?.toUpperCase();
+
+    if (!newStatus || !allowed.includes(newStatus)) {
+      return res.status(400).json({ error: "Invalid status" });
+    }
+
+    const existing = await prisma.order.findUnique({ where: { id } });
+    if (!existing) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const updated = await prisma.order.update({
+      where: { id },
+      data: { status: newStatus as any },
+    });
+
+    await prisma.orderLog.create({
+      data: {
+        orderId: id,
+        action: "status-change",
+        oldValue: existing.status,
+        newValue: newStatus,
+        user: "admin",
+      },
+    });
+
+    res.json(updated);
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });
 
-adminOrdersRouter.post("/:orderId/status", async (req, res) => {
+adminOrdersRouter.get("/:id/seatmap", async (req, res) => {
   try {
-    const status = req.body.status as CrmOrderStatus;
-    const order = await updateOrderStatus(req.params.orderId, status);
-    res.json({ order });
-  } catch (e: any) {
-    res.status(400).json({ error: e?.message ?? "Failed to update status" });
-  }
-});
+    const { id } = req.params as { id: string };
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: { items: true },
+    });
 
-adminOrdersRouter.post("/:orderId/cancel", async (req, res) => {
-  try {
-    const order = await cancelOrder(req.params.orderId);
-    res.json({ order });
-  } catch (e: any) {
-    res.status(400).json({ error: e?.message ?? "Failed to cancel order" });
+    if (!order) {
+      return res.status(404).json({ error: "Order not found" });
+    }
+
+    const seatIds = new Set<string>();
+    order.items.forEach((item) => {
+      if (item.seatId) seatIds.add(item.seatId);
+    });
+
+    res.json({
+      eventId: order.eventId,
+      seats: Array.from(seatIds).map((seatId) => ({ seatId, status: "taken" })),
+    });
+  } catch (e) {
+    console.error(e);
+    res.status(500).json({ error: "Internal server error" });
   }
 });

@@ -24,25 +24,29 @@ model User {
 
 // Мероприятие (например: экскурсия, концерт, рейс теплохода)
 model Event {
-  id          Int           @id @default(autoincrement())
+  id          String        @id @default(cuid())
   title       String
+  startsAt    DateTime
+  endsAt      DateTime?
+  venueId     String?
+  seatMapId   String?
   description String?
-  date        DateTime
   imageUrl    String?
 
-  // Схема сидений (если есть)
-  seatPrices  SeatPrice[]
   ticketTypes TicketType[]
+  seats       Seat[]
+  prices      TicketPrice[]
   trips       Trip[]
-  seatMap     SeatMap?
+  orders      Order[]
 
   createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
 }
 
 // Рейс/Маршрут для водных прогулок
 model Trip {
   id        String   @id @default(uuid())
-  eventId   Int
+  eventId   String
   event     Event    @relation(fields: [eventId], references: [id])
 
   boatName  String?
@@ -54,30 +58,55 @@ model Trip {
 
 // Типы билетов (входной, VIP, детский и т.п.)
 model TicketType {
-  id        String   @id @default(uuid())
-  eventId   Int
-  event     Event    @relation(fields: [eventId], references: [id])
+  id          String       @id @default(cuid())
+  eventId     String
+  code        String
+  name        String
+  description String?
+  currency    String
+  saleStarts  DateTime?
+  saleEnds    DateTime?
+  isActive    Boolean      @default(true)
 
-  name      String
-  price     Decimal  @db.Decimal(10, 2)
-
-  createdAt DateTime @default(now())
-}
-
-// Цены по местам (seatmap)
-model SeatPrice {
-  id        String   @id @default(uuid())
-  eventId   Int
-  event     Event    @relation(fields: [eventId], references: [id])
-
-  seatId    String      // напр. “A12” или “deck1-zone3-seat15”
-  price     Decimal     @db.Decimal(10, 2)
-  category  String?
-
-  createdAt DateTime    @default(now())
+  event       Event        @relation(fields: [eventId], references: [id])
+  prices      TicketPrice[]
+  orderItems  OrderItem[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([eventId])
-  @@index([seatId])
+  @@unique([eventId, code])
+}
+
+// Прайсы билетов по категориям/зонам
+model TicketPrice {
+  id             String       @id @default(cuid())
+  eventId        String
+  ticketTypeId   String
+  seatCategoryId String?
+  zone           String?
+  amount         Decimal      @db.Decimal(10, 2)
+  feeAmount      Decimal?     @db.Decimal(10, 2)
+  currency       String
+  isActive       Boolean      @default(true)
+
+  event        Event          @relation(fields: [eventId], references: [id])
+  ticketType   TicketType     @relation(fields: [ticketTypeId], references: [id])
+  seatCategory SeatCategory?  @relation(fields: [seatCategoryId], references: [id])
+
+  @@index([eventId])
+  @@index([ticketTypeId])
+  @@index([seatCategoryId])
+}
+
+// Категория мест (VIP, Economy и т.п.)
+model SeatCategory {
+  id    String @id @default(cuid())
+  code  String
+  name  String
+  seats Seat[]
+
+  @@unique([code])
 }
 
 // ------------------------------
@@ -85,7 +114,7 @@ model SeatPrice {
 // ------------------------------
 model SeatMap {
   id        Int      @id @default(autoincrement())
-  eventId   Int      @unique
+  eventId   String   @unique
   event     Event    @relation(fields: [eventId], references: [id])
 
   schemaJson Json
@@ -96,44 +125,53 @@ model SeatMap {
 }
 
 model Seat {
-  id         Int      @id @default(autoincrement())
-  seatMapId  Int
-  seatMap    SeatMap  @relation(fields: [seatMapId], references: [id])
-
-  externalId String?
+  id         String       @id @default(cuid())
+  eventId    String
+  externalId String
   label      String
+  categoryId String?
+  zone       String?
+  isActive   Boolean      @default(true)
+
+  seatMapId  Int?
+  seatMap    SeatMap?     @relation(fields: [seatMapId], references: [id])
   row        String?
   section    String?
   priceZone  String?
-  basePrice  Decimal? @db.Decimal(10, 2)
+  basePrice  Decimal?     @db.Decimal(10, 2)
 
-  isActive   Boolean  @default(true)
+  event      Event        @relation(fields: [eventId], references: [id])
+  category   SeatCategory? @relation(fields: [categoryId], references: [id])
+  locks      SeatLock[]
+  orderItems OrderItem[]
+  orderSeats OrderSeat[]
 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
 
+  @@unique([eventId, externalId])
+  @@index([eventId])
   @@index([seatMapId])
-  @@index([externalId])
-  @@index([section])
+  @@index([categoryId])
 }
 
 // ------------------------------
 // Блокировка мест (для seatmap)
 // ------------------------------
 model SeatLock {
-  id                Int      @id @default(autoincrement())
-  eventId           Int
-  seatId            Int
-  seat              Seat     @relation(fields: [seatId], references: [id])
-  sessionId         String
-  expiresAt         DateTime
-  externalBookingId String?
+  id          String   @id @default(cuid())
+  seatId      String
+  eventId     String
+  lockedUntil DateTime
+  bySessionId String
+  status      String
 
-  createdAt DateTime @default(now())
+  seat        Seat     @relation(fields: [seatId], references: [id])
+  event       Event    @relation(fields: [eventId], references: [id])
 
   @@index([eventId])
   @@index([seatId])
-  @@index([expiresAt])
+  @@index([lockedUntil])
 }
 
 model WaterSeatLock {
@@ -152,28 +190,31 @@ model WaterSeatLock {
 
 // Заказ
 model Order {
-  id          String       @id @default(uuid())
-  userId      String?
-  user        User?        @relation(fields: [userId], references: [id])
+  id            String       @id @default(cuid())
+  userId        String?
+  user          User?        @relation(fields: [userId], references: [id])
 
-  eventId     Int
-  event       Event        @relation(fields: [eventId], references: [id])
+  eventId       String
+  event         Event        @relation(fields: [eventId], references: [id])
 
-  tripId      String?
-  trip        Trip?        @relation(fields: [tripId], references: [id])
+  tripId        String?
+  trip          Trip?        @relation(fields: [tripId], references: [id])
 
-  status      OrderStatus  @default(PENDING)
-  totalAmount Decimal       @db.Decimal(10,2)
+  status        OrderStatus  @default(PENDING)
+  totalAmount   Int
+  currency      String       @default("RUB")
 
   customerName  String?
   customerPhone String?
   customerEmail String?
 
-  items       OrderItem[]
-  payment     Payment?
-  seats       OrderSeat[]
+  items         OrderItem[]
+  payment       Payment?
+  seats         OrderSeat[]
+  logs          OrderLog[]
 
-  createdAt   DateTime @default(now())
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model OrderSeat {
@@ -181,7 +222,7 @@ model OrderSeat {
   orderId   String
   order     Order    @relation(fields: [orderId], references: [id])
 
-  seatId    Int
+  seatId    String
   seat      Seat     @relation(fields: [seatId], references: [id])
 
   price     Decimal? @db.Decimal(10, 2)
@@ -193,17 +234,33 @@ model OrderSeat {
 
 // Позиции заказа — выбранные места или билеты
 model OrderItem {
-  id         String     @id @default(uuid())
-  orderId    String
-  order      Order      @relation(fields: [orderId], references: [id])
+  id           String     @id @default(cuid())
+  orderId      String
+  order        Order      @relation(fields: [orderId], references: [id])
 
-  ticketTypeId String?
-  ticketType   TicketType? @relation(fields: [ticketTypeId], references: [id])
+  eventId      String
+  event        Event      @relation(fields: [eventId], references: [id])
+  ticketTypeId String
+  seatId       String?
+  price        Int
 
-  seatId     Int?
-  price      Decimal    @db.Decimal(10, 2)
+  ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
+  seat         Seat?      @relation(fields: [seatId], references: [id])
+  @@index([eventId])
+  @@index([seatId])
+}
 
-  createdAt  DateTime   @default(now())
+model OrderLog {
+  id        String      @id @default(cuid())
+  createdAt DateTime    @default(now())
+
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id])
+
+  action    String
+  oldValue  String?
+  newValue  String?
+  user      String?
 }
 
 // Платёж (YooKassa)
@@ -214,8 +271,8 @@ model Payment {
 
   provider    String      @default("yookassa")
   status      PaymentStatus
-  externalId  String?     // ID в YooKassa
-  amount      Decimal     @db.Decimal(10,2)
+  externalId  String?
+  amount      Decimal     @db.Decimal(10, 2)
   createdAt   DateTime    @default(now())
 }
 
@@ -223,7 +280,6 @@ model Payment {
 
 enum OrderStatus {
   PENDING
-  WAITING_FOR_PAYMENT
   PAID
   CANCELLED
   REFUNDED

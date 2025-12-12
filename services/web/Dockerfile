@@ -1,17 +1,21 @@
-FROM node:20-alpine
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-# копируем package.json и package-lock.json (если есть)
 COPY package*.json ./
-
-# ставим зависимости
 RUN npm install
 
-# копируем всё содержимое web-папки
 COPY . .
+RUN npm run build
 
-# открываем порт
+FROM node:20-alpine AS runner
+
+WORKDIR /app
+
+ENV NODE_ENV=production
+
+COPY --from=builder /app ./
+
 EXPOSE 3000
 
-CMD ["npm", "run", "dev"]
+CMD ["npm", "start"]

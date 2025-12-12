@@ -1,39 +1,25 @@
-import { astraClient } from "../core/astraClient";
-import { getPrismaClient } from "../core/prisma";
-import { emitSeatStatus } from "../ws/seatmapHub";
+import { cleanExpiredSeatLocks, startSeatLockCleanupWorker } from "./seatLockCleanup";
 
-export async function cleanExpiredSeatLocks() {
-  const prisma = getPrismaClient();
-  if (!prisma) return;
+export { cleanExpiredSeatLocks };
 
-  const now = new Date();
-  const expiredLocks = await (prisma as any).waterSeatLock.findMany({
-    where: { expiresAt: { lt: now } },
-  });
-
-  if (!expiredLocks.length) return;
-
-  console.log(`Found ${expiredLocks.length} expired seat locks, clearing...`);
-
-  for (const lock of expiredLocks) {
-    try {
-      await astraClient.cancelBookSeat({
-        eventID: lock.eventId,
-        sessionID: lock.sessionId,
-        seatID: lock.seatCode,
-        email: process.env.ASTRA_EMAIL ?? undefined,
-      });
-
-    } catch (err) {
-      console.error(`Failed to release seat ${lock.seatCode} for event ${lock.eventId}:`, err);
-    } finally {
+export function startSeatLockCleaner(intervalMs = 30000) {
+  // Backwards-compatible entry point that mirrors the cron-driven worker
+  if (intervalMs !== 30000) {
+    // fall back to simple interval if a custom timing was requested
+    console.log("[SeatLockCleaner] Worker started");
+    setInterval(async () => {
       try {
-        await (prisma as any).waterSeatLock.delete({ where: { id: lock.id } });
-        console.log(`Released seat ${lock.seatCode} for event ${lock.eventId} (lock #${lock.id})`);
-        emitSeatStatus(lock.eventId, lock.seatCode, "free");
-      } catch (deleteErr) {
-        console.error(`Failed to delete expired lock ${lock.id} for event ${lock.eventId}:`, deleteErr);
+        await cleanExpiredSeatLocks();
+      } catch (err) {
+        console.error("[SeatLockCleaner] Error:", err);
       }
-    }
+    }, intervalMs);
+    return;
   }
+
+  startSeatLockCleanupWorker();
+}
+
+if (require.main === module) {
+  startSeatLockCleanupWorker();
 }

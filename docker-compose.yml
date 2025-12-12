@@ -1,41 +1,48 @@
 version: "3.9"
 name: ticketing
+
 services:
   ticketing-api:
-    build: ./services/api
+    build:
+      context: ./services/api
     image: ticketing-api:local
-    environment:
-      HOST: 0.0.0.0
-      PORT: 4000
-      SERVICE_NAME: ticketing-api
-      LOG_LEVEL: info
-      DATABASE_URL: postgresql://ticketing:ticketing@postgres:5432/ticketing
-      REDIS_URL: redis://redis:6379
-      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+    env_file:
+      - ./services/api/.env.docker
     ports:
       - "4000:4000"
-    volumes:
-      - ./services/api:/app
-      - /app/node_modules
-    environment:
-      - NODE_ENV=development
+    command: npm start
     restart: unless-stopped
     depends_on:
       - postgres
       - redis
       - rabbitmq
 
+  seatlock-worker:
+    build:
+      context: ./services/api
+    image: ticketing-api:local
+    env_file:
+      - ./services/api/.env.docker
+    command: ["node", "dist/workers/seatLockCleanup.js"]
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
   web:
     build:
-      context: .
-      dockerfile: services/web/Dockerfile
+      context: ./services/web
+      dockerfile: Dockerfile
     image: ticketing-web:local
+    volumes:
+      - ./services/web:/app
+      - /app/node_modules
     environment:
-      NEXT_PUBLIC_API_URL: http://api:4000
+      NEXT_PUBLIC_API_URL: http://ticketing-api:4000
+      NODE_ENV: development
     ports:
       - "3000:3000"
     depends_on:
-      - api
+      - ticketing-api
     restart: unless-stopped
 
   postgres:

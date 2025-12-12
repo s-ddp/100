@@ -2,8 +2,11 @@ import { Router } from "../vendor/express";
 import { getPrismaClient } from "../core/prisma";
 import { createYooPayment } from "../core/yookassaClient";
 import { CRM_ORDER_STATUS, CrmOrderStatus } from "../services/crmOrdersService";
+import { yookassaCallbackRouter } from "./payments/yookassaCallback";
 
 export const paymentsRouter = Router();
+
+paymentsRouter.use("/yookassa/callback", yookassaCallbackRouter);
 
 const PAYABLE_STATUSES: CrmOrderStatus[] = [
   CRM_ORDER_STATUS.PENDING,

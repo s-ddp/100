@@ -1,19 +1,23 @@
-FROM node:18
+FROM node:20-alpine
 
+# Рабочая директория
 WORKDIR /app
 
-# Устанавливаем зависимости
+# 1. Устанавливаем зависимости
 COPY package*.json ./
 RUN npm install
 
-# Копируем исходники
-COPY . .
+# 2. Копируем исходники и конфиг
+COPY tsconfig.json ./
+COPY prisma ./prisma
+COPY src ./src
 
-# Открываем порт
+# 3. Собираем TypeScript -> dist
+RUN npm run build
+
+# Прод окружение
+ENV NODE_ENV=production
 EXPOSE 4000
 
-# Для продакшена:
-# CMD ["npm", "start"]
-
-# Для разработки:
-CMD ["npm", "run", "dev"]
+# 4. Запускаем уже собранный JS
+CMD ["npm", "start"]

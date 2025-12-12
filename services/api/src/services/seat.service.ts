@@ -15,7 +15,11 @@ export async function getAvailableSeatsForEvent(eventId: string) {
   // Занятые местами считаем: оплаченные, и "живые" локи.
   const paidSeatIds = (
     await prisma.orderItem.findMany({
-      where: { eventId, status: "PAID", seatId: { not: null } },
+      where: {
+        eventId,
+        seatId: { not: null },
+        order: { status: "PAID" },
+      },
       select: { seatId: true },
     })
   ).map((s) => s.seatId!);

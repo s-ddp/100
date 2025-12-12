@@ -190,7 +190,7 @@ model WaterSeatLock {
 
 // Заказ
 model Order {
-  id            String       @id @default(uuid())
+  id            String       @id @default(cuid())
   userId        String?
   user          User?        @relation(fields: [userId], references: [id])
 
@@ -201,7 +201,8 @@ model Order {
   trip          Trip?        @relation(fields: [tripId], references: [id])
 
   status        OrderStatus  @default(PENDING)
-  totalAmount   Decimal       @db.Decimal(10, 2)
+  totalAmount   Int
+  currency      String       @default("RUB")
 
   customerName  String?
   customerPhone String?
@@ -210,8 +211,10 @@ model Order {
   items         OrderItem[]
   payment       Payment?
   seats         OrderSeat[]
+  logs          OrderLog[]
 
   createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
 }
 
 model OrderSeat {
@@ -236,16 +239,28 @@ model OrderItem {
   order        Order      @relation(fields: [orderId], references: [id])
 
   eventId      String
+  event        Event      @relation(fields: [eventId], references: [id])
   ticketTypeId String
   seatId       String?
-  status       String
-  priceAmount  Decimal    @db.Decimal(10, 2)
-  currency     String
+  price        Int
 
   ticketType   TicketType @relation(fields: [ticketTypeId], references: [id])
   seat         Seat?      @relation(fields: [seatId], references: [id])
   @@index([eventId])
   @@index([seatId])
+}
+
+model OrderLog {
+  id        String      @id @default(cuid())
+  createdAt DateTime    @default(now())
+
+  orderId   String
+  order     Order       @relation(fields: [orderId], references: [id])
+
+  action    String
+  oldValue  String?
+  newValue  String?
+  user      String?
 }
 
 // Платёж (YooKassa)
@@ -265,7 +280,6 @@ model Payment {
 
 enum OrderStatus {
   PENDING
-  WAITING_FOR_PAYMENT
   PAID
   CANCELLED
   REFUNDED

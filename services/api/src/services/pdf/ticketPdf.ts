@@ -36,8 +36,8 @@ export async function generateTicketPdf(order: FullOrder): Promise<Buffer> {
   });
 
   doc.moveDown();
-  const total = Number(order.totalAmount ?? 0);
-  doc.text(`Сумма: ${total.toFixed(2)} ₽`, { align: "right" });
+  const totalRub = Number(order.totalAmount ?? 0) / 100;
+  doc.text(`Сумма: ${totalRub.toFixed(2)} ₽`, { align: "right" });
 
   doc.end();
   });

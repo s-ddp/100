@@ -19,10 +19,11 @@ export async function calculateOrderAmount(eventId: string, seatIds: string[]): 
     throw new Error("Some seats not found in DB");
   }
 
-  const total = seats.reduce((sum: number, seat: any) => {
+  const totalCents = seats.reduce((sum: number, seat: any) => {
     const price = Number(seat.basePrice ?? 0);
-    return sum + price;
+    const cents = Math.round(price * 100);
+    return sum + cents;
   }, 0);
 
-  return Number(total.toFixed(2));
+  return totalCents;
 }

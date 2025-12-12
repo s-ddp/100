@@ -1,6 +1,6 @@
 import { getPrismaClient } from "../core/prisma";
 
-const ACTIVE_ORDER_STATUSES = ["PAID", "WAITING_FOR_PAYMENT"];
+const ACTIVE_ORDER_STATUSES = ["PAID", "PENDING"];
 
 export async function checkSeatAvailable(eventId: string, seatId: string) {
   const prisma = getPrismaClient();

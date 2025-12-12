@@ -42,38 +42,25 @@ adminOrdersRouter.get("/", async (req, res) => {
         skip: (pageNum - 1) * sizeNum,
         take: sizeNum,
         include: {
-          items: { include: { seat: true, ticketType: true } },
-          seats: true,
-          event: true,
+          items: true,
+          event: { select: { id: true, title: true } },
         },
       }),
     ]);
 
-    const data = orders.map((order) => {
-      const seatsFromItems = order.items
-        .filter((item) => item.seatId)
-        .map((item) => item.seatId as string);
-      const seatsFromOrderSeats = order.seats.map((seat) => seat.seatId);
-      const seats = Array.from(new Set([...seatsFromItems, ...seatsFromOrderSeats]));
-
-      return {
+    res.json({
+      data: orders.map((order) => ({
         id: order.id,
         status: order.status,
-        customer: {
-          name: order.customerName,
-          phone: order.customerPhone,
-          email: order.customerEmail,
-        },
-        total: order.totalAmount,
-        currency: order.currency,
         createdAt: order.createdAt,
+        totalAmount: order.totalAmount,
+        currency: order.currency,
+        customerName: order.customerName,
+        customerPhone: order.customerPhone,
+        customerEmail: order.customerEmail,
         event: order.event,
-        seats,
-      };
-    });
-
-    res.json({
-      data,
+        seats: order.items.filter((item) => item.seatId).map((item) => item.seatId as string),
+      })),
       pagination: {
         total,
         page: pageNum,
@@ -93,10 +80,9 @@ adminOrdersRouter.get("/:id", async (req, res) => {
     const order = await prisma.order.findUnique({
       where: { id },
       include: {
-        items: { include: { seat: true, ticketType: true } },
-        event: true,
+        items: true,
+        event: { select: { id: true, title: true } },
         logs: { orderBy: { createdAt: "desc" } },
-        seats: true,
       },
     });
 
@@ -104,7 +90,25 @@ adminOrdersRouter.get("/:id", async (req, res) => {
       return res.status(404).json({ error: "Order not found" });
     }
 
-    res.json(order);
+    res.json({
+      id: order.id,
+      status: order.status,
+      createdAt: order.createdAt,
+      updatedAt: order.updatedAt,
+      totalAmount: order.totalAmount,
+      currency: order.currency,
+      customerName: order.customerName,
+      customerPhone: order.customerPhone,
+      customerEmail: order.customerEmail,
+      items: order.items.map((item) => ({
+        id: item.id,
+        ticketTypeId: item.ticketTypeId,
+        seatId: item.seatId,
+        price: item.price,
+      })),
+      logs: order.logs,
+      event: order.event,
+    });
   } catch (e) {
     console.error(e);
     res.status(500).json({ error: "Internal server error" });
@@ -155,7 +159,7 @@ adminOrdersRouter.get("/:id/seatmap", async (req, res) => {
     const { id } = req.params as { id: string };
     const order = await prisma.order.findUnique({
       where: { id },
-      include: { items: true, seats: true },
+      include: { items: true },
     });
 
     if (!order) {
@@ -166,7 +170,6 @@ adminOrdersRouter.get("/:id/seatmap", async (req, res) => {
     order.items.forEach((item) => {
       if (item.seatId) seatIds.add(item.seatId);
     });
-    order.seats.forEach((seat) => seatIds.add(seat.seatId));
 
     res.json({
       eventId: order.eventId,

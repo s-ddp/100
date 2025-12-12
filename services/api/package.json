@@ -8,13 +8,11 @@
     "start": "node dist/index.js"
   },
   "dependencies": {
-    "@appigram/yookassa-node": "^1.1.11",
-    "dotenv": "^16.4.5",
-    "express": "^4.19.2"
-  },
-  "devDependencies": {
     "@types/express": "^4.17.21",
     "@types/node": "^20.11.30",
+    "@appigram/yookassa-node": "^1.1.11",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.4.0"
   }

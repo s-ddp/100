@@ -1,4 +1,4 @@
-import PDFDocument from "pdfkit";
+import PDFDocument from "../../shims/pdfkit.js";
 import { Order, OrderSeat, Event } from "@prisma/client";
 
 type FullOrder = Order & {

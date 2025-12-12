@@ -14,8 +14,11 @@ import {
 } from "../core/waterStore";
 import { emitSeatStatus } from "../ws/seatmapHub";
 import { CRM_ORDER_STATUS } from "../services/crmOrdersService";
+import { createOrderRouter } from "./orders/createOrder";
 
 export const ordersRouter = Router();
+
+ordersRouter.use("/checkout", createOrderRouter);
 
 ordersRouter.post("/", async (req, res, next) => {
   try {

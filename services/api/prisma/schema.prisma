@@ -165,10 +165,30 @@ model Order {
   status      OrderStatus  @default(PENDING)
   totalAmount Decimal       @db.Decimal(10,2)
 
+  customerName  String?
+  customerPhone String?
+  customerEmail String?
+
   items       OrderItem[]
   payment     Payment?
+  seats       OrderSeat[]
 
   createdAt   DateTime @default(now())
+}
+
+model OrderSeat {
+  id        Int      @id @default(autoincrement())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+
+  seatId    Int
+  seat      Seat     @relation(fields: [seatId], references: [id])
+
+  price     Decimal? @db.Decimal(10, 2)
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([seatId])
 }
 
 // Позиции заказа — выбранные места или билеты

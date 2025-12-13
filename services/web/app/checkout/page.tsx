@@ -1,6 +1,9 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
+export const dynamic = "force-dynamic";
+
+import { useState } from "react";
+import { useOrder } from "../../contexts/OrderContext";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
@@ -11,6 +14,7 @@ interface CustomerPayload {
 }
 
 export default function CheckoutPage() {
+  const { setOrder } = useOrder();
   const [eventId, setEventId] = useState(1);
   const [seats, setSeats] = useState('');
   const [customer, setCustomer] = useState<CustomerPayload>({
@@ -52,6 +56,12 @@ export default function CheckoutPage() {
       }
 
       if (json?.paymentUrl) {
+        setOrder({
+          id: json?.orderId || json?.id || eventId,
+          paymentUrl: json.paymentUrl,
+          status: json?.status,
+          total: json?.total,
+        });
         window.location.href = json.paymentUrl;
       } else {
         setError('Ссылка на оплату не получена');

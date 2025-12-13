@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { Seatmap } from '../../../components/Seatmap';
 
 interface Props {

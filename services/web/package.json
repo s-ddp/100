@@ -2,9 +2,9 @@
   "name": "ticketing-web",
   "private": true,
   "scripts": {
-    "dev": "node node_modules/next/bin/next.js dev",
-    "build": "node node_modules/next/bin/next.js build",
-    "start": "node node_modules/next/bin/next.js start"
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start"
   },
   "dependencies": {
     "next": "^14.1.0",

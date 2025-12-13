@@ -2,14 +2,9 @@
   "name": "ticketing-web",
   "private": true,
   "scripts": {
-    "build": "npx next build",
-    "start": "npx next start",
-    "dev": "npx next dev"
-  },
-  "devDependencies": {
-    "@types/node": "^20.12.7",
-    "@types/react": "^18.2.71",
-    "typescript": "^5.4.5"
+    "dev": "node node_modules/next/bin/next.js dev",
+    "build": "node node_modules/next/bin/next.js build",
+    "start": "node node_modules/next/bin/next.js start"
   },
   "dependencies": {
     "next": "^14.1.0",

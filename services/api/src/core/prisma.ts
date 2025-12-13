@@ -1,24 +1,12 @@
-import { PrismaClient } from "../vendor/prisma";
+import { PrismaClient } from "@prisma/client";
+import { prisma } from "../utils/prisma";
 
-let prisma: PrismaClient | null = null;
-
-function ensureClient() {
-  if (!process.env.DATABASE_URL) return null;
-  if (!prisma) {
-    prisma = new PrismaClient();
-  }
+export function getPrismaClient() {
   return prisma;
 }
 
-export function getPrismaClient() {
-  return ensureClient();
-}
-
 export async function disposePrisma() {
-  if (prisma) {
-    await prisma.$disconnect();
-    prisma = null;
-  }
+  await prisma.$disconnect();
 }
 
 export type PrismaClientType = PrismaClient;

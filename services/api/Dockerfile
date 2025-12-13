@@ -4,7 +4,7 @@ WORKDIR /app
 
 ENV NODE_ENV=development
 
-COPY package*.json ./
+COPY package.json ./
 RUN npm install
 
 COPY tsconfig.json ./
@@ -19,7 +19,7 @@ WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY package*.json ./
+COPY package.json ./
 RUN npm install --omit=dev
 
 COPY --from=builder /app/dist ./dist

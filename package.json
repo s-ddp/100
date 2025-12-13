@@ -3,7 +3,8 @@
   "private": true,
   "workspaces": [
     "services/api",
-    "services/web"
+    "services/web",
+    "services/seatlock-worker"
   ],
   "scripts": {
     "start:api": "npm run start --workspace services/api",

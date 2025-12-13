@@ -1,7 +1,5 @@
 "use client";
 
-export const dynamic = "force-dynamic";
-
 import { useState } from "react";
 import { useOrder } from "../../contexts/OrderContext";
 
@@ -16,11 +14,11 @@ interface CustomerPayload {
 export default function CheckoutPage() {
   const { setOrder } = useOrder();
   const [eventId, setEventId] = useState(1);
-  const [seats, setSeats] = useState('');
+  const [seats, setSeats] = useState("");
   const [customer, setCustomer] = useState<CustomerPayload>({
-    name: '',
-    phone: '',
-    email: '',
+    name: "",
+    phone: "",
+    email: "",
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -28,20 +26,20 @@ export default function CheckoutPage() {
   const handleSubmit = async () => {
     setError(null);
     const seatList = seats
-      .split(',')
+      .split(",")
       .map((s) => s.trim())
       .filter(Boolean);
 
     if (!seatList.length) {
-      setError('Укажите хотя бы одно место через запятую');
+      setError("Укажите хотя бы одно место через запятую");
       return;
     }
 
     setIsSubmitting(true);
     try {
       const res = await fetch(`${API_URL}/orders/checkout`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           eventId,
           seats: seatList,
@@ -51,7 +49,7 @@ export default function CheckoutPage() {
 
       const json = await res.json();
       if (!res.ok) {
-        setError(json?.error || 'Не удалось создать заказ');
+        setError(json?.error || "Не удалось создать заказ");
         return;
       }
 
@@ -64,11 +62,11 @@ export default function CheckoutPage() {
         });
         window.location.href = json.paymentUrl;
       } else {
-        setError('Ссылка на оплату не получена');
+        setError("Ссылка на оплату не получена");
       }
     } catch (err: any) {
       console.error(err);
-      setError(err?.message || 'Ошибка при создании заказа');
+      setError(err?.message || "Ошибка при создании заказа");
     } finally {
       setIsSubmitting(false);
     }
@@ -139,7 +137,7 @@ export default function CheckoutPage() {
         disabled={isSubmitting}
         className="rounded bg-blue-600 px-4 py-2 text-white disabled:opacity-50"
       >
-        {isSubmitting ? 'Создаём заказ...' : 'Перейти к оплате'}
+        {isSubmitting ? "Создаём заказ..." : "Перейти к оплате"}
       </button>
     </div>
   );

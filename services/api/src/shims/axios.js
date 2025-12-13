@@ -1,8 +1,8 @@
 export default {
-  get: async () => ({ data: {} }),
-  post: async () => ({ data: {} }),
+  get: async (_url, _config) => ({ data: {} }),
+  post: async (_url, _data, _config) => ({ data: {} }),
   create: () => ({
-    get: async () => ({ data: {} }),
-    post: async () => ({ data: {} }),
+    get: async (_url, _config) => ({ data: {} }),
+    post: async (_url, _data, _config) => ({ data: {} }),
   }),
 };

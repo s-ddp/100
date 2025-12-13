@@ -2,10 +2,12 @@
   "name": "ticketing-api",
   "version": "0.1.0",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "ts-node-dev src/index.ts",
     "build": "npx tsc",
-    "start": "node dist/index.js"
+    "start": "node dist/index.js",
+    "test": "node --test src/**/*.test.js"
   },
   "dependencies": {
     "@types/express": "^4.17.21",

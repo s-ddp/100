@@ -1,3 +1,3 @@
 export default function Home() {
-  return <div>Frontend is alive 🚀</div>;
+  return <h1>Frontend is alive ✅</h1>;
 }

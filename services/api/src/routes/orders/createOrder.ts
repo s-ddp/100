@@ -6,11 +6,11 @@ import { calculateOrderAmount } from "../../services/pricing";
 
 export const createOrderRouter = Router();
 
-function parseSeatIds(seats: any): number[] {
+function parseSeatIds(seats: any): string[] {
   if (!Array.isArray(seats)) return [];
   return seats
-    .map((id) => Number(id))
-    .filter((id) => Number.isFinite(id) && id > 0);
+    .map((id) => `${id}`)
+    .filter((id) => typeof id === "string" && id.length > 0);
 }
 
 createOrderRouter.post("/", async (req, res) => {
@@ -20,11 +20,11 @@ createOrderRouter.post("/", async (req, res) => {
       return res.status(500).json({ error: "Database not configured" });
     }
 
-    const eventId = Number(req.body?.eventId);
+    const eventId = `${req.body?.eventId ?? ""}`;
     const seatIds = parseSeatIds(req.body?.seats);
     const customer = req.body?.customer ?? {};
 
-    if (!Number.isFinite(eventId)) {
+    if (!eventId) {
       return res.status(400).json({ error: "eventId is required" });
     }
     if (!seatIds.length) {
@@ -41,7 +41,7 @@ createOrderRouter.post("/", async (req, res) => {
       return res.status(404).json({ error: "Some seats were not found" });
     }
 
-    const unavailable: number[] = [];
+    const unavailable: string[] = [];
     for (const seatId of seatIds) {
       const available = await checkSeatAvailable(eventId, seatId);
       if (!available) {

@@ -46,21 +46,33 @@ declare module "cors" {
 declare module "@prisma/client" {
   export type CrmOrderStatus = "PENDING" | "LOCKED" | "PAID" | "CANCELLED" | "EXPIRED";
 
+  export type Event = any;
+  export type Order = any;
+  export type OrderSeat = any;
+
   export class PrismaClient {
     event: { findUnique(args: any): Promise<any> };
+    ticketType: { findMany(args: any): Promise<any> };
+    ticketPrice: { findMany(args: any): Promise<any> };
+    seat: { findMany(args: any): Promise<any> };
     seatLock: {
       create(args: any): Promise<any>;
       createMany(args: any): Promise<any>;
       findMany(args: any): Promise<any>;
       delete(args: any): Promise<any>;
       deleteMany(args: any): Promise<any>;
+      updateMany(args: any): Promise<any>;
     };
     order: {
       create(args: any): Promise<any>;
       findUnique(args: any): Promise<any>;
       update(args: any): Promise<any>;
+      count(args: any): Promise<any>;
+      findMany(args: any): Promise<any>;
     };
-    orderItem: { create(args: any): Promise<any> };
+    orderSeat: { findMany(args: any): Promise<any> };
+    orderItem: { create(args: any): Promise<any>; findMany(args: any): Promise<any> };
+    orderLog: { create(args: any): Promise<any> };
     waterSeatLock: {
       create(args: any): Promise<any>;
       createMany(args: any): Promise<any>;
@@ -76,6 +88,10 @@ declare module "@prisma/client" {
     };
     $disconnect(): Promise<void>;
   }
+}
+
+declare module "date-fns" {
+  export function addMinutes(date: any, amount: any): any;
 }
 
 declare module "dotenv" {

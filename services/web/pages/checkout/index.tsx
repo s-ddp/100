@@ -4,6 +4,6 @@ const CheckoutPage = dynamic(() => import('../../components/checkout/CheckoutPag
   ssr: false,
 });
 
-export default function Page() {
+export default function Checkout() {
   return <CheckoutPage />;
 }

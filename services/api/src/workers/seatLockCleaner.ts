@@ -1,4 +1,4 @@
-import { cleanExpiredSeatLocks, startSeatLockCleanupWorker } from "./seatLockCleanup";
+import { cleanExpiredSeatLocks, startSeatLockCleanup } from "./seatLockCleanup";
 
 export { cleanExpiredSeatLocks };
 
@@ -17,9 +17,9 @@ export function startSeatLockCleaner(intervalMs = 30000) {
     return;
   }
 
-  startSeatLockCleanupWorker();
+  startSeatLockCleanup();
 }
 
 if (require.main === module) {
-  startSeatLockCleanupWorker();
+  startSeatLockCleanup();
 }

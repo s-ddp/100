@@ -8,3 +8,6 @@ package-lock.json
 coverage
 ops/logs
 ops/cache
+
+# Next.js build output
+.next

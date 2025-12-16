@@ -29,7 +29,7 @@ export async function cleanExpiredSeatLocks() {
   }
 }
 
-export function startSeatLockCleanupWorker() {
+export function startSeatLockCleanup() {
   console.log("SeatLockCleanup worker started (every 1 minute)");
   cron.schedule("*/1 * * * *", async () => {
     try {
@@ -40,6 +40,6 @@ export function startSeatLockCleanupWorker() {
   });
 }
 
-if (require.main === module) {
-  startSeatLockCleanupWorker();
+export function startSeatLockCleanupWorker() {
+  return startSeatLockCleanup();
 }

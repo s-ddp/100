@@ -179,6 +179,7 @@ ordersRouter.post("/", async (req, res, next) => {
     const order = prisma
       ? await (prisma as any).order.create({
           data: {
+            id: orderID,
             eventId,
             status: "PENDING",
             totalAmount: amountCents,
@@ -209,23 +210,22 @@ ordersRouter.post("/:id/confirm", async (req, res, next) => {
     }
 
     const prisma = getPrismaClient();
-    const order = prisma ? await (prisma as any).order.findUnique({ where: { id: Number(id) } }) : null;
-    if (!order || !order.externalOrderId) {
-      return res.status(404).json({ error: "Order not found" });
-    }
+    const order = prisma ? await (prisma as any).order.findUnique({ where: { id } }) : null;
+
+    const orderIdForProvider = order?.id ?? id;
+    const email = (req.body as any)?.email ?? order?.customerEmail;
 
     const astraResp = await astraClient.confirmPayment({
-      orderID: order.externalOrderId,
+      orderID: orderIdForProvider,
       orderConfirm: confirm ?? true,
-      email: order.email,
+      email,
     });
 
-    if (prisma) {
+    if (prisma && order) {
       await (prisma as any).order.update({
         where: { id: order.id },
         data: {
           status: astraResp.orderPaymentConfirmed ? "paid" : "error",
-          astraResponse: astraResp,
         },
       });
     }
@@ -275,7 +275,7 @@ ordersRouter.get("/:id", async (req, res, next) => {
     const prisma = getPrismaClient();
     if (prisma) {
       const order = await (prisma as any).order.findUnique({
-        where: { id: Number(id) },
+        where: { id },
         include: { items: true, payments: true, event: true },
       });
 

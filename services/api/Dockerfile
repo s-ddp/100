@@ -1,36 +1,20 @@
-FROM node:20-alpine
-
+# 1) Сборка (builder)
+FROM node:20-alpine AS builder
 WORKDIR /app
 
-ENV NODE_ENV=development
+COPY package*.json ./
+RUN npm ci
 
-COPY package.json ./
-RUN npm config set registry https://registry.npmjs.org/ \
-  && npm config set fetch-retries 5 \
-  && npm config set fetch-retry-factor 2 \
-  && npm config set fetch-retry-mintimeout 20000 \
-  && npm config set fetch-retry-maxtimeout 120000 \
-  && npm install --no-audit --no-fund
-
-COPY tsconfig.json ./
-COPY src ./src
-COPY prisma ./prisma
-
+COPY . .
 RUN npm run build
 
-# ---------- runner ----------
-FROM node:20-alpine AS runner
+# 2) Запуск (runtime)
+FROM node:20-alpine
 WORKDIR /app
-
 ENV NODE_ENV=production
 
-COPY package.json ./
-RUN npm config set registry https://registry.npmjs.org/ \
-  && npm config set fetch-retries 5 \
-  && npm config set fetch-retry-factor 2 \
-  && npm config set fetch-retry-mintimeout 20000 \
-  && npm config set fetch-retry-maxtimeout 120000 \
-  && npm install --omit=dev --no-audit --no-fund
+COPY package*.json ./
+RUN npm ci --omit=dev
 
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/prisma ./prisma

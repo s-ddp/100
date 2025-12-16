@@ -1,6 +1,6 @@
-export function createTransport() {
+export function createTransport(_options = {}) {
   return {
-    async sendMail() {
+    async sendMail(_mailOptions = {}) {
       return { messageId: `stub-${Date.now()}` };
     },
   };

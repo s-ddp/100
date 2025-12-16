@@ -1,14 +1,18 @@
 export default class PDFDocument {
-  constructor() {
+  constructor(_options = {}) {
     this.handlers = {};
   }
   pipe(stream) {
     this.stream = stream;
-  }
-  fontSize() {
     return this;
   }
-  text() {
+  fontSize(_size) {
+    return this;
+  }
+  text(_text, _options = {}) {
+    return this;
+  }
+  moveDown() {
     return this;
   }
   end() {

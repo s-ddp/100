@@ -1,5 +1,5 @@
-# ---------- builder ----------
-FROM node:20-alpine AS builder
+FROM node:20-alpine
+
 WORKDIR /app
 
 ENV NODE_ENV=development

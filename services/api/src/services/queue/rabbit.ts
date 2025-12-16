@@ -1,11 +1,11 @@
-import amqp from "../../shims/amqplib.js";
+import amqp from "../../legacy/shims/amqplib.js";
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://rabbitmq:5672";
 const QUEUE_NEW_ORDERS = "orders.new";
 
-let channelPromise: Promise<amqp.Channel> | null = null;
+let channelPromise: Promise<any> | null = null;
 
-async function getChannel(): Promise<amqp.Channel> {
+async function getChannel(): Promise<any> {
   if (!channelPromise) {
     channelPromise = (async () => {
       const conn = await amqp.connect(RABBITMQ_URL);

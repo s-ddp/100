@@ -1,4 +1,4 @@
-import cron from "../shims/node-cron.js";
+import cron from "node-cron";
 import { getPrismaClient } from "../core/prisma.js";
 import { cancelBookSeat } from "../services/providers/astramarin.js";
 

@@ -1,6 +1,6 @@
-import { Router } from "../vendor/express";
-import { astraClient } from "../core/astraClient";
-import { getPrismaClient } from "../core/prisma";
+import { Router } from "../vendor/express.js";
+import { astraClient } from "../core/astraClient.js";
+import { getPrismaClient } from "../core/prisma.js";
 import {
   createSeatOrder,
   findPrice,
@@ -11,10 +11,10 @@ import {
   resolveTrip,
   seatOrders,
   seatReservations,
-} from "../core/waterStore";
-import { emitSeatStatus } from "../ws/seatmapHub";
-import { CRM_ORDER_STATUS } from "../services/crmOrdersService";
-import { createOrderRouter } from "./orders/createOrder";
+} from "../core/waterStore.js";
+import { emitSeatStatus } from "../ws/seatmapHub.js";
+import { CRM_ORDER_STATUS } from "../services/crmOrdersService.js";
+import { createOrderRouter } from "./orders/createOrder.js";
 
 export const ordersRouter = Router();
 

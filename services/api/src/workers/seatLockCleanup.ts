@@ -1,6 +1,6 @@
 import cron from "../shims/node-cron.js";
-import { getPrismaClient } from "../core/prisma";
-import { cancelBookSeat } from "../services/providers/astramarin";
+import { getPrismaClient } from "../core/prisma.js";
+import { cancelBookSeat } from "../services/providers/astramarin.js";
 
 export async function cleanExpiredSeatLocks() {
   const prisma = getPrismaClient();

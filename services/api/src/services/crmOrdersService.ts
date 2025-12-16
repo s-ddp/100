@@ -1,6 +1,6 @@
-import { astraClient } from "../core/astraClient";
-import { getPrismaClient } from "../core/prisma";
-import { emitSeatStatus } from "../ws/seatmapHub";
+import { astraClient } from "../core/astraClient.js";
+import { getPrismaClient } from "../core/prisma.js";
+import { emitSeatStatus } from "../ws/seatmapHub.js";
 
 export const CRM_ORDER_STATUS = {
   PENDING: "PENDING",

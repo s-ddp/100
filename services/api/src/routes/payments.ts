@@ -1,8 +1,8 @@
-import { Router } from "../vendor/express";
-import { getPrismaClient } from "../core/prisma";
-import { createYooPayment } from "../core/yookassaClient";
-import { CRM_ORDER_STATUS, CrmOrderStatus } from "../services/crmOrdersService";
-import { yookassaCallbackRouter } from "./payments/yookassaCallback";
+import { Router } from "../vendor/express.js";
+import { getPrismaClient } from "../core/prisma.js";
+import { createYooPayment } from "../core/yookassaClient.js";
+import { CRM_ORDER_STATUS, CrmOrderStatus } from "../services/crmOrdersService.js";
+import { yookassaCallbackRouter } from "./payments/yookassaCallback.js";
 
 export const paymentsRouter = Router();
 

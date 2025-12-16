@@ -1,4 +1,4 @@
-import { cleanExpiredSeatLocks, startSeatLockCleanup } from "./seatLockCleanup";
+import { cleanExpiredSeatLocks, startSeatLockCleanup } from "./seatLockCleanup.js";
 
 export { cleanExpiredSeatLocks };
 

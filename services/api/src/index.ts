@@ -1,6 +1,6 @@
-import { startApp } from "./app";
-import { logger } from "./logger";
-import { startSeatLockCleanup } from "./workers/seatLockCleanup";
+import { startApp } from "./app.js";
+import { logger } from "./logger.js";
+import { startSeatLockCleanup } from "./workers/seatLockCleanup.js";
 
 async function bootstrap() {
   await startApp();

@@ -1,5 +1,5 @@
-import { Router } from "../vendor/express";
-import { AppConfig } from "../config/env";
+import { Router } from "../vendor/express.js";
+import { AppConfig } from "../config/env.js";
 
 export function createHealthRouter(config: AppConfig) {
   const router = Router();

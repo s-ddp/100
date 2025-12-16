@@ -1,6 +1,6 @@
 import cron from "../shims/node-cron.js";
-import { getPrismaClient } from "../core/prisma";
-import { cancelBookSeat } from "../services/providers/astramarin";
+import { getPrismaClient } from "../core/prisma.js";
+import { cancelBookSeat } from "../services/providers/astramarin.js";
 
 export async function cleanExpiredSeatLocks() {
   const prisma = getPrismaClient();
@@ -29,7 +29,7 @@ export async function cleanExpiredSeatLocks() {
   }
 }
 
-export function startSeatLockCleanupWorker() {
+export function startSeatLockCleanup() {
   console.log("SeatLockCleanup worker started (every 1 minute)");
   cron.schedule("*/1 * * * *", async () => {
     try {
@@ -40,6 +40,6 @@ export function startSeatLockCleanupWorker() {
   });
 }
 
-if (require.main === module) {
-  startSeatLockCleanupWorker();
+export function startSeatLockCleanupWorker() {
+  return startSeatLockCleanup();
 }

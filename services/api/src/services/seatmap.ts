@@ -1,4 +1,4 @@
-import { getPrismaClient } from "../core/prisma";
+import { getPrismaClient } from "../core/prisma.js";
 
 const ACTIVE_ORDER_STATUSES = ["PAID", "PENDING"];
 

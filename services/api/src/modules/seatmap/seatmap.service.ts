@@ -1,5 +1,5 @@
 import { addMinutes } from "date-fns";
-import { getPrismaClient } from "../../core/prisma";
+import { getPrismaClient } from "../../core/prisma.js";
 
 type SeatStatus = "available" | "locked" | "booked";
 

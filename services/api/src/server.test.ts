@@ -2,9 +2,9 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import http from "node:http";
 
-import { createApp } from "./app";
-import { loadConfig } from "./config/env";
-import { resetWaterState } from "./core/waterStore";
+import { createApp } from "./app.js";
+import { loadConfig } from "./config/env.js";
+import { resetWaterState } from "./core/waterStore.js";
 
 type StatusResponse = { status: string; service: string };
 type EventSummary = { id: string; datetime: string };

@@ -1,26 +1,10 @@
-import { createApp } from "./app";
-import { loadConfig } from "./config/env";
-import { logger } from "./logger";
-import { startSeatLockCleanupWorker } from "./workers/seatLockCleanup";
-import { registerSeatmapBroadcaster } from "./ws/seatmapHub";
-import { createSeatmapWSServer } from "./ws/seatmapServer";
+import { startApp } from "./app.js";
+import { logger } from "./logger.js";
+import { startSeatLockCleanup } from "./workers/seatLockCleanup.js";
 
 async function bootstrap() {
-  const config = loadConfig();
-  const app = createApp(config);
-
-  if (app.listen) {
-    const server = app.listen(config.port, config.host, () => {
-      logger.info({ port: config.port, host: config.host, env: config.env }, "API server is running");
-    });
-
-    const wsServer = createSeatmapWSServer(server);
-    registerSeatmapBroadcaster(wsServer.broadcastSeatChange);
-
-    startSeatLockCleanupWorker();
-  } else {
-    logger.error("Unable to start server: listen is not available");
-  }
+  await startApp();
+  startSeatLockCleanup();
 }
 
 bootstrap().catch((error) => {

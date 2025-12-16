@@ -1,7 +1,7 @@
-import { Router } from "../vendor/express";
+import { Router } from "../vendor/express.js";
 
-import { getPrismaClient } from "../core/prisma";
-import { buildSeatStatus, resolveEvent, resolveTrip } from "../core/waterStore";
+import { getPrismaClient } from "../core/prisma.js";
+import { buildSeatStatus, resolveEvent, resolveTrip } from "../core/waterStore.js";
 
 export const tripsRouter = Router();
 

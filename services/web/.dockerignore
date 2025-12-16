@@ -1,6 +1,6 @@
 node_modules
-npm-debug.log
-.DS_Store
 .next
-coverage
-*.log
+npm-debug.log
+Dockerfile
+.dockerignore
+__app_disabled

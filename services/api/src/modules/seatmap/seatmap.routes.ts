@@ -3,7 +3,7 @@ import {
   acquireSeatLocks,
   getSeatmapForEvent,
   releaseSeatLocks,
-} from "./seatmap.service";
+} from "./seatmap.service.js";
 
 const router = Router();
 

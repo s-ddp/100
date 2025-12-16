@@ -1,4 +1,4 @@
-import { PrismaClient } from "../vendor/prisma";
+import { PrismaClient } from "../vendor/prisma.js";
 
 let prisma: PrismaClient | null = null;
 

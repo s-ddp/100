@@ -1,6 +1,6 @@
-import { Router } from "../vendor/express";
-import { astraClient } from "../core/astraClient";
-import { getPrismaClient } from "../core/prisma";
+import { Router } from "../vendor/express.js";
+import { astraClient } from "../core/astraClient.js";
+import { getPrismaClient } from "../core/prisma.js";
 import {
   buildSeatStatus,
   findPrice,
@@ -13,10 +13,10 @@ import {
   resolveEvent,
   resolveTrip,
   seatReservations,
-} from "../core/waterStore";
-import { waterEvents, waterSeatPrices, waterSeatMaps, waterTrips, waterVessels } from "../water-data";
-import { emitSeatStatus } from "../ws/seatmapHub";
-import { getAvailableSeats, getPrices, getTicketTypes } from "../controllers/events.controller";
+} from "../core/waterStore.js";
+import { waterEvents, waterSeatPrices, waterSeatMaps, waterTrips, waterVessels } from "../water-data.js";
+import { emitSeatStatus } from "../ws/seatmapHub.js";
+import { getAvailableSeats, getPrices, getTicketTypes } from "../controllers/events.controller.js";
 
 export const eventsRouter = Router();
 const seatLockTtlMs = Number(process.env.SEAT_LOCK_TTL_MS ?? 10 * 60 * 1000);

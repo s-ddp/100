@@ -1,9 +1,13 @@
-import PDFDocument from "../../shims/pdfkit.js";
-import { Order, OrderSeat, Event } from "@prisma/client";
+import PDFDocument from "../../legacy/shims/pdfkit.js";
 
-type FullOrder = Order & {
-  seats: OrderSeat[];
-  event: Event;
+type FullOrder = {
+  id: string;
+  customerName?: string | null;
+  customerPhone?: string | null;
+  customerEmail?: string | null;
+  totalAmount?: number | null;
+  event: { title: string; date: Date };
+  seats: { seatId: string }[];
 };
 
 export async function generateTicketPdf(order: FullOrder): Promise<Buffer> {
@@ -33,12 +37,12 @@ export async function generateTicketPdf(order: FullOrder): Promise<Buffer> {
     doc.fontSize(14).text("Места:", { underline: true });
     order.seats.forEach((s) => {
       doc.text(`• Место: ${s.seatId}`);
-  });
+    });
 
-  doc.moveDown();
-  const totalRub = Number(order.totalAmount ?? 0) / 100;
-  doc.text(`Сумма: ${totalRub.toFixed(2)} ₽`, { align: "right" });
+    doc.moveDown();
+    const totalRub = Number(order.totalAmount ?? 0) / 100;
+    doc.text(`Сумма: ${totalRub.toFixed(2)} ₽`, { align: "right" });
 
-  doc.end();
+    doc.end();
   });
 }

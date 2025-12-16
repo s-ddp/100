@@ -1,4 +1,4 @@
-import { getPrismaClient } from "../core/prisma";
+import { getPrismaClient } from "../core/prisma.js";
 
 export async function calculateOrderAmount(eventId: string, seatIds: string[]): Promise<number> {
   if (!Array.isArray(seatIds) || seatIds.length === 0) return 0;

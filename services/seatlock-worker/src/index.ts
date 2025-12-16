@@ -1,3 +1,3 @@
-import { startSeatLockCleanupWorker } from "./workers/seatLockCleanup";
+import { startSeatLockCleanupWorker } from "./workers/seatLockCleanup.js";
 
 startSeatLockCleanupWorker();

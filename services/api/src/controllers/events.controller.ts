@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import { prisma } from "../utils/prisma";
-import { getAvailableSeatsForEvent } from "../services/seat.service";
+import { prisma } from "../utils/prisma.js";
+import { getAvailableSeatsForEvent } from "../services/seat.service.js";
 
 export async function getTicketTypes(req: Request, res: Response) {
   const { id: eventId } = req.params;

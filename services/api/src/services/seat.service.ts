@@ -1,4 +1,4 @@
-import { prisma } from "../utils/prisma";
+import { prisma } from "../utils/prisma.js";
 
 const LOCK_TTL_MS = 15 * 60 * 1000; // 15 минут
 

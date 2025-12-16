@@ -1,8 +1,8 @@
-import { Router } from "../../vendor/express";
-import { getPrismaClient } from "../../core/prisma";
-import { checkSeatAvailable } from "../../services/seatmap";
-import { yookassaCreatePayment } from "../../services/yookassa";
-import { calculateOrderAmount } from "../../services/pricing";
+import { Router } from "../../vendor/express.js";
+import { getPrismaClient } from "../../core/prisma.js";
+import { checkSeatAvailable } from "../../services/seatmap.js";
+import { yookassaCreatePayment } from "../../services/yookassa.js";
+import { calculateOrderAmount } from "../../services/pricing.js";
 
 export const createOrderRouter = Router();
 

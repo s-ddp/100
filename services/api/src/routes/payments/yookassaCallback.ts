@@ -1,8 +1,8 @@
-import { Router } from "../../vendor/express";
-import { getPrismaClient } from "../../core/prisma";
-import { generateTicketPdf } from "../../services/pdf/ticketPdf";
-import { sendTicketEmail } from "../../services/email/sendTicketEmail";
-import { publishNewOrderMessage } from "../../services/queue/rabbit";
+import { Router } from "../../vendor/express.js";
+import { getPrismaClient } from "../../core/prisma.js";
+import { generateTicketPdf } from "../../services/pdf/ticketPdf.js";
+import { sendTicketEmail } from "../../services/email/sendTicketEmail.js";
+import { publishNewOrderMessage } from "../../services/queue/rabbit.js";
 
 export const yookassaCallbackRouter = Router();
 

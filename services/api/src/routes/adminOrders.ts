@@ -1,5 +1,5 @@
-import { Router } from "../vendor/express";
-import { prisma } from "../utils/prisma";
+import { Router } from "../vendor/express.js";
+import { prisma } from "../utils/prisma.js";
 
 export const adminOrdersRouter = Router();
 

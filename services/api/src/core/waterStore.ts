@@ -5,7 +5,7 @@ import {
   waterTicketTypes,
   waterTrips,
   waterVessels,
-} from "../water-data";
+} from "../water-data.js";
 
 export type SeatReservationStatus = "reserved" | "sold";
 

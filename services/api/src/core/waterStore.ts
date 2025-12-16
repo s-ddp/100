@@ -156,13 +156,16 @@ export function buildSeatStatus(eventId: string, tripId?: string | null, seatLoc
     };
   };
 
+  const { vesselId: seatMapVesselId, ...restSeatMap } = seatMap;
+  const vesselId = event?.vesselId ?? seatMapVesselId;
+
   return {
     eventId: event?.id ?? eventId,
     tripId: trip?.id ?? tripId ?? undefined,
-    vesselId: event?.vesselId ?? seatMap.vesselId,
-    vesselName: listVessels().find((v) => v.id === (event?.vesselId ?? seatMap.vesselId))?.name,
-    ...seatMap,
-    areas: seatMap.areas.map((area) => ({
+    vesselId,
+    vesselName: listVessels().find((v) => v.id === vesselId)?.name,
+    ...restSeatMap,
+    areas: restSeatMap.areas.map((area) => ({
       ...area,
       seats: area.seats.map(mapSeat),
     })),

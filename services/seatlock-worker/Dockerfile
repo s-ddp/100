@@ -11,7 +11,7 @@ RUN npm config set registry https://registry.npmjs.org/ \
   && npm config set fetch-retry-factor 2 \
   && npm config set fetch-retry-mintimeout 20000 \
   && npm config set fetch-retry-maxtimeout 120000 \
-  && (npm ci --no-audit --no-fund || npm install --no-audit --no-fund)
+  && npm install --no-audit --no-fund
 
 COPY tsconfig.json ./
 COPY src ./src
@@ -30,7 +30,7 @@ RUN npm config set registry https://registry.npmjs.org/ \
   && npm config set fetch-retry-factor 2 \
   && npm config set fetch-retry-mintimeout 20000 \
   && npm config set fetch-retry-maxtimeout 120000 \
-  && (npm ci --omit=dev --no-audit --no-fund || npm install --omit=dev --no-audit --no-fund)
+  && npm install --omit=dev --no-audit --no-fund
 
 COPY --from=builder /app/dist ./dist
 

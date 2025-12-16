@@ -6,6 +6,8 @@
     "module": "ESNext",
     "moduleResolution": "Node",
     "esModuleInterop": true,
+    "strict": false,
+    "resolveJsonModule": true,
     "forceConsistentCasingInFileNames": true,
     "strict": false,
     "skipLibCheck": true

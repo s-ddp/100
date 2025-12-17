@@ -1,4 +1,4 @@
-import axios from "../../legacy/shims/axios.js";
+import axios from "axios";
 
 const BASE_URL = process.env.ASTRAMARIN_API_URL;
 const API_KEY = process.env.ASTRAMARIN_API_KEY;

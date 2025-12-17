@@ -1,4 +1,4 @@
-import amqp from "../../legacy/shims/amqplib.js";
+import amqp from "amqplib";
 
 const RABBITMQ_URL = process.env.RABBITMQ_URL || "amqp://rabbitmq:5672";
 const QUEUE_NEW_ORDERS = "orders.new";

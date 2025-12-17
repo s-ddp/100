@@ -4,7 +4,7 @@ import { startSeatLockCleanup } from "./workers/seatLockCleanup.js";
 
 async function bootstrap() {
   await startApp();
-  startSeatLockCleanup();
+ // startSeatLockCleanup();
 }
 
 bootstrap().catch((error) => {

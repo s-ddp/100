@@ -1,3 +1,5 @@
+version: "3.9"
+
 services:
   ticketing-api:
     build:
@@ -9,17 +11,14 @@ services:
     ports:
       - "4000:4000"
     command: node dist/index.js
-    restart: unless-stopped
     depends_on:
       - postgres
       - redis
       - rabbitmq
+    restart: unless-stopped
 
   seatlock-worker:
-    build:
-      context: ./services/api
-      dockerfile: Dockerfile
-    image: seatlock-worker:local
+    image: ticketing-api:local
     env_file:
       - ./services/api/.env.docker
     command: node dist/worker.js
@@ -32,9 +31,6 @@ services:
       context: ./services/web
       dockerfile: Dockerfile
     image: ticketing-web:local
-    volumes:
-      - ./services/web:/app
-      - /app/node_modules
     environment:
       NEXT_PUBLIC_API_URL: http://ticketing-api:4000
     ports:
@@ -64,18 +60,4 @@ services:
     ports:
       - "5672:5672"
       - "15672:15672"
-    restart: unless-stopped
-
-  prometheus:
-    image: prom/prometheus:v2.52.0
-    volumes:
-      - ./ops/observability/prometheus.yml:/etc/prometheus/prometheus.yml:ro
-    ports:
-      - "9090:9090"
-    restart: unless-stopped
-
-  grafana:
-    image: grafana/grafana:10.4.2
-    ports:
-      - "3001:3000"
     restart: unless-stopped

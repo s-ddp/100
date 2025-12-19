@@ -83,7 +83,7 @@ eventsRouter.get("/", async (req, res, next) => {
           };
         }));
 
-    res.json({ events, total: events.length });
+    res.json(events);
   } catch (err) {
     next(err);
   }

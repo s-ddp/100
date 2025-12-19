@@ -1,32 +1,27 @@
-FROM node:20-bullseye
+FROM node:20-slim
 
 WORKDIR /app
 
-# npm network hardening
-RUN npm config set registry https://registry.npmjs.org/ \
- && npm config set fetch-retries 10 \
- && npm config set fetch-retry-factor 3 \
- && npm config set fetch-retry-mintimeout 20000 \
- && npm config set fetch-retry-maxtimeout 180000
+# 1. Системные зависимости для Prisma
+RUN apt-get update && apt-get install -y \
+  openssl \
+  ca-certificates \
+  && rm -rf /var/lib/apt/lists/*
 
-# deps
-COPY package.json package-lock.json* ./
-RUN if [ -f package-lock.json ]; then \
-      npm ci --no-audit --no-fund; \
-    else \
-      npm install --no-audit --no-fund; \
-    fi
+# 2. package.json
+COPY package.json ./
+RUN npm install
 
-# ⬇️ КРИТИЧЕСКИ ВАЖНО
-# копируем ВЕСЬ src, включая shims
-COPY src ./src
+# 3. Prisma
 COPY prisma ./prisma
-COPY tsconfig.json ./
-
-# build
 RUN npx prisma generate
+
+# 4. Исходники
+COPY tsconfig.json ./
+COPY src ./src
+
+# 5. Build
 RUN npm run build
 
-# runtime
-EXPOSE 4000
+# 6. Start
 CMD ["node", "dist/index.js"]

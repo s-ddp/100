@@ -1,15 +1,11 @@
 {
-  "name": "ticketing-monorepo",
+  "name": "ticketing-root",
   "private": true,
   "workspaces": [
-    "services/api",
     "services/web",
-    "services/seatlock-worker"
+    "services/api"
   ],
   "scripts": {
-    "start:api": "npm run start --workspace services/api",
-    "start:web": "npm run start --workspace services/web",
-    "test:api": "npm run test --workspace services/api",
-    "test": "npm run test:api"
+    "build:web": "npm run build --workspace ticketing-web"
   }
 }

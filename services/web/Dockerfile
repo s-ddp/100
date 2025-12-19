@@ -1,25 +1,19 @@
-FROM node:20-alpine AS builder
+FROM node:20-alpine
+
 WORKDIR /app
 
-ENV NODE_ENV=production
-
+# 1. Копируем ТОЛЬКО package.json (lock-файла НЕТ — и это НОРМАЛЬНО)
 COPY package.json ./
-RUN npm config set registry https://registry.npmjs.org/ \
- && npm config set fetch-retries 5 \
- && npm config set fetch-retry-factor 2 \
- && npm config set fetch-retry-mintimeout 20000 \
- && npm config set fetch-retry-maxtimeout 120000 \
- && npm install --no-audit --no-fund
 
+# 2. Устанавливаем зависимости (next ОБЯЗАН быть в dependencies)
+RUN npm install
+
+# 3. Копируем остальной код
 COPY . .
+
+# 4. Билдим Next.js
 RUN npm run build
 
-FROM node:20-alpine AS runner
-WORKDIR /app
-
-ENV NODE_ENV=production
-
-COPY --from=builder /app ./
-
+# 5. Запуск
 EXPOSE 3000
-CMD ["npm", "run", "start"]
+CMD ["npm", "start"]

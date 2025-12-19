@@ -1,0 +1,1077 @@
+{
+	"name": "@appigram/yookassa-node",
+	"versions": {
+		"1.1.1": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.1",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.1",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "7761e2f4e1089435ade1ac1541d681d623ed0129",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.1.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-pG1YU/b68IWjwDfvSztBR9T4iew5LoOD8TK6BLfMsrNyTN3aFRaRiJt3hx0DrdkDy1V4dYtsPoX4/O01unqw3A==",
+				"signatures": [
+					{
+						"sig": "MEYCIQCEDA+uakEzVDgy6F7qA1cAwE3CYsJNiu9pohT3lYeU3gIhANatFLNywpjzTW/JZfyWU3IFavZImNDvn42Gq1CszloX",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72401,
+				"npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.13\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJgJAJiCRA9TVsSAnZWagAAcvYP/3kLefe58ZVMQJPaHwCe\nAAMJFea8gUN4+4/QcOioXZCnaMQ9seZptTI38ChSXcZVvV9nn8RNKQ2tQWGi\nUXohxR5/aS68ez6kqgIeaCqQNWtzEBVmKLkuXVKVVRMdnQbrIAaKdXLMZidX\nJBIo8PGDHt5c+Ddxa+qdxf4h0la5O4vuOukNXnl4OhI8SegqdV5dq/jn6x6d\nXJJocbktVlGTjhEKGSS5858k67Ikn9woERa/nlzbkxjvZV8QZl1GfbmwSHkL\nW/EPjMAZ/MNuwSjFf4L0r8YG8V38C6CYDEsZ+5izzBnYUODVqo4Gn0OW16Y0\nDPKdclwIp7D1pQSoCk1YXyO6pFanimwjrf5jQfQYEijY+LZd6C+6ZUbFQpCN\nHuMBygtoR2og6tJjYdP8lh4+9PDDvalyK+33MHbzAqksZt8lLSYiQapdTcj9\nRmPRd8jLRG34ELUIpQx1DYM5e4OPhZRh7rbW05TV9Y3Zx8Ss5FqRe6Ot2r1R\n8i4/hVPXuESCBkq1SisnFYRoMb+t/O3Sf9K+po9cdp9HeRFELXnLck036d8m\nzQGGTkn5dULe5aqKk1uNzJlpNzCwl5iFc7I43WOPyhGvmyOm7TBUVLJBlazH\nPYbPe5hZ+LlHMrOYNHDyaRc7w9QcEWKo9dDD2lZYiaacMfvilk2gEuZb4hoM\nrtNG\r\n=G0m0\r\n-----END PGP SIGNATURE-----\r\n"
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=4"
+			},
+			"gitHead": "b3fd41b8f4730eb89f312d0ef8d0e72a08b1c94d",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "6.14.6",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "12.18.4",
+			"dependencies": {
+				"uuid": "^8.3.2",
+				"axios": "^0.21.1",
+				"request": "^2.88.0",
+				"bluebird": "^3.7.2",
+				"babel-eslint": "^10.1.0",
+				"request-promise": "^4.2.4",
+				"eslint-plugin-import": "^2.22.1",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.0",
+				"mocha": "^8.2.1",
+				"sinon": "^9.2.4",
+				"eslint": "^7.19.0",
+				"supertest": "^6.1.3",
+				"eslint-plugin-chai-friendly": "^0.6.0"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.1_1612972641737_0.05746068164506446",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.2": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.2",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.2",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "c919f2e882d537feb0736eb54f349199a348aca4",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.2.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-0b4MD35ip9NU3V4QpSS51hsFQUzmlFktum7dQVbuOnZFCxR7WNz1xPreFJAcde25mJWUYjPrNDI2hQpq0OrdjA==",
+				"signatures": [
+					{
+						"sig": "MEYCIQCF0KK337CeSVjr1r1+tTnG/i8oMDUneqmR8Ic02ymSDAIhANJTXjPHOwIWNgs9LfJwJn0Gu7NavaQcDSDG3jGb7fwQ",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72402,
+				"npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.13\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJgpUG/CRA9TVsSAnZWagAAZAsP/iaDteeHEHNMFjz4gzWt\nw8dJPB7eVJ2cseDqOnymjT7cvAPaZkTFPs17pvS/2LGcNktIBJ6rhoGYu6oY\nQ9ly7oSk2wlpCtgDNY3mVX/e6f2UCzIrJU2hT1FOu/vd82j0ueHEo4D7K+fl\nQtaGAJtuKmhNsTsaJ1IuHAT+y4UMnSErgZhtvST15kSRvCRLI56SMb7fgKfp\niCnUIvZdAey6u8LlUeSUE+P38ED4Lr3Ype3sMElhwVMs2RxhHd/G/o0LUxd6\nlcz/KAUAGqyCUU/pFImZ90QjDuMqVs7UxoyU6jS+xxYiDPFWj0FB9f03wgHl\nLvdCeAi6Ks9kWogVKy9E/uuwRVN+yK8NWhSvQCqbbBuPYTsexisVk4Jl7D7W\nHaZg8XQ4uPEuoXNR4O54/rjBOooAT/6SK8GTTu1iuUX8vJ0OnoerfLdgmj0L\n0LSuvEcWjeOh+calXx/7cP+yuJMb9S1c4Zni9QWZa1ZBMvUhz21KofkyoUmR\n2vUswo1Vvklmp+smwFUZE9VxsFzHyGVC/uNjXeNHlXf5EV6tpaoDoamROqsm\nGYLPJylF0Fn2zJu6f27CV/+bM99GB9kO1q6zz5O3P8jM6mqOvc6DnYhe+445\nPH9PdhK7XePo4q84Z8nb/Dfl3BSMdhlZ4TsfZp93MRcgUwit7ZjUGRem7x7N\nrzAs\r\n=nfEJ\r\n-----END PGP SIGNATURE-----\r\n"
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=4"
+			},
+			"gitHead": "81675848c4226623f34be877f3da21fc4be4caaf",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "7.13.0",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "12.21.0",
+			"dependencies": {
+				"uuid": "^8.3.2",
+				"axios": "^0.21.1",
+				"request": "^2.88.0",
+				"bluebird": "^3.7.2",
+				"babel-eslint": "^10.1.0",
+				"request-promise": "^4.2.4",
+				"eslint-plugin-import": "^2.23.2",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.4",
+				"mocha": "^8.4.0",
+				"sinon": "^10.0.0",
+				"eslint": "^7.26.0",
+				"supertest": "^6.1.3",
+				"eslint-plugin-chai-friendly": "^0.7.1"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.2_1621443006613_0.04783839240369692",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.3": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.3",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.3",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "7ca17acf6d2d6236a88ff149c098d57c33fa7b07",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.3.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-BLLXYq9yUmL2ffNkz14IBxFRetGcAK0j8P5WeNUCz/vag0yM74z+LFi2T8FBwO04KbGs1VTefmymYj4qV1wHiw==",
+				"signatures": [
+					{
+						"sig": "MEYCIQDRhrKXxHyQ8eyUfms8OvTVBuQMGKDoIEiFKJCjrdSUbgIhAP5m/bH/GGFfWlNtgSKe5Z3O5cPP6PceuB+GdwysXm1v",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72449,
+				"npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.13\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJgpXRWCRA9TVsSAnZWagAAH0cP+gKnko724d3Ev6S6hrCH\nXDtJZ3Y41uZKD1ngyLLf13IHKMd37KMMNbMODmfJv/2zQts/TZoAg8dxao36\n6BR2B/nEoSxn1ikAFmGLzQlhXKJNKgCSI9aLyx/YbVRMKopv/cnpi15mB2Xk\nrfbs6zJUnLDVlFf+VvRLn4vsDjgW3jGS/qs9qWUUnU5uouyChw56WWJM+HPt\ngw7Y3DIDanHUdZxwq8eVe63r+7KmBRW5sW8M16/J5oLbB/5RlY5FD4b3zJ5v\nvZniW936sbSX8BB4y8tbvDKMkFMMG3Dl114L0uLjEwWnbFxky25IssYCn+56\nudgT2wwG2vj1FjgLecmuDyQuio65cKd9F2JrGQzRv/jG7HWApD4QSS/Jm7Or\nrFT5MyQ6f5HXEKY7rVg165zSpxvNlWVgm/IqfEINUpvHK8z4PED5BQHTAmOA\n4qC6LxxoyNu8LnMlq77fNhO9VtjCs2uLb4r1TL4PUN55w0SSz0zGVnGmAnV7\nCN/YKGVuIPECONS6QQ3pt9fMaKEH1RtgeTi/hG6paYf2jQoFuhB/b4i9NdvX\nmhH1E6BNFbQVN4T2wbyisKzp7x3cssOq1I6Xygk0KSry5s6pqgPtmpdj4kZC\nK8gYBCKQ3k12QflIezDwmy0qiEqrWtukBOD4LWsxcP9g38sDs7MKunf887wq\nt84H\r\n=p6ms\r\n-----END PGP SIGNATURE-----\r\n"
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=12"
+			},
+			"gitHead": "361315e310510c4f4adf3d8b3feba8ef8fab4893",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "7.13.0",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "12.21.0",
+			"dependencies": {
+				"uuid": "^8.3.2",
+				"axios": "^0.21.1",
+				"request": "^2.88.2",
+				"bluebird": "^3.7.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.4",
+				"mocha": "^8.4.0",
+				"sinon": "^10.0.0",
+				"eslint": "^7.26.0",
+				"supertest": "^6.1.3",
+				"@babel/core": "^7.14.3",
+				"@babel/eslint-parser": "^7.14.3",
+				"eslint-plugin-import": "^2.23.2",
+				"eslint-plugin-chai-friendly": "^0.7.1"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.3_1621455957562_0.05748301712413939",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.4": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.4",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.4",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "06e6a39b3a9a684320afd9f10e9f8f97d3654da7",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.4.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-b3dhsKLqmPnZ64oayyu6lEVuU8inMKF77y+hZPoTp1ufYpQaUCBzrX4x+k/Yk/f3qtXPZVGm81QXxOlqpQrY3w==",
+				"signatures": [
+					{
+						"sig": "MEUCIDOb8WugFI7ZGahcdI+STe+guLA8Kk8PIiD7iDzgUXYWAiEAhVFUCpKXZpv9FSPJRT+cGDpryPoQAJX330P09OTSYlw=",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72376,
+				"npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v3.0.13\r\nComment: https://openpgpjs.org\r\n\r\nwsFcBAEBCAAQBQJhLzeECRA9TVsSAnZWagAAu4IP/1138pWgXvoAFXSRahP8\nr2sJbX7lDz36KmH80HJnPb0Tjj71UBmujlqpyhOyE36EdD1P0Cy2tyq7IBwB\n0oybCs1+27VLG3n131CkDRdmfwudcjl6XIZG56ZaPRWIh8zwPVmopbGs6UL4\nclaAjATzP9H291WlH3ERml2jzqX6bW6bVs3Yi3YIBz8Mx8OXU2yO86QY5hE5\nrcSYS3MdWrvSJ3sowXghgWLuZEnK7K6wtexQXvN7jnOS5OTbX8rcRti/iA51\nEsCASikuJazVk3MJjlF0dRzotG7g3pRW4cCKqouS8loQAt+5XKCbwbqXtByG\noIUmF/LRm2AXz6iEqLpVH0d11nbOeHnXXz0P18Z4dfE7+88nb2PVh3Dm4ZaJ\nO7rvQe6C5QbaVHb/w7WJyKhRdOI6Z0+yxPZzFBU1CAXjL8m9HjqTDZbCRkZW\nuQeoB+rw3QyrW7XH7jOvDeY8Z6B1Gn+i4bwQogMABmUsSjWUcjco1CxVI5+o\nlklwmjSezdiCN+UGsp0CAQah9oS4U3sfMTGFSCdlh3/Vw1YqhaC7NUU/P6Mv\noaK7Fx5k7Y1uW1LKiFV5TYQ9SIHk2R9zJnlCcJ9RtwzNUoebWW+Vh7c5sZdt\nHMSSFRJUxtdmeHEWzUnb2NIZFKBQTxE5Ge4Go2MmuqnCXgn7+DjAJU1Ky8o/\nVEb5\r\n=1cCA\r\n-----END PGP SIGNATURE-----\r\n"
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=12"
+			},
+			"gitHead": "6831ddbdcd718c38300655d418c203aabeed5946",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "7.21.1",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "14.17.6",
+			"dependencies": {
+				"uuid": "^8.3.2",
+				"axios": "^0.21.1",
+				"request": "^2.88.2",
+				"bluebird": "^3.7.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.4",
+				"mocha": "^9.1.1",
+				"sinon": "^11.1.2",
+				"eslint": "^7.32.0",
+				"supertest": "^6.1.6",
+				"@babel/core": "^7.15.0",
+				"@babel/eslint-parser": "^7.15.0",
+				"eslint-plugin-import": "^2.24.2",
+				"eslint-plugin-chai-friendly": "^0.7.2"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.4_1630484356780_0.9054211959666714",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.5": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.5",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.5",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "b221d1cd261d96b2de32012a2d6fa0d1191c624a",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.5.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-0P9194tadaYBuKEqhw5dhqMsFZFGwe9O0ciQ9CizttR9UbGlnCXOnXqqs9kp9GQwvVwvKIfrYGToNgTOteIEEQ==",
+				"signatures": [
+					{
+						"sig": "MEYCIQCvAJ2oMQ29fO2JsZ6SAFW1w6ioWLHYDKA9v11HmvBg7AIhAJS+jNfLdm7teViSXEsqyX8N4567ucXfWM4EabnkNNwS",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72377,
+				"npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v4.10.10\r\nComment: https://openpgpjs.org\r\n\r\nwsFzBAEBCAAGBQJipHeFACEJED1NWxICdlZqFiEECWMYAoorWMhJKdjhPU1b\r\nEgJ2VmoE0w/9Edv/NaCnrhRZcZAd1TEOqqx5G+LuCNhM5Ue8xoyZRPcDrRYm\r\nnXOjBW8vucas1MeSLG89QROVCfIAolQa10vjZ0TMW/hmCvhuVTd25tdfx7D3\r\nVTFF2oJE6saUji8R9vjDRFhwPgCOwAId6+fQfelSb5+SbxjcxJVGjq+3+gPo\r\nck85Le2uohi6jSwvVPktA3GVN+77UiJ3YLpdJl//OCk3XCijTxp1/Yt/HfM6\r\n4lJKbKp2qA0kZp5LarO2CheUJ2B+Pxhog+tgX/nu32v57vMcXK5ujSwe7Vpm\r\nEt0dSfZQjd0U0y5TYrCdUMT6aNCYS03jItXoWWKwSi8gQUkTvAdAx9VYs04n\r\nh+NcTs1bexSWeqWPP6FCUMJt+utm8oub+y8hqMxn5r8aoZH3sqmvE1QtnTIf\r\ndNy4ijHAZ6VgtmHcP8jyv1QdItgZsIEWdM45QVM1Zo+nPd2/1zC1sd7WLXKD\r\nzpMQtGcLzbtyaGEJ6zfvkIBW7OqINmqajesvEfIQj/T38UeiPKghPzSwVywU\r\nGT8VTz1pZN4QONVbkBhvNA2MgdUiZ1QGn2ipWYzDeW5u/BIKjFRNDJMOPyfP\r\nGES3Mc4nLo1UJP8DE0DLGtxRHiHFUQVr+1UY/oI9tb6mN5T4uh6FVLmVJeic\r\nk4Q3sLdQOGUtgMCVORF5fVVWLT0L/eNtKIk=\r\n=72O7\r\n-----END PGP SIGNATURE-----\r\n"
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=12"
+			},
+			"gitHead": "65142714c28c91535104961631fa3318265a34ee",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "6.14.17",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "14.19.3",
+			"dependencies": {
+				"uuid": "^8.3.2",
+				"axios": "^0.27.2",
+				"request": "^2.88.2",
+				"bluebird": "^3.7.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.6",
+				"mocha": "^10.0.0",
+				"sinon": "^14.0.0",
+				"eslint": "^8.17.0",
+				"supertest": "^6.2.3",
+				"@babel/core": "^7.18.2",
+				"@babel/eslint-parser": "^7.18.2",
+				"eslint-plugin-import": "^2.26.0",
+				"eslint-plugin-chai-friendly": "^0.7.2"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.5_1654945668928_0.5016304682460595",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.6": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.6",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.6",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "11c152c77782de14c29410b847b5d8b593ad5357",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.6.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-2oGHbI3CFtI4eQD8y+ru5Tw1nVPzBEGHVrRm/5iYliOJn5UVw7jeEBMcEkCMtAoo/5BUYxNsxYZ5bYtGJgK3iQ==",
+				"signatures": [
+					{
+						"sig": "MEUCIQDf0+SQtOtJcMcNDgIZ9tT+6aDEUoNq5d4eWihITADpewIgYOjB6N++CBuVT+BtFUwj5HUnfzSUaing7XpvlnnMrBM=",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72377,
+				"npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v4.10.10\r\nComment: https://openpgpjs.org\r\n\r\nwsFzBAEBCAAGBQJjGE0VACEJED1NWxICdlZqFiEECWMYAoorWMhJKdjhPU1b\r\nEgJ2Vmq7RQ//atPQ/jhO2kfx7XSQgs9VF90rUWy7x+0H7Yp/R6c3AXz0zBD7\r\nnLg76fhehZZUDF5NXua4W9yHCADLzxln04r+QzN4+hfQA1/qHMjB+2rk2CfD\r\nsBxNBuJXtI1XtQk81yyuaK+NAMF8ezXl1wBi6VcjCIRpRQ7lLiyrgOgic/SI\r\nDeImLIkPyx1SbLusb3GnVs6d+arHbRDdnyTZnnCz7evrfw44edebjY9+sYfi\r\nH3WO2f4ZjlMrb3q8Z6A4Dw21xh2mcYZHoAjYOCursu5ySI3G4Nclon4iZGwg\r\nupMZF2DC/Ex3sBx0gnOVrEw/wqBDtSqCNWIoshSM6/fefZHtFyxfBh3o+W87\r\nyybaYzCv57p2Da6FhNNmY7dLBc3708h+2XGRq/Pc1aXd2HJ0Qq2VWWzaJRmx\r\nZMmYPK3irn79Zi/Lk1qvaU0g4ciMMHO2uUDN8x2jzyP1pq0bG3RsFPlUXM5D\r\nqzoBFeN9ntN2YWI51mvFcwH3AXTbnsLgv3vWiq8olqD/i+8OSSrhcZ1Bh29r\r\nUgkZaLtsww5RW67CnpJGBdYZ4LPAI78zYghathG3PsGWd0qapD9ZwsYpO2Yn\r\nR0HqZLh3UUoL33VXll51QsFERPQzs9+R5hDD6SXX2nLsVgQXPJ5HQBmkQiB3\r\nAWqSuT3wkhPmRor0uA2Ya95WmIiGn2ck/oI=\r\n=dvhx\r\n-----END PGP SIGNATURE-----\r\n"
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=12"
+			},
+			"gitHead": "8477a215b4c4f97025bdf33a67f50819f3a4561b",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "8.19.0",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "14.20.0",
+			"dependencies": {
+				"uuid": "^9.0.0",
+				"axios": "^0.27.2",
+				"request": "^2.88.2",
+				"bluebird": "^3.7.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.6",
+				"mocha": "^10.0.0",
+				"sinon": "^14.0.0",
+				"eslint": "^8.23.0",
+				"supertest": "^6.2.4",
+				"@babel/core": "^7.19.0",
+				"@babel/eslint-parser": "^7.18.9",
+				"eslint-plugin-import": "^2.26.0",
+				"eslint-plugin-chai-friendly": "^0.7.2"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.6_1662536980980_0.6550874622407066",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.7": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.7",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.7",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "f13e779bc537a6ca168e985c4b6c512220ec3864",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.7.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-/entoirqCJC+ogM9WPMe7yigxWR8cSix86KB8GzTwqATZwzcNxPsmwFoEXj/5yMWqNsUyK+N9GYXtqGbgP1EHA==",
+				"signatures": [
+					{
+						"sig": "MEQCIHaH0IRWENc9+72BG9cFEnuWeLlSrrjuMMBTFyiSF05MAiBTgttP+kE4BHcvKAhUD/inR0T+yCPX2nXhSM9ZVq8tcw==",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72376,
+				"npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v4.10.10\r\nComment: https://openpgpjs.org\r\n\r\nwsFzBAEBCAAGBQJjXG4RACEJED1NWxICdlZqFiEECWMYAoorWMhJKdjhPU1b\r\nEgJ2VmroRBAAkDlYc/vLOirCqChlfmRX85+wZ5wkIElL2OJ16QmXnXkM4rxX\r\nP96Lc4L1L8DxpfG6t3Oij3T/L56C1pLUQhgqkgEFGFsTYaz1uiV++BCZmKvJ\r\nXWo2+RVkiDDkkniZ0oyEh3m6PZThpAU5NCrQWBlZBz6JKLUngw08G6IRPElQ\r\nFexfQ8eLQce+3MZ/TrB/Bj9e3Bsc3Dura+Nr/FhekH6mClEZjZYF4kqUAy4B\r\n1SmVgj60HnDNcjI1i21XEas3nCL7mLwjeHbUeSXgGbaFKxb5BjxM2C6iUgzy\r\nKu2KocpLciR9ycooC14YotR9FtUo4DlXMhPliiAhzqTwCMeJChI1FZyb4q2K\r\nnR4nF9QodUgT10nQkHVbov4iAxFTHkk5aHh5/tbpWYAx5sBwhLpqHLwHITWT\r\nNFbjhzVq52DUG1QLz8I4lXFFjFPbawYit7fVgMQF58ACOo1qmvm8ABk64AvN\r\n96xGdzk1ZSFP1xBruFiFqJEGZ2rTIhb/CNpVZJCDqSKtGC4BwKkPRw2MwW4y\r\ncO8RJJpAzwZkOT1ewfVjPu+GEjMUOZ5hv5tBscw9uEUaJktK8WMpvYN3kMHv\r\nox9zRg2FO7bvKVrDk9EFy5+rUkmvr6hPkQX8IU8b6P7379DWuP1xD00o2cgk\r\no3mDoq3pwS0+xJLj32VvLDIAVrnxRuAKivg=\r\n=ddlr\r\n-----END PGP SIGNATURE-----\r\n"
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=12"
+			},
+			"gitHead": "75053593b6076ac9cac7ae7fd091e687b1d4abb1",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "8.19.2",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "14.20.1",
+			"dependencies": {
+				"uuid": "^9.0.0",
+				"axios": "^1.1.3",
+				"request": "^2.88.2",
+				"bluebird": "^3.7.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.6",
+				"mocha": "^10.1.0",
+				"sinon": "^14.0.1",
+				"eslint": "^8.26.0",
+				"supertest": "^6.3.1",
+				"@babel/core": "^7.19.6",
+				"@babel/eslint-parser": "^7.19.1",
+				"eslint-plugin-import": "^2.26.0",
+				"eslint-plugin-chai-friendly": "^0.7.2"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.7_1667001873277_0.23763955321001018",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.8": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.8",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.8",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "d03e97714f91bc23cf9d3e2a0eb6dcf1f0ed8967",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.8.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-X+WkcGL9M5/cQStjD4AiDqdcic4GFt1c/YEVNHmCZ5ZwUbWkk0fwXbDEe5AR53NRgm+PMBNRloLk4klqkpUKPw==",
+				"signatures": [
+					{
+						"sig": "MEUCIQC1QyshLQvZ9uk1Ug4yr3ivabDnzicX63kDPy3MfXtGyQIgRKLU1zEV8nqOj2LcVS7SEc3b7Zs6zc5rRWH4G8sylmA=",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72376,
+				"npm-signature": "-----BEGIN PGP SIGNATURE-----\r\nVersion: OpenPGP.js v4.10.10\r\nComment: https://openpgpjs.org\r\n\r\nwsFzBAEBCAAGBQJkAciVACEJED1NWxICdlZqFiEECWMYAoorWMhJKdjhPU1b\r\nEgJ2VmrUrg/+IkUpyyqaBHwihK7M+zgDtTOeZ+ZJe3dx6HvAhfUQkMZR4OMX\r\n9IP+qodKevvn3yuR+kbEwExgIWZIUG53R2huJ5bwHqtD4u0mcmrOus8RbSGr\r\ntyV9gRwS6X0302zyFuB60lR1X/xECKV7uv8TifyuOZWHWn/uNvQShmP3XhLP\r\nRsKS/rm9WQah6t7Tmq463M+KZt5Zf/dbLWnjlnQ8C7zy6ak4kwvNwOJvsi1l\r\nozqhd4mjn3bzK6LiK+OKxspt66uPGX3uT512GRw7RxJbd+cwErivHX26nBip\r\nMqeIiCj9Oko9TScOQHbjo7Y8ppmjrsiPj3JuCw6IvMoNVaR+vX9QNRQuVNjG\r\nABB9OfRlDwAwOIOlmnHuGR1hZwD73MkDz/B6AMSZ5LnaZhTHGeSJAVmRDEqb\r\n5Xq+QgPEHLKh5Q3i2p/bLKp1Sr3P5fUS1qyzEBqYL4n9xIUvNr3hfiTWhTkp\r\nqDYU33RtFTtMUKgjKIgedoRy72hGW+fvL98gaucJhoLBqwHv5v+CzqiTkYvQ\r\nvkbrizu9gkbQD0hckCSj4IKgELfyFBcynukzv0DDj1n9+j9x1imQ3l4aiC7f\r\n/3T95fOntcQ9PHMLi1/S7VNkbiVnHRs4L7f7FcpWyl7GQolNOoYyj1TZx97z\r\nQlUuOc6c6AxuVo67zm/R++cke9wNqDoG3vE=\r\n=9y+k\r\n-----END PGP SIGNATURE-----\r\n"
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=12"
+			},
+			"gitHead": "0d55295ecc88c6ae627b1c4bb660b05d05a25bd1",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "9.5.1",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "14.21.2",
+			"dependencies": {
+				"uuid": "^9.0.0",
+				"axios": "^1.3.4",
+				"request": "^2.88.2",
+				"bluebird": "^3.7.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.7",
+				"mocha": "^10.2.0",
+				"sinon": "^15.0.1",
+				"eslint": "^8.35.0",
+				"supertest": "^6.3.3",
+				"@babel/core": "^7.21.0",
+				"@babel/eslint-parser": "^7.19.1",
+				"eslint-plugin-import": "^2.27.5",
+				"eslint-plugin-chai-friendly": "^0.7.2"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.8_1677838485764_0.35357507840391045",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.9": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.9",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.9",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "75c6717c3192630ee8b159cda513431aba2cbf30",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.9.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-VuUiAqKV0u7SYHeUKF8Mn+XDtlfLsGRfaJlshRVmJJfwf5eLHqXdp5lG/P40GDadMN2b8UZK+qp5GaYYAesFBg==",
+				"signatures": [
+					{
+						"sig": "MEUCIFHA7pnFn0Vb/u1c8SnzimjSY9Uvg6c1Gic+54NG2ct+AiEAsYc0VGhBeRQJLgrvuv5+FsUNLPVk7YjL9eF0KckLS8I=",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72378
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=14"
+			},
+			"gitHead": "8da789aa2729b41678b9474e005c53382e7b6821",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "9.8.1",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "16.20.2",
+			"dependencies": {
+				"uuid": "^9.0.0",
+				"axios": "^1.5.0",
+				"request": "^2.88.2",
+				"bluebird": "^3.7.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^4.3.8",
+				"mocha": "^10.2.0",
+				"sinon": "^15.2.0",
+				"eslint": "^8.48.0",
+				"supertest": "^6.3.3",
+				"@babel/core": "^7.22.11",
+				"@babel/eslint-parser": "^7.22.11",
+				"eslint-plugin-import": "^2.28.1",
+				"eslint-plugin-chai-friendly": "^0.7.2"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.9_1693784384665_0.6621564322945863",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.10": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.10",
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"author": {
+				"url": "https://ryfma.com/",
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com"
+			},
+			"license": "MIT",
+			"_id": "@appigram/yookassa-node@1.1.10",
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"dist": {
+				"shasum": "a08ce3e39aa02e24c121831343510b1bd46c94c6",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.10.tgz",
+				"fileCount": 25,
+				"integrity": "sha512-jkvH1lTqmHyP52Ox67AQZTtOTh8V0CaICK5xjKWpxNQMLc/uisRN+YEih/SumHVD/cwTnlk3yrieueqMzLlSFA==",
+				"signatures": [
+					{
+						"sig": "MEUCIQDB0HqOAuABNIwpPLErTYoPdQml2GX6cQtWwYkqNMpZTQIgHJma5milBF5HGucDcWmKxlizx3+DCLapQICLQR2cWds=",
+						"keyid": "SHA256:jl3bwswu80PjjokCgh0o2w5c2U4LhQAE57gj9cz1kzA"
+					}
+				],
+				"unpackedSize": 72377
+			},
+			"main": "./lib/index.js",
+			"engines": {
+				"node": ">=14"
+			},
+			"gitHead": "b91ddb4f2b545347bd8f1b9f519a9bd400759b9c",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"repository": {
+				"url": "git+https://github.com/appigram/yookassa-node.git",
+				"type": "git"
+			},
+			"_npmVersion": "6.14.18",
+			"description": "YooKassa API v3",
+			"directories": {},
+			"_nodeVersion": "14.21.3",
+			"dependencies": {
+				"uuid": "^9.0.1",
+				"axios": "^1.6.8",
+				"request": "^2.88.2",
+				"bluebird": "^3.7.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4"
+			},
+			"_hasShrinkwrap": false,
+			"devDependencies": {
+				"chai": "^5.1.0",
+				"mocha": "^10.4.0",
+				"sinon": "^17.0.1",
+				"eslint": "^8.48.0",
+				"supertest": "^7.0.0",
+				"@babel/core": "^7.24.4",
+				"@babel/eslint-parser": "^7.24.1",
+				"eslint-plugin-import": "^2.29.1",
+				"eslint-plugin-chai-friendly": "^0.7.4"
+			},
+			"_npmOperationalInternal": {
+				"tmp": "tmp/yookassa-node_1.1.10_1714333944521_0.7348598878617112",
+				"host": "s3://npm-registry-packages"
+			},
+			"contributors": []
+		},
+		"1.1.11": {
+			"name": "@appigram/yookassa-node",
+			"version": "1.1.11",
+			"description": "YooKassa API v3",
+			"main": "./lib/index.js",
+			"scripts": {
+				"lint": "eslint ./",
+				"test": "mocha ./tests/basic.js"
+			},
+			"keywords": [
+				"YooKassa",
+				"YooMoney",
+				"Yandex.Checkout",
+				"Yandex.Kassa",
+				"payment processing",
+				"credit cards",
+				"api"
+			],
+			"repository": {
+				"type": "git",
+				"url": "git+https://github.com/appigram/yookassa-node.git"
+			},
+			"engines": {
+				"node": ">=14"
+			},
+			"author": {
+				"name": "Evgeny Sysmanov",
+				"email": "appigram@gmail.com",
+				"url": "https://ryfma.com/"
+			},
+			"license": "MIT",
+			"devDependencies": {
+				"@babel/core": "^7.28.0",
+				"@babel/eslint-parser": "^7.28.0",
+				"chai": "^5.2.1",
+				"eslint": "^9.32.0",
+				"eslint-plugin-chai-friendly": "^1.1.0",
+				"eslint-plugin-import": "^2.32.0",
+				"globals": "^16.3.0",
+				"mocha": "^11.7.1",
+				"sinon": "^21.0.0",
+				"supertest": "^7.1.4"
+			},
+			"dependencies": {
+				"axios": "^1.11.0",
+				"bluebird": "^3.7.2",
+				"request": "^2.88.2",
+				"request-promise": "^4.2.6",
+				"request-promise-core": "^1.1.4",
+				"uuid": "^11.1.0"
+			},
+			"_id": "@appigram/yookassa-node@1.1.11",
+			"gitHead": "d51f5c5865ce57ac1165b6604d84fc4478cd6cb3",
+			"bugs": {
+				"url": "https://github.com/appigram/yookassa-node/issues"
+			},
+			"homepage": "https://github.com/appigram/yookassa-node#readme",
+			"_nodeVersion": "22.17.0",
+			"_npmVersion": "10.9.2",
+			"dist": {
+				"integrity": "sha512-ngy8PDxgq0Nruz4p8K12S405+8Vkzf6gmOAb5GoJflvmw+3irBBzxwcduLwOOEW/5UKWYvt1uJ46MDnv5AX5yw==",
+				"shasum": "b2e86c233599d0c8c80e6878a3539fe8fb32377e",
+				"tarball": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.11.tgz",
+				"fileCount": 25,
+				"unpackedSize": 71630,
+				"signatures": [
+					{
+						"keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U",
+						"sig": "MEQCIAglmVf3TGAEosfitHVxT8eRabVOH9EdoW7waNZqX+BhAiAekqmg/Muq8X0GvvUU8IX97bFIJ8lzIwOSfGggSwfyyw=="
+					}
+				]
+			},
+			"_npmUser": {
+				"name": "appigram",
+				"email": "appigram@gmail.com"
+			},
+			"directories": {},
+			"maintainers": [
+				{
+					"name": "appigram",
+					"email": "appigram@gmail.com"
+				}
+			],
+			"_npmOperationalInternal": {
+				"host": "s3://npm-registry-packages-npm-production",
+				"tmp": "tmp/yookassa-node_1.1.11_1753649030396_0.21877968520092805"
+			},
+			"_hasShrinkwrap": false,
+			"contributors": []
+		}
+	},
+	"time": {
+		"created": "2021-02-10T15:57:21.686Z",
+		"modified": "2025-07-27T20:43:50.763Z",
+		"1.1.1": "2021-02-10T15:57:21.840Z",
+		"1.1.2": "2021-05-19T16:50:06.792Z",
+		"1.1.3": "2021-05-19T20:25:57.724Z",
+		"1.1.4": "2021-09-01T08:19:16.948Z",
+		"1.1.5": "2022-06-11T11:07:49.232Z",
+		"1.1.6": "2022-09-07T07:49:41.188Z",
+		"1.1.7": "2022-10-29T00:04:33.589Z",
+		"1.1.8": "2023-03-03T10:14:45.953Z",
+		"1.1.9": "2023-09-03T23:39:44.877Z",
+		"1.1.10": "2024-04-28T19:52:24.682Z",
+		"1.1.11": "2025-07-27T20:43:50.593Z"
+	},
+	"users": {},
+	"dist-tags": {
+		"latest": "1.1.11"
+	},
+	"_uplinks": {
+		"npmjs": {
+			"etag": "W/\"d6685da2c41aba52be8cacbbd632cf68\"",
+			"fetched": 1766097191918
+		}
+	},
+	"_distfiles": {
+		"yookassa-node-1.1.1.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.1.tgz",
+			"sha": "7761e2f4e1089435ade1ac1541d681d623ed0129",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.2.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.2.tgz",
+			"sha": "c919f2e882d537feb0736eb54f349199a348aca4",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.3.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.3.tgz",
+			"sha": "7ca17acf6d2d6236a88ff149c098d57c33fa7b07",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.4.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.4.tgz",
+			"sha": "06e6a39b3a9a684320afd9f10e9f8f97d3654da7",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.5.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.5.tgz",
+			"sha": "b221d1cd261d96b2de32012a2d6fa0d1191c624a",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.6.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.6.tgz",
+			"sha": "11c152c77782de14c29410b847b5d8b593ad5357",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.7.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.7.tgz",
+			"sha": "f13e779bc537a6ca168e985c4b6c512220ec3864",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.8.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.8.tgz",
+			"sha": "d03e97714f91bc23cf9d3e2a0eb6dcf1f0ed8967",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.9.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.9.tgz",
+			"sha": "75c6717c3192630ee8b159cda513431aba2cbf30",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.10.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.10.tgz",
+			"sha": "a08ce3e39aa02e24c121831343510b1bd46c94c6",
+			"registry": "npmjs"
+		},
+		"yookassa-node-1.1.11.tgz": {
+			"url": "https://registry.npmjs.org/@appigram/yookassa-node/-/yookassa-node-1.1.11.tgz",
+			"sha": "b2e86c233599d0c8c80e6878a3539fe8fb32377e",
+			"registry": "npmjs"
+		}
+	},
+	"_attachments": {},
+	"_rev": "2-5bd6b5eea6647092",
+	"_id": "@appigram/yookassa-node",
+	"readme": "README.md"
+}

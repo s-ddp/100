@@ -12,3 +12,6 @@ ops/cache
 # Next.js build output
 .next
 services/web/node_modules/@types/react-dom/index.d.ts
+# Verdaccio
+verdaccio/storage/
+verdaccio/conf/

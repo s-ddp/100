@@ -1,0 +1,557 @@
+@'
+/* Общие стили */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Roboto', sans-serif;
+}
+
+body {
+  background: #fff;
+  padding-top: 80px; /* Отступ для фиксированной шапки */
+}
+
+a { color: inherit; }
+
+/* ============================================== */
+/* Шапка сайта — фиксированная */
+/* ============================================== */
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 100;
+  padding: 16px 0;
+}
+
+.header-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.header-logo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0055FB;
+  text-decoration: none;
+}
+
+.header-nav {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+}
+
+.header-nav-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: #212121;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.header-nav-link:hover { color: #0055FB; }
+
+.header-actions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.header-cart {
+  position: relative;
+  font-size: 20px;
+  color: #212121;
+  cursor: pointer;
+}
+
+.header-cart-badge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  background: #FF6B00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-tickets-btn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0055FB;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-tickets-btn:hover { background: #0044CC; }
+
+/* Бургер-меню для мобильных — плейсхолдер */
+.header-burger {
+  display: none;
+  font-size: 24px;
+  color: #212121;
+  cursor: pointer;
+}
+
+/* ============================================== */
+/* Блок хитов продаж */
+/* ============================================== */
+.top-sales-block {
+  background: #F0F8FF;
+  padding: 40px 0;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #e0e8f0;
+}
+
+.top-sales-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  position: relative;
+}
+
+.top-sales-header {
+  margin-bottom: 20px;
+  padding: 0 8px;
+}
+
+.top-sales-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #212121;
+  margin-bottom: 4px;
+}
+
+.top-sales-subtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+/* Стрелки для хитов продаж */
+.top-sales-arrow {
+  position: absolute;
+  top: calc(50% + 20px);
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: rgba(255,255,255,0.95);
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.top-sales-arrow:hover { background: #fff; }
+.top-sales-arrow-left { left: 0; }
+.top-sales-arrow-right { right: 0; }
+.top-sales-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ============================================== */
+/* Календарь */
+/* ============================================== */
+.yandex-afisha-calendar {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  overflow: hidden; /* ВАЖНО: прячем скроллбар */
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.calendar-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: none;
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s;
+}
+
+.calendar-arrow-left { left: 8px; }
+.calendar-arrow-right { right: 8px; }
+
+.calendar-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+}
+
+.calendar-dates-wrapper {
+  display: flex;
+  gap: 16px;
+  transition: transform 0.3s ease;
+  will-change: transform;
+}
+
+.month-group {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.month-title {
+  font-size: 12px;
+  font-weight: 400;
+  color: #999;
+  margin-left: 4px;
+  text-transform: lowercase;
+}
+
+.days-row {
+  display: flex;
+  gap: 12px;
+}
+
+.day-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 36px;
+  cursor: pointer;
+}
+
+.day-weekday {
+  font-size: 10px;
+  font-weight: 400;
+  color: #666;
+}
+
+.day-weekday.weekend { color: #E52E2E; }
+
+.day-number {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+}
+
+.day-number.past { color: #999; }
+
+.day-number.active {
+  color: #0055FB;
+  font-weight: 700;
+}
+
+/* ============================================== */
+/* Блоки экскурсий */
+/* ============================================== */
+.excursion-categories {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.category-block {
+  margin-bottom: 64px;
+  position: relative;
+}
+
+.category-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding: 0 8px;
+}
+
+.category-title {
+  font-size: 22px;
+  font-weight: 500;
+  color: #212121;
+}
+
+.category-all-link {
+  font-size: 14px;
+  font-weight: 500;
+  color: #0055FB;
+  text-decoration: none;
+  transition: opacity 0.2s;
+}
+
+.category-all-link:hover { opacity: 0.8; }
+
+/* Обертка карточек */
+.excursion-cards-wrapper {
+  width: 100%;
+  overflow: hidden;
+}
+
+.excursion-cards-row {
+  display: flex;
+  gap: 24px;
+  transition: transform 0.3s ease;
+  will-change: transform;
+  min-width: max-content;
+}
+
+/* Карточка экскурсии */
+.excursion-card {
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  transition: transform 0.2s, box-shadow 0.2s;
+  min-width: 300px;
+  max-width: 300px;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+}
+
+.excursion-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+}
+
+/* Изображение в карточке */
+.excursion-card-img {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  background-color: #f0f0f0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #999;
+  font-size: 14px;
+}
+
+/* Бейдж */
+.excursion-tag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  padding: 6px 12px;
+  background: #FF6B00;
+  color: #fff;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 16px;
+  z-index: 5;
+}
+
+/* Контент карточки */
+.excursion-card-content {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.excursion-card-rating {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.excursion-card-title {
+  font-size: 18px;
+  font-weight: 500;
+  color: #212121;
+  margin-bottom: 8px;
+  line-height: 1.3;
+  min-height: 54px;
+}
+
+.excursion-card-meta {
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  color: #666;
+  margin-bottom: 16px;
+}
+
+.excursion-card-price {
+  font-size: 20px;
+  font-weight: 700;
+  color: #212121;
+  margin-bottom: 16px;
+}
+
+.excursion-book-btn {
+  width: 100%;
+  padding: 12px;
+  border: none;
+  border-radius: 8px;
+  background: #0055FB;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.excursion-book-btn:hover { background: #0044CC; }
+.excursion-book-btn:active { transform: scale(0.98); }
+
+/* Стрелки для карточек категорий */
+.category-arrow {
+  position: absolute;
+  top: calc(50% + 20px);
+  transform: translateY(-50%);
+  width: 40px;
+  height: 40px;
+  border: none;
+  background: rgba(255,255,255,0.95);
+  border-radius: 50%;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 20px;
+  color: #666;
+  cursor: pointer;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: opacity 0.2s, background 0.2s;
+}
+
+.category-arrow:hover { background: #fff; }
+.category-arrow-left { left: 0; }
+.category-arrow-right { right: 0; }
+
+.category-arrow:disabled {
+  opacity: 0.3;
+  cursor: default;
+  pointer-events: none;
+}
+
+/* ============================================== */
+/* Подвал сайта */
+/* ============================================== */
+.footer {
+  background: #0F172A;
+  color: #fff;
+  padding: 60px 0 24px;
+}
+
+.footer-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.footer-column h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.footer-column ul { list-style: none; }
+.footer-column ul li { margin-bottom: 12px; }
+
+.footer-column ul li a {
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-column ul li a:hover { color: #fff; }
+
+.footer-contact-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 12px;
+}
+
+.footer-socials {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.footer-social-link {
+  font-size: 20px;
+  color: rgba(255,255,255,0.7);
+  transition: color 0.2s;
+}
+
+.footer-social-link:hover { color: #0055FB; }
+
+.footer-copyright {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 24px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+}
+
+/* ============================================== */
+/* Адаптивность */
+/* ============================================== */
+@media (max-width: 1024px) {
+  .header-nav { display: none; }
+  .header-burger { display: block; }
+  .excursion-card { min-width: 260px; max-width: 260px; }
+}
+
+@media (max-width: 768px) {
+  .excursion-card { min-width: 240px; max-width: 240px; }
+}
+
+@media (max-width: 480px) {
+  .header-tickets-btn { display: none; }
+  .excursion-card { min-width: 220px; max-width: 220px; }
+}
+'@ | Set-Content -Encoding utf8 "app\globals.css"

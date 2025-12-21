@@ -1,0 +1,110 @@
+@'
+.header {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%;
+  background: #fff;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  z-index: 100;
+  padding: 16px 0;
+}
+
+.headerContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.headerLogo {
+  font-size: 20px;
+  font-weight: 700;
+  color: #0055FB;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.headerNav {
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+}
+
+.headerNavLink {
+  font-size: 14px;
+  font-weight: 500;
+  color: #212121;
+  text-decoration: none;
+  transition: color 0.2s;
+  white-space: nowrap;
+}
+
+.headerNavLink:hover { color: #0055FB; }
+
+.headerActions {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.headerCart {
+  position: relative;
+  font-size: 20px;
+  color: #212121;
+  cursor: pointer;
+  line-height: 1;
+}
+
+.headerCartBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  width: 18px;
+  height: 18px;
+  background: #FF6B00;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 500;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.headerTicketsBtn {
+  padding: 8px 16px;
+  border: none;
+  border-radius: 6px;
+  background: #0055FB;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+
+.headerTicketsBtn:hover { background: #0044CC; }
+
+.headerBurger {
+  display: none;
+  font-size: 24px;
+  color: #212121;
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .headerNav { display: none; }
+  .headerBurger { display: block; }
+}
+
+@media (max-width: 480px) {
+  .headerTicketsBtn { display: none; }
+}
+'@ | Set-Content -Encoding utf8 "app\ui\SiteHeader.module.css"

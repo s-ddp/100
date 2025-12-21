@@ -2,10 +2,6 @@
   "name": "ticketing-root",
   "private": true,
   "workspaces": [
-    "services/web",
-    "services/api"
-  ],
-  "scripts": {
-    "build:web": "npm run build --workspace ticketing-web"
-  }
+    "services/web"
+  ]
 }

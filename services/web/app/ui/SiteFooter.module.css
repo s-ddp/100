@@ -1,0 +1,72 @@
+﻿@'
+.footer {
+  background: #0F172A;
+  color: #fff;
+  padding: 60px 0 24px;
+  margin-top: 40px;
+}
+
+.footerContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.footerColumn h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+}
+
+.footerColumn ul { list-style: none; margin: 0; padding: 0; }
+.footerColumn ul li { margin-bottom: 12px; }
+
+.footerColumn ul li a {
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footerColumn ul li a:hover { color: #fff; }
+
+.footerText {
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 16px;
+}
+
+.footerContactItem {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: rgba(255,255,255,0.7);
+  margin-bottom: 12px;
+}
+
+.footerSocials { display: flex; gap: 16px; margin-top: 16px; }
+
+.footerSocialLink {
+  font-size: 20px;
+  color: rgba(255,255,255,0.7);
+  transition: color 0.2s;
+}
+
+.footerSocialLink:hover { color: #0055FB; }
+
+.footerCopyright {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 24px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+}
+'@ | Set-Content -Encoding utf8 "app\ui\SiteFooter.module.css"

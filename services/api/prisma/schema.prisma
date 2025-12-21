@@ -1,290 +1,73 @@
-// DATABASE ----------------------------------------------
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
-// MODELS --------------------------------------------------
-
-// Пользователь (покупатель)
-model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  phone     String?
-  name      String?
-  createdAt DateTime @default(now())
-
-  orders Order[]
-}
-
-// Мероприятие
 model Event {
-  id          String    @id @default(cuid())
-  title       String
-  startsAt    DateTime
-  endsAt      DateTime?
-  venueId     String?
-  description String?
-  imageUrl    String?
+  id              String   @id
+  title           String
+  description     String?
+  city            String?
+  category        String?
+  image           String?
+  durationMinutes Int?
+  hasSeating      Boolean  @default(true)
 
-  ticketTypes TicketType[]
-  seats       Seat[]
-  prices      TicketPrice[]
-  trips       Trip[]
-  orders      Order[]
+  createdAt       DateTime @default(now())
 
-  seatMaps   SeatMap[] // ✅ обратная связь
-  seatLocks  SeatLock[] // ✅ обратная связь
-  orderItems OrderItem[] // ✅ обратная связь
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-// Рейс / маршрут
-model Trip {
-  id      String @id @default(uuid())
-  eventId String
-  event   Event  @relation(fields: [eventId], references: [id])
-
-  boatName  String?
-  startTime DateTime
-  endTime   DateTime?
-
-  orders Order[]
-}
-
-// Типы билетов
-model TicketType {
-  id          String    @id @default(cuid())
-  eventId     String
-  code        String
-  name        String
-  description String?
-  currency    String
-  saleStarts  DateTime?
-  saleEnds    DateTime?
-  isActive    Boolean   @default(true)
-
-  event      Event         @relation(fields: [eventId], references: [id])
-  prices     TicketPrice[]
-  orderItems OrderItem[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([eventId, code])
-  @@index([eventId])
-}
-
-// Прайсы билетов
-model TicketPrice {
-  id             String   @id @default(cuid())
-  eventId        String
-  ticketTypeId   String
-  seatCategoryId String?
-  zone           String?
-  amount         Decimal  @db.Decimal(10, 2)
-  feeAmount      Decimal? @db.Decimal(10, 2)
-  currency       String
-  isActive       Boolean  @default(true)
-
-  event        Event         @relation(fields: [eventId], references: [id])
-  ticketType   TicketType    @relation(fields: [ticketTypeId], references: [id])
-  seatCategory SeatCategory? @relation(fields: [seatCategoryId], references: [id])
-
-  @@index([eventId])
-  @@index([ticketTypeId])
-  @@index([seatCategoryId])
-}
-
-// Категория мест
-model SeatCategory {
-  id   String @id @default(cuid())
-  code String
-  name String
-
-  seats        Seat[]
-  ticketPrices TicketPrice[] // ✅ обратная связь
-
-  @@unique([code])
-}
-
-// ------------------------------
-// Схема мест
-// ------------------------------
-model SeatMap {
-  id      Int    @id @default(autoincrement())
-  eventId String
-  event   Event  @relation(fields: [eventId], references: [id])
-
-  schemaJson Json
-  seats      Seat[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([eventId])
+  seats           Seat[]
+  orders          Order[]
 }
 
 model Seat {
-  id         String  @id @default(cuid())
+  id         String   @id
   eventId    String
-  externalId String
-  label      String
-  categoryId String?
+  event      Event    @relation(fields: [eventId], references: [id])
+
+  seatCode   String
+  alias      String?
   zone       String?
-  isActive   Boolean @default(true)
+  label      String?
+  category   String?
 
-  seatMapId Int?
-  seatMap   SeatMap? @relation(fields: [seatMapId], references: [id])
+  isActive   Boolean  @default(true)
 
-  row       String?
-  section   String?
-  priceZone String?
-  basePrice Decimal? @db.Decimal(10, 2)
-
-  event    Event         @relation(fields: [eventId], references: [id])
-  category SeatCategory? @relation(fields: [categoryId], references: [id])
-
-  locks      SeatLock[]
   orderItems OrderItem[]
-  orderSeats OrderSeat[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@unique([eventId, externalId])
-  @@index([eventId])
-  @@index([seatMapId])
-  @@index([categoryId])
+  locks      SeatLock[]
 }
 
-// ------------------------------
-// Блокировка мест
-// ------------------------------
-model SeatLock {
-  id          String   @id @default(cuid())
-  seatId      String
-  eventId     String
-  lockedUntil DateTime
-  bySessionId String
-  status      String
-
-  seat  Seat  @relation(fields: [seatId], references: [id])
-  event Event @relation(fields: [eventId], references: [id])
-
-  @@index([eventId])
-  @@index([seatId])
-  @@index([lockedUntil])
-}
-
-// Заказ
 model Order {
-  id     String  @id @default(cuid())
-  userId String?
-  user   User?   @relation(fields: [userId], references: [id])
+  id        String      @id @default(uuid())
+  eventId   String
+  event     Event       @relation(fields: [eventId], references: [id])
 
-  eventId String
-  event   Event  @relation(fields: [eventId], references: [id])
+  status    String
+  createdAt DateTime    @default(now())
 
-  tripId String?
-  trip   Trip?   @relation(fields: [tripId], references: [id])
-
-  status      OrderStatus @default(PENDING)
-  totalAmount Int
-  currency    String      @default("RUB")
-
-  customerName  String?
-  customerPhone String?
-  customerEmail String?
-
-  items   OrderItem[]
-  payment Payment?
-  seats   OrderSeat[]
-  logs    OrderLog[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  items     OrderItem[]
 }
 
-model OrderSeat {
-  id      Int    @id @default(autoincrement())
-  orderId String
-  seatId  String
-
-  order Order @relation(fields: [orderId], references: [id])
-  seat  Seat  @relation(fields: [seatId], references: [id])
-
-  price     Decimal? @db.Decimal(10, 2)
-  createdAt DateTime @default(now())
-
-  @@index([orderId])
-  @@index([seatId])
-}
-
-// Позиции заказа
 model OrderItem {
-  id           String  @id @default(cuid())
-  orderId      String
-  eventId      String
-  ticketTypeId String
-  seatId       String?
-  price        Int
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
 
-  order      Order      @relation(fields: [orderId], references: [id])
-  event      Event      @relation(fields: [eventId], references: [id])
-  ticketType TicketType @relation(fields: [ticketTypeId], references: [id])
-  seat       Seat?      @relation(fields: [seatId], references: [id])
-
-  @@index([eventId])
-  @@index([seatId])
+  eventId   String
+  seatId    String?
+  seat      Seat?    @relation(fields: [seatId], references: [id])
 }
 
-model OrderLog {
-  id        String   @id @default(cuid())
-  createdAt DateTime @default(now())
+model SeatLock {
+  id        String   @id @default(uuid())
+  eventId   String
+  seatId    String
+  seat      Seat     @relation(fields: [seatId], references: [id])
 
-  orderId String
-  order   Order  @relation(fields: [orderId], references: [id])
-
-  action   String
-  oldValue String?
-  newValue String?
-  user     String?
-}
-
-// Платёж
-model Payment {
-  id      String @id @default(uuid())
-  orderId String @unique
-  order   Order  @relation(fields: [orderId], references: [id])
-
-  provider   String        @default("yookassa")
-  status     PaymentStatus
-  externalId String?
-  amount     Decimal       @db.Decimal(10, 2)
-  createdAt  DateTime      @default(now())
-}
-
-// ENUMS ----------------------------------------------------
-
-enum OrderStatus {
-  PENDING
-  PAID
-  CANCELLED
-  REFUNDED
-}
-
-enum PaymentStatus {
-  PENDING
-  WAITING
-  PAID
-  FAILED
-  CANCELED
+  sessionId String
+  lockedAt  DateTime
+  expiresAt DateTime
 }

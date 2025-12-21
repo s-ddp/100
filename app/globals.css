@@ -1,0 +1,8 @@
+﻿* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; }
+body {
+  font-family: Roboto, system-ui, -apple-system, Segoe UI, Arial, sans-serif;
+  color: #111;
+  background: #fff;
+}
+a { color: inherit; }

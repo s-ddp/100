@@ -1,7 +1,4 @@
-export const metadata = {
-  title: "AquaVoyage — билеты на водные экскурсии",
-  description: "Онлайн покупка билетов на водные экскурсии и круизы",
-};
+﻿import "./globals.css";
 
 export default function RootLayout({
   children,
@@ -10,7 +7,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ru">
-      <body style={{ margin: 0, fontFamily: "Arial, sans-serif" }}>
+      <body>
         {children}
       </body>
     </html>

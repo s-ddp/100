@@ -13,7 +13,7 @@ export default function SiteHeader() {
         {/* Навигация */}
         <nav className={styles.nav}>
           <a href="#">Экскурсии</a>
-          <a href="#">Аренда</a>
+          <Link href="/rent">Аренда</Link>
           <a href="#">Причалы</a>
           <a href="#">Новости</a>
           <Link href="/help">Уголок покупателя</Link>

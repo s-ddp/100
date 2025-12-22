@@ -1,4 +1,3 @@
-﻿@'
 import styles from "./SiteFooter.module.css";
 
 export default function SiteFooter() {
@@ -58,4 +57,3 @@ export default function SiteFooter() {
     </footer>
   );
 }
-'@ | Set-Content -Encoding utf8 "app\ui\SiteFooter.tsx"

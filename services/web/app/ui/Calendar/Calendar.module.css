@@ -1,0 +1,51 @@
+.calendar {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 16px 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.monthGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.monthTitle {
+  font-size: 12px;
+  color: #999;
+  margin-left: 4px;
+}
+
+.daysRow {
+  display: flex;
+  gap: 12px;
+}
+
+.dayItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 36px;
+}
+
+.weekday {
+  font-size: 10px;
+  color: #666;
+}
+
+.weekend {
+  color: #e52e2e;
+}
+
+.dayNumber {
+  font-size: 14px;
+  font-weight: 500;
+  color: #000;
+}
+
+.active {
+  color: #0055fb;
+  font-weight: 700;
+}

@@ -1,4 +1,10 @@
 ﻿import "./globals.css";
+import SiteHeader from "./ui/SiteHeader";
+
+export const metadata = {
+  title: "AquaVoyage",
+  description: "Экскурсии и аренда водного транспорта",
+};
 
 export default function RootLayout({
   children,
@@ -8,7 +14,13 @@ export default function RootLayout({
   return (
     <html lang="ru">
       <body>
-        {children}
+        {/* Хедер */}
+        <SiteHeader />
+
+        {/* Контент всех страниц */}
+        <main style={{ paddingTop: "96px" }}>
+          {children}
+        </main>
       </body>
     </html>
   );

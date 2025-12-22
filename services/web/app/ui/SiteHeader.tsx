@@ -1,47 +1,29 @@
-@'
-import Link from "next/link";
 import styles from "./SiteHeader.module.css";
-
-const navItems = [
-  { label: "Главная", href: "/" },
-  { label: "Хиты продаж", href: "/#top-sales" },
-  { label: "Экскурсии", href: "/events" },
-  { label: "О нас", href: "/about" },
-  { label: "Контакты", href: "/contacts" },
-];
 
 export default function SiteHeader() {
   return (
     <header className={styles.header}>
-      <div className={styles.headerContainer}>
-        <Link href="/" className={styles.headerLogo}>
+      <div className={styles.container}>
+        {/* Логотип */}
+        <div className={styles.logo}>
           AquaVoyage
-        </Link>
+        </div>
 
-        <nav className={styles.headerNav} aria-label="Главное меню">
-          {navItems.map((x) => (
-            <Link key={x.href} href={x.href} className={styles.headerNavLink}>
-              {x.label}
-            </Link>
-          ))}
+        {/* Навигация */}
+        <nav className={styles.nav}>
+          <a href="#">Экскурсии</a>
+          <a href="#">Аренда</a>
+          <a href="#">Причалы</a>
+          <a href="#">Новости</a>
+          <a href="#">Уголок покупателя</a>
+          <a href="#">Контакты</a>
         </nav>
 
-        <div className={styles.headerActions}>
-          <div className={styles.headerCart} title="Корзина">
-            <i className="fas fa-shopping-cart" />
-            <span className={styles.headerCartBadge}>0</span>
-          </div>
-
-          <Link className={styles.headerTicketsBtn} href="/me/tickets">
-            Мои билеты
-          </Link>
-
-          <div className={styles.headerBurger} title="Меню">
-            <i className="fas fa-bars" />
-          </div>
-        </div>
+        {/* Кнопка */}
+        <button className={styles.ticketsButton}>
+          Мои билеты
+        </button>
       </div>
     </header>
   );
 }
-'@ | Set-Content -Encoding utf8 "app\ui\SiteHeader.tsx"

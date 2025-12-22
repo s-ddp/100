@@ -1,0 +1,267 @@
+/* =========================
+   ХИТЫ ПРОДАЖ
+========================= */
+.topSales {
+  background: #f0f8ff;
+  padding: 40px 0;
+  border-bottom: 1px solid #e0e8f0;
+}
+
+.topSalesContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.topSalesHeader {
+  margin-bottom: 24px;
+}
+
+.topSalesTitle {
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.topSalesSubtitle {
+  font-size: 14px;
+  color: #666;
+}
+
+.topSalesRow {
+  display: flex;
+  gap: 24px;
+}
+
+.topSalesCard {
+  width: 300px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.topSalesImage {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.topSalesTag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: #ff6b00;
+  color: #fff;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 16px;
+}
+
+.topSalesContent {
+  padding: 20px;
+}
+
+.topSalesTitleCard {
+  font-size: 18px;
+  margin-bottom: 8px;
+}
+
+.topSalesMeta {
+  font-size: 13px;
+  color: #666;
+}
+
+.topSalesPrice {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 12px 0;
+}
+
+.topSalesButton {
+  width: 100%;
+  padding: 12px;
+  background: #0055fb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* =========================
+   КАЛЕНДАРЬ
+========================= */
+.calendar {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 24px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.monthTitle {
+  font-size: 12px;
+  color: #999;
+  margin-bottom: 8px;
+}
+
+.daysRow {
+  display: flex;
+  gap: 12px;
+}
+
+.day {
+  width: 36px;
+  text-align: center;
+}
+
+.weekday {
+  font-size: 10px;
+  color: #666;
+}
+
+.weekend {
+  color: #e52e2e;
+}
+
+.dayNumber {
+  font-size: 14px;
+}
+
+.dayNumberActive {
+  font-size: 14px;
+  font-weight: 700;
+  color: #0055fb;
+}
+
+/* =========================
+   КАТЕГОРИИ
+========================= */
+.categories {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 48px 24px;
+}
+
+.categoryBlock {
+  margin-bottom: 64px;
+}
+
+.categoryHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+.categoryTitle {
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.categoryAll {
+  font-size: 14px;
+  color: #0055fb;
+  text-decoration: none;
+}
+
+.categoryRow {
+  display: flex;
+  gap: 24px;
+}
+
+.categoryCard {
+  width: 300px;
+  background: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.categoryImage {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+}
+
+.categoryTag {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  background: #ff6b00;
+  color: #fff;
+  font-size: 12px;
+  padding: 6px 12px;
+  border-radius: 16px;
+}
+
+.categoryContent {
+  padding: 20px;
+}
+
+.categoryCardTitle {
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.categoryMeta {
+  font-size: 13px;
+  color: #666;
+}
+
+.categoryPrice {
+  font-size: 20px;
+  font-weight: 700;
+  margin: 12px 0;
+}
+
+.categoryButton {
+  width: 100%;
+  padding: 12px;
+  background: #0055fb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+/* =========================
+   ФУТЕР
+========================= */
+.footer {
+  background: #0f172a;
+  color: #fff;
+  padding: 60px 0 24px;
+}
+
+.footerContainer {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 24px;
+}
+
+.footerGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 32px;
+  margin-bottom: 40px;
+}
+
+.footerGrid h3 {
+  font-size: 16px;
+  margin-bottom: 16px;
+}
+
+.footerGrid a {
+  color: rgba(255,255,255,0.7);
+  text-decoration: none;
+  font-size: 14px;
+}
+
+.footerCopy {
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 24px;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  text-align: center;
+}

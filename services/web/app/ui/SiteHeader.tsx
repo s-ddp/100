@@ -15,7 +15,7 @@ export default function SiteHeader() {
           <Link href="/">Главная</Link>
           <Link href="/excursions/reki-i-kanaly">Экскурсии</Link>
           <Link href="/rent">Аренда</Link>
-          <Link href="/buyer">Уголок покупателя</Link>
+          <Link href="/help">Уголок покупателя</Link>
           <Link href="/contacts">Контакты</Link>
           <Link href="/admin">Admin</Link>
         </nav>

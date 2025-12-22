@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./TopSales.module.css";
 
 export default function TopSales() {
@@ -35,6 +36,11 @@ export default function TopSales() {
 }
 
 function Card({ img, title, time, price }: any) {
+  const slug =
+    title === "Закат с живой музыкой по центральным каналам"
+      ? "sunset-live-music"
+      : undefined;
+
   return (
     <div className={styles.card}>
       <div
@@ -48,9 +54,15 @@ function Card({ img, title, time, price }: any) {
         <h3>{title}</h3>
         <div className={styles.meta}>{time}</div>
         <div className={styles.price}>{price}</div>
-        <button className={styles.buyButton}>
-          Купить билет →
-        </button>
+        {slug ? (
+          <Link href={`/excursions/event/${slug}`} className={styles.buyButton}>
+            Купить билет →
+          </Link>
+        ) : (
+          <button className={styles.buyButton}>
+            Купить билет →
+          </button>
+        )}
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 ﻿import "./globals.css";
 import SiteHeader from "./ui/SiteHeader";
+import Footer from "./ui/Footer/Footer";
 
 export const metadata = {
   title: "AquaVoyage",
@@ -21,6 +22,8 @@ export default function RootLayout({
         <main style={{ paddingTop: "96px" }}>
           {children}
         </main>
+
+        <Footer />
       </body>
     </html>
   );

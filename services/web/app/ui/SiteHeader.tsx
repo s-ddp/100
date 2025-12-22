@@ -17,7 +17,6 @@ export default function SiteHeader() {
           <Link href="/rent">Аренда</Link>
           <Link href="/help">Уголок покупателя</Link>
           <Link href="/contacts">Контакты</Link>
-          <Link href="/admin">Admin</Link>
         </nav>
 
         {/* Кнопка */}

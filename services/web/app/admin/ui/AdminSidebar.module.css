@@ -1,0 +1,23 @@
+.sidebar {
+  background: #0a1029;
+  border-right: 1px solid rgba(255,255,255,0.06);
+  padding: 24px 16px;
+  min-height: calc(100vh - 64px);
+}
+
+.nav {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.nav a {
+  color: #cbd5e1;
+  text-decoration: none;
+  padding: 10px 12px;
+  border-radius: 8px;
+}
+
+.nav a:hover {
+  background: rgba(255,255,255,0.06);
+}

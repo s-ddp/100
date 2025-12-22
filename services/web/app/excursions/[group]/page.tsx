@@ -1,4 +1,5 @@
 import Link from "next/link";
+import styles from "../Excursion.module.css";
 
 const groups: any = {
   "reki-i-kanaly": {
@@ -25,34 +26,34 @@ export default function GroupPage({ params }: { params: { group: string } }) {
 
   if (!group) {
     return (
-      <main className="container">
+      <main className={styles.container}>
         <h1>Экскурсия не найдена</h1>
       </main>
     );
   }
 
   return (
-    <main className="container">
+    <main className={styles.container}>
       <h1>{group.title}</h1>
       <p>{group.description}</p>
 
-      <div className="excursion-grid">
+      <div className={styles.grid}>
         {group.events.map((e: any) => (
           <Link
             key={e.slug}
-            href={`/excursions/event/${e.slug}`}
-            className="excursion-card"
+            href={`/excursions/${params.group}/${e.slug}`}
+            className={styles.card}
           >
             <div
-              className="excursion-img"
+              className={styles.cardImg}
               style={{ backgroundImage: `url(${e.img})` }}
             />
-            <h3>{e.title}</h3>
-            <strong>{e.price}</strong>
+            <h3 className={styles.cardTitle}>{e.title}</h3>
+            <strong className={styles.cardPrice}>{e.price}</strong>
           </Link>
         ))}
         {group.events.length === 0 && (
-          <div className="excursion-empty">Скоро добавим расписание</div>
+          <div className={styles.empty}>Скоро добавим расписание</div>
         )}
       </div>
     </main>

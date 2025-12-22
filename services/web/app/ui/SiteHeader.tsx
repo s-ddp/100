@@ -12,12 +12,12 @@ export default function SiteHeader() {
 
         {/* Навигация */}
         <nav className={styles.nav}>
-          <a href="#">Экскурсии</a>
+          <Link href="/">Главная</Link>
+          <Link href="/excursions/reki-i-kanaly">Экскурсии</Link>
           <Link href="/rent">Аренда</Link>
-          <a href="#">Причалы</a>
-          <a href="#">Новости</a>
-          <Link href="/help">Уголок покупателя</Link>
-          <a href="#">Контакты</a>
+          <Link href="/buyer">Уголок покупателя</Link>
+          <Link href="/contacts">Контакты</Link>
+          <Link href="/admin">Admin</Link>
         </nav>
 
         {/* Кнопка */}

@@ -96,7 +96,7 @@ function CategoryBlock({
 
       <div className={styles.cardsRow}>
         {cards.map((card, i) => (
-          <CategoryCard key={i} {...card} />
+          <CategoryCard key={i} {...card} groupSlug={groupSlug} />
         ))}
       </div>
     </div>
@@ -110,6 +110,7 @@ function CategoryCard({
   time,
   price,
   slug,
+  groupSlug,
 }: {
   img: string;
   tag: string;
@@ -117,9 +118,10 @@ function CategoryCard({
   time: string;
   price: string;
   slug: string;
+  groupSlug: string;
 }) {
   return (
-    <Link href={`/excursions/event/${slug}`} className={styles.card}>
+    <Link href={`/excursions/${groupSlug}/${slug}`} className={styles.card}>
       <div
         className={styles.image}
         style={{ backgroundImage: `url(${img})` }}

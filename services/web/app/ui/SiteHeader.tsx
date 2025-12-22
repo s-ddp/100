@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./SiteHeader.module.css";
 
 export default function SiteHeader() {
@@ -15,7 +16,7 @@ export default function SiteHeader() {
           <a href="#">Аренда</a>
           <a href="#">Причалы</a>
           <a href="#">Новости</a>
-          <a href="#">Уголок покупателя</a>
+          <Link href="/help">Уголок покупателя</Link>
           <a href="#">Контакты</a>
         </nav>
 

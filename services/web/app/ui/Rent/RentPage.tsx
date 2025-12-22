@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./Rent.module.css";
 
 export default function RentPage() {
@@ -36,7 +37,9 @@ export default function RentPage() {
           <h3>Катер "Бриз"</h3>
           <p>6 человек</p>
           <strong>5 000 ₽ / час</strong>
-          <button>Арендовать →</button>
+          <Link href="/rent/albatros" className={styles.cardButton}>
+            Арендовать →
+          </Link>
         </div>
 
         <div className={styles.card}>
@@ -44,7 +47,9 @@ export default function RentPage() {
           <h3>Яхта "Альбатрос"</h3>
           <p>12 человек</p>
           <strong>15 000 ₽ / час</strong>
-          <button>Арендовать →</button>
+          <Link href="/rent/albatros" className={styles.cardButton}>
+            Арендовать →
+          </Link>
         </div>
       </section>
     </main>

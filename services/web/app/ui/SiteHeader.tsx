@@ -1,3 +1,4 @@
+import Link from "next/link";
 import styles from "./SiteHeader.module.css";
 
 export default function SiteHeader() {
@@ -11,12 +12,12 @@ export default function SiteHeader() {
 
         {/* Навигация */}
         <nav className={styles.nav}>
-          <a href="#">Экскурсии</a>
-          <a href="#">Аренда</a>
-          <a href="#">Причалы</a>
-          <a href="#">Новости</a>
-          <a href="#">Уголок покупателя</a>
-          <a href="#">Контакты</a>
+          <Link href="/">Главная</Link>
+          <Link href="/excursions/reki-i-kanaly">Экскурсии</Link>
+          <Link href="/rent">Аренда</Link>
+          <Link href="/buyer">Уголок покупателя</Link>
+          <Link href="/contacts">Контакты</Link>
+          <Link href="/admin">Admin</Link>
         </nav>
 
         {/* Кнопка */}

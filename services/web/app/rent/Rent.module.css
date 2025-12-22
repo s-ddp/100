@@ -1,0 +1,52 @@
+.container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 120px 24px 40px;
+}
+
+.header h1 {
+  font-size: 32px;
+}
+
+.filters {
+  background: #fff;
+  padding: 24px;
+  border-radius: 12px;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px,1fr));
+  gap: 24px;
+  margin: 32px 0;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px,1fr));
+  gap: 24px;
+}
+
+.card {
+  background: #fff;
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+.image {
+  height: 160px;
+  background: linear-gradient(135deg, #dbeafe, #e0f2fe);
+  border-radius: 10px;
+  margin-bottom: 12px;
+}
+
+.cardButton {
+  margin-top: 12px;
+  width: 100%;
+  padding: 12px;
+  background: #0055fb;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  display: inline-block;
+  text-align: center;
+  text-decoration: none;
+}

@@ -1,108 +1,120 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import styles from "./parameters.module.css";
 
-type ParameterType = "text" | "number" | "enum" | "multiselect";
+type ParamType = "text" | "number" | "enum" | "multiselect" | "boolean";
 
-type Parameter = {
+type RentParam = {
   id: string;
   name: string;
-  type: ParameterType;
-  useInCard: boolean;
-  useInFilter: boolean;
-  status: "active" | "inactive";
-  values?: string;
+  type: ParamType;
+  useInFilters: boolean;
+  active: boolean;
+  options: string[];
 };
 
 type FormState = {
+  id?: string;
   name: string;
-  type: ParameterType;
-  useInCard: boolean;
-  useInFilter: boolean;
-  status: "active" | "inactive";
-  values: string;
+  type: ParamType;
+  useInFilters: boolean;
+  active: boolean;
+  optionsText: string;
 };
 
-const initialForm: FormState = {
+const emptyForm: FormState = {
   name: "",
   type: "text",
-  useInCard: true,
-  useInFilter: false,
-  status: "active",
-  values: "",
+  useInFilters: true,
+  active: true,
+  optionsText: "",
+};
+
+const typeLabels: Record<ParamType, string> = {
+  text: "Текст",
+  number: "Число",
+  enum: "Список (один вариант)",
+  multiselect: "Список (несколько вариантов)",
+  boolean: "Да / Нет",
 };
 
 export default function AdminRentParameters() {
-  const [parameters, setParameters] = useState<Parameter[]>([]);
-  const [form, setForm] = useState<FormState>(initialForm);
+  const [parameters, setParameters] = useState<RentParam[]>([]);
+  const [form, setForm] = useState<FormState>(emptyForm);
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const typeLabels: Record<ParameterType, string> = {
-    text: "Текст",
-    number: "Число",
-    enum: "Список (один вариант)",
-    multiselect: "Список (несколько вариантов)",
-  };
-
-  const openForCreate = () => {
-    setForm(initialForm);
-    setEditingId(null);
-    setModalOpen(true);
-  };
-
-  const openForEdit = (p: Parameter) => {
-    setForm({
-      name: p.name,
-      type: p.type,
-      useInCard: p.useInCard,
-      useInFilter: p.useInFilter,
-      status: p.status,
-      values: p.values || "",
-    });
-    setEditingId(p.id);
-    setModalOpen(true);
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-
-    const payload: Parameter = {
-      id: editingId ?? crypto.randomUUID(),
-      name: form.name.trim(),
-      type: form.type,
-      useInCard: form.useInCard,
-      useInFilter: form.useInFilter,
-      status: form.status,
-      values:
-        form.type === "enum" || form.type === "multiselect"
-          ? form.values.trim()
-          : "",
-    };
-
-    if (!payload.name) return;
-
-    setParameters((prev) => {
-      if (editingId) {
-        return prev.map((p) => (p.id === editingId ? payload : p));
-      }
-      return [...prev, payload];
-    });
-
-    setModalOpen(false);
-    setEditingId(null);
-    setForm(initialForm);
-  };
-
-  const handleDelete = (id: string) => {
-    setParameters((prev) => prev.filter((p) => p.id !== id));
-  };
-
-  const showValuesField = useMemo(
+  const hasOptions = useMemo(
     () => form.type === "enum" || form.type === "multiselect",
     [form.type]
   );
+
+  async function load() {
+    const res = await fetch("/api/admin/rent/parameters", { cache: "no-store" });
+    const data = await res.json();
+    setParameters(data.parameters || []);
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
+
+  function openCreate() {
+    setForm(emptyForm);
+    setModalOpen(true);
+  }
+
+  function openEdit(p: RentParam) {
+    setForm({
+      id: p.id,
+      name: p.name,
+      type: p.type,
+      useInFilters: p.useInFilters,
+      active: p.active,
+      optionsText: (p.options || []).join(", "),
+    });
+    setModalOpen(true);
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const payload: Partial<RentParam> = {
+        id: form.id,
+        name: form.name.trim(),
+        type: form.type,
+        useInFilters: form.useInFilters,
+        active: form.active,
+        options: hasOptions
+          ? form.optionsText
+              .split(",")
+              .map((x) => x.trim())
+              .filter(Boolean)
+          : [],
+      };
+
+      const res = await fetch("/api/admin/rent/parameters", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const data = await res.json();
+      if (data.parameters) setParameters(data.parameters);
+      setModalOpen(false);
+      setForm(emptyForm);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleDelete(id: string) {
+    if (!confirm("Удалить параметр?")) return;
+    const res = await fetch(`/api/admin/rent/parameters?id=${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (data.parameters) setParameters(data.parameters);
+  }
 
   return (
     <section className={styles.wrapper}>
@@ -111,7 +123,7 @@ export default function AdminRentParameters() {
           <h1>Параметры судов</h1>
           <p>Настройка характеристик для аренды судов.</p>
         </div>
-        <button className={styles.primaryButton} onClick={openForCreate}>
+        <button className={styles.primaryButton} onClick={openCreate}>
           Добавить параметр
         </button>
       </div>
@@ -131,7 +143,7 @@ export default function AdminRentParameters() {
             {parameters.length === 0 && (
               <tr>
                 <td colSpan={5} className={styles.empty}>
-                  Пока нет параметров. Добавьте первый, чтобы начать.
+                  Пока нет параметров. Добавьте первый.
                 </td>
               </tr>
             )}
@@ -139,12 +151,12 @@ export default function AdminRentParameters() {
               <tr key={p.id}>
                 <td>{p.name}</td>
                 <td>{typeLabels[p.type]}</td>
-                <td>{p.useInFilter ? "да" : "нет"}</td>
-                <td className={p.status === "active" ? styles.statusActive : styles.statusInactive}>
-                  {p.status === "active" ? "активен" : "выключен"}
+                <td>{p.useInFilters ? "да" : "нет"}</td>
+                <td className={p.active ? styles.statusActive : styles.statusInactive}>
+                  {p.active ? "активен" : "выключен"}
                 </td>
                 <td className={styles.actions}>
-                  <button onClick={() => openForEdit(p)}>Редактировать</button>
+                  <button onClick={() => openEdit(p)}>Редактировать</button>
                   <button onClick={() => handleDelete(p.id)} className={styles.danger}>
                     Удалить
                   </button>
@@ -164,7 +176,7 @@ export default function AdminRentParameters() {
             }}
           >
             <div className={styles.modalHeader}>
-              <h2>{editingId ? "Редактирование параметра" : "Добавить параметр"}</h2>
+              <h2>{form.id ? "Редактирование параметра" : "Добавить параметр"}</h2>
               <button className={styles.close} onClick={() => setModalOpen(false)}>
                 ✕
               </button>
@@ -188,7 +200,7 @@ export default function AdminRentParameters() {
                   onChange={(e) =>
                     setForm({
                       ...form,
-                      type: e.target.value as ParameterType,
+                      type: e.target.value as ParamType,
                     })
                   }
                 >
@@ -196,67 +208,46 @@ export default function AdminRentParameters() {
                   <option value="number">Число</option>
                   <option value="enum">Список (один вариант)</option>
                   <option value="multiselect">Список (несколько вариантов)</option>
+                  <option value="boolean">Да / Нет</option>
                 </select>
               </label>
 
-              <div className={styles.row}>
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    checked={form.useInCard}
-                    onChange={(e) =>
-                      setForm({ ...form, useInCard: e.target.checked })
-                    }
-                  />
-                  Использовать в карточке
-                </label>
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={form.useInFilters}
+                  onChange={(e) => setForm({ ...form, useInFilters: e.target.checked })}
+                />
+                Использовать в фильтрах
+              </label>
 
-                <label className={styles.checkbox}>
-                  <input
-                    type="checkbox"
-                    checked={form.useInFilter}
-                    onChange={(e) =>
-                      setForm({ ...form, useInFilter: e.target.checked })
-                    }
-                  />
-                  Использовать в фильтре
-                </label>
-              </div>
+              <label className={styles.checkbox}>
+                <input
+                  type="checkbox"
+                  checked={form.active}
+                  onChange={(e) => setForm({ ...form, active: e.target.checked })}
+                />
+                Активен
+              </label>
 
-              {showValuesField && (
+              {hasOptions && (
                 <label>
                   Значения (через запятую)
                   <textarea
-                    value={form.values}
+                    value={form.optionsText}
                     onChange={(e) =>
-                      setForm({ ...form, values: e.target.value })
+                      setForm({ ...form, optionsText: e.target.value })
                     }
                   />
                 </label>
               )}
 
-              <label>
-                Статус
-                <select
-                  value={form.status}
-                  onChange={(e) =>
-                    setForm({
-                      ...form,
-                      status: e.target.value as "active" | "inactive",
-                    })
-                  }
-                >
-                  <option value="active">active</option>
-                  <option value="inactive">inactive</option>
-                </select>
-              </label>
-
               <div className={styles.modalActions}>
                 <button type="button" onClick={() => setModalOpen(false)}>
                   Отмена
                 </button>
-                <button type="submit" className={styles.primaryButton}>
-                  Сохранить
+                <button type="submit" className={styles.primaryButton} disabled={loading}>
+                  {loading ? "Сохранение..." : "Сохранить"}
                 </button>
               </div>
             </form>

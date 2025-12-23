@@ -1,13 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import styles from "./cities.module.css";
 
-type City = {
-  id: string;
-  name: string;
-  active: boolean;
-};
+type City = { id: string; name: string; active: boolean };
 
 const emptyCity: Omit<City, "id"> = { name: "", active: true };
 
@@ -16,6 +12,17 @@ export default function AdminCitiesPage() {
   const [modalOpen, setModalOpen] = useState(false);
   const [form, setForm] = useState(emptyCity);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    const res = await fetch("/api/admin/dictionaries/cities", { cache: "no-store" });
+    const data = await res.json();
+    setCities(data.cities || []);
+  }
+
+  useEffect(() => {
+    load();
+  }, []);
 
   const openCreate = () => {
     setForm(emptyCity);
@@ -29,31 +36,36 @@ export default function AdminCitiesPage() {
     setModalOpen(true);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const name = form.name.trim();
     if (!name) return;
-
-    const payload: City = {
-      id: editingId ?? crypto.randomUUID(),
-      name,
-      active: form.active,
-    };
-
-    setCities((prev) => {
-      if (editingId) {
-        return prev.map((c) => (c.id === editingId ? payload : c));
-      }
-      return [...prev, payload];
-    });
-
-    setModalOpen(false);
-    setEditingId(null);
-    setForm(emptyCity);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/dictionaries/cities", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          id: editingId || undefined,
+          name,
+          active: form.active,
+        }),
+      });
+      const data = await res.json();
+      if (data.cities) setCities(data.cities);
+      setModalOpen(false);
+      setEditingId(null);
+      setForm(emptyCity);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDelete = (id: string) => {
-    setCities((prev) => prev.filter((c) => c.id !== id));
+  const handleDelete = async (id: string) => {
+    if (!confirm("Удалить город?")) return;
+    const res = await fetch(`/api/admin/dictionaries/cities?id=${id}`, { method: "DELETE" });
+    const data = await res.json();
+    if (data.cities) setCities(data.cities);
   };
 
   return (
@@ -142,8 +154,8 @@ export default function AdminCitiesPage() {
                 <button type="button" onClick={() => setModalOpen(false)}>
                   Отмена
                 </button>
-                <button type="submit" className={styles.primaryButton}>
-                  Сохранить
+                <button type="submit" className={styles.primaryButton} disabled={loading}>
+                  {loading ? "Сохранение..." : "Сохранить"}
                 </button>
               </div>
             </form>

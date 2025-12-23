@@ -1,0 +1,39 @@
+[
+  {
+    "id": "albatros",
+    "name": "Моторная яхта \"Альбатрос\"",
+    "cityId": "spb",
+    "type": "motor-yacht",
+    "pricePerHour": 15000,
+    "images": [
+      "https://images.unsplash.com/photo-1524008757925-5024e639526e?w=1600&q=95",
+      "https://images.unsplash.com/photo-1517984033328-110d6e870561?w=1600&q=95"
+    ],
+    "params": {
+      "p_length": 14,
+      "p_capacity": 12,
+      "p_route": "Нева",
+      "p_amenities": ["Бар", "Туалет", "Музыка"],
+      "p_captain": true
+    },
+    "active": true
+  },
+  {
+    "id": "briz",
+    "name": "Катер \"Бриз\"",
+    "cityId": "spb",
+    "type": "catamaran",
+    "pricePerHour": 5000,
+    "images": [
+      "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=1600&q=95"
+    ],
+    "params": {
+      "p_length": 7,
+      "p_capacity": 6,
+      "p_route": "Каналы",
+      "p_amenities": ["Музыка", "Пледы"],
+      "p_captain": false
+    },
+    "active": true
+  }
+]

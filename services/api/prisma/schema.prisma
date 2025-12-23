@@ -7,6 +7,93 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+model BoatType {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  sortOrder Int      @default(0)
+  boats     Boat[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Location {
+  id        String   @id @default(cuid())
+  name      String
+  city      String?
+  address   String?
+  lat       Float?
+  lng       Float?
+  boats     Boat[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Parameter {
+  id        String   @id @default(cuid())
+  group     String?  // например "Технические", "Комфорт"
+  name      String   // например "Каюты", "Длина", "Wi-Fi"
+  unit      String?  // "м", "л.с."
+  valueType String   @default("TEXT") // TEXT|NUMBER|BOOL|ENUM
+  sortOrder Int      @default(0)
+  links     BoatParameter[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([name])
+}
+
+model Boat {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  isActive    Boolean  @default(false)
+
+  typeId      String
+  type        BoatType @relation(fields: [typeId], references: [id])
+
+  locationId  String
+  location    Location @relation(fields: [locationId], references: [id])
+
+  images      BoatImage[]
+  parameters  BoatParameter[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([typeId])
+  @@index([locationId])
+}
+
+model BoatImage {
+  id        String   @id @default(cuid())
+  boatId    String
+  boat      Boat     @relation(fields: [boatId], references: [id], onDelete: Cascade)
+  url       String
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+}
+
+model BoatParameter {
+  id          String    @id @default(cuid())
+  boatId      String
+  boat        Boat      @relation(fields: [boatId], references: [id], onDelete: Cascade)
+
+  parameterId String
+  parameter   Parameter @relation(fields: [parameterId], references: [id])
+
+  // значение параметра у конкретного судна
+  valueText   String?
+  valueNumber Float?
+  valueBool   Boolean?
+
+  createdAt DateTime @default(now())
+
+  @@unique([boatId, parameterId])
+}
+
 model Event {
   id              String   @id
   title           String

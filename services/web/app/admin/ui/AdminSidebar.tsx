@@ -25,9 +25,8 @@ const MENU: MenuGroup[] = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const [openGroup, setOpenGroup] = useState<string>("rent");
+  const [openGroup, setOpenGroup] = useState("rent");
 
-  // при переходе — раскрываем группу
   useEffect(() => {
     setOpenGroup("rent");
   }, [pathname]);
@@ -75,7 +74,7 @@ export default function AdminSidebar() {
   );
 }
 
-/* ===== styles ===== */
+/* styles */
 
 const sidebar: React.CSSProperties = {
   width: 240,

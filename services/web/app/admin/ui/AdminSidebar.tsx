@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useState, useEffect } from "react";
 
@@ -23,6 +24,24 @@ export default function AdminSidebar() {
   useEffect(() => {
     setOpen("rent");
   }, [pathname]);
+
+  const groupByPath = useMemo(() => {
+    for (const g of GROUPS) {
+      if (g.items.some((it) => pathname?.startsWith(it.href))) return g.id;
+    }
+    return "rent";
+  }, [pathname]);
+
+  const [openGroupId, setOpenGroupId] = useState<string>(groupByPath);
+
+  // при переходе — открываем группу текущего раздела и закрываем предыдущую
+  useEffect(() => {
+    setOpenGroupId(groupByPath);
+  }, [groupByPath]);
+
+  function toggleGroup(id: string) {
+    setOpenGroupId((prev) => (prev === id ? "" : id)); // одна открыта, остальные закрыты
+  }
 
   return (
     <aside style={sidebar}>

@@ -3,9 +3,15 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const MENU = [
+type MenuGroup = {
+  id: string;
+  title: string;
+  items: { label: string; href: string }[];
+};
+
+const MENU: MenuGroup[] = [
   {
     id: "rent",
     title: "Аренда",
@@ -19,69 +25,87 @@ const MENU = [
 
 export default function AdminSidebar() {
   const pathname = usePathname();
-  const [open, setOpen] = useState<string>("rent");
+  const [openGroup, setOpenGroup] = useState<string>("rent");
 
+  // при смене страницы — раскрываем нужную группу
   useEffect(() => {
-    setOpen("rent");
+    setOpenGroup("rent");
   }, [pathname]);
-
-  const groupByPath = useMemo(() => {
-    for (const g of GROUPS) {
-      if (g.items.some((it) => pathname?.startsWith(it.href))) return g.id;
-    }
-    return "rent";
-  }, [pathname]);
-
-  const [openGroupId, setOpenGroupId] = useState<string>(groupByPath);
-
-  // при переходе — открываем группу текущего раздела и закрываем предыдущую
-  useEffect(() => {
-    setOpenGroupId(groupByPath);
-  }, [groupByPath]);
-
-  function toggleGroup(id: string) {
-    setOpenGroupId((prev) => (prev === id ? "" : id)); // одна открыта, остальные закрыты
-  }
 
   return (
     <aside style={sidebar}>
-      <h3 style={{ padding: 12 }}>Admin</h3>
-      {MENU.map((g) => (
-        <div key={g.id}>
-          <div onClick={() => setOpen(g.id)} style={group}>
-            {g.title}
+      <div style={logo}>Admin</div>
+
+      {MENU.map((group) => {
+        const opened = openGroup === group.id;
+
+        return (
+          <div key={group.id}>
+            <button
+              onClick={() => setOpenGroup(opened ? "" : group.id)}
+              style={groupBtn}
+            >
+              {group.title}
+              <span style={{ opacity: 0.6 }}>{opened ? "▾" : "▸"}</span>
+            </button>
+
+            {opened &&
+              group.items.map((item) => {
+                const active =
+                  pathname === item.href ||
+                  pathname.startsWith(item.href + "/");
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    style={{
+                      ...itemStyle,
+                      background: active ? "#2a2f3a" : undefined,
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
           </div>
-          {open === g.id &&
-            g.items.map((i) => (
-              <Link key={i.href} href={i.href} style={{
-                ...item,
-                background: pathname?.startsWith(i.href) ? "#2a2f3a" : undefined,
-              }}>
-                {i.label}
-              </Link>
-            ))}
-        </div>
-      ))}
+        );
+      })}
     </aside>
   );
 }
 
+/* ===== styles ===== */
+
 const sidebar: React.CSSProperties = {
   width: 240,
+  minHeight: "100vh",
   background: "#1b1f2a",
   color: "#fff",
-  minHeight: "100vh",
+  padding: 8,
 };
 
-const group: React.CSSProperties = {
+const logo: React.CSSProperties = {
+  fontWeight: 900,
   padding: 12,
-  cursor: "pointer",
-  fontWeight: 700,
 };
 
-const item: React.CSSProperties = {
+const groupBtn: React.CSSProperties = {
+  width: "100%",
+  background: "none",
+  border: "none",
+  color: "#fff",
+  padding: "10px 12px",
+  fontWeight: 700,
+  display: "flex",
+  justifyContent: "space-between",
+  cursor: "pointer",
+};
+
+const itemStyle: React.CSSProperties = {
   display: "block",
   padding: "8px 24px",
   color: "#fff",
   textDecoration: "none",
+  fontSize: 14,
 };

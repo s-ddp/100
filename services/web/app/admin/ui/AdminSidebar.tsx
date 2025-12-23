@@ -1,86 +1,68 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import styles from "./AdminSidebar.module.css";
+import { useState, useEffect } from "react";
 
-const sections = [
+const MENU = [
   {
-    title: "Управление системой",
-    items: [
-      { href: "/admin/users", label: "Управление доступом" },
-      { href: "/admin/settings", label: "Настройки" },
-      { href: "/admin/translations", label: "Переводы" },
-    ],
-  },
-  {
-    title: "Содержание сайта",
-    items: [
-      { href: "/admin/content/pages", label: "Страницы" },
-      { href: "/admin/content/news", label: "Новости" },
-      { href: "/admin/content/navigation", label: "Навигация" },
-    ],
-  },
-  {
-    title: "Интернет-магазин",
-    items: [
-      { href: "/admin/shop/orders", label: "Заказы" },
-      { href: "/admin/shop/clients", label: "Клиенты" },
-      { href: "/admin/shop/finance", label: "Финансы" },
-    ],
-  },
-  {
-    title: "Работа с поставщиками",
-    items: [
-      { href: "/admin/suppliers/list", label: "Поставщики" },
-      { href: "/admin/suppliers/settlements", label: "Расчёты с поставщиками" },
-    ],
-  },
-  {
-    title: "Отчетность",
-    items: [{ href: "/admin/reports", label: "Отчеты" }],
-  },
-  {
-    title: "Справочники",
-    items: [
-      { href: "/admin/dictionaries", label: "Справочники" },
-      { href: "/admin/dictionaries/cities", label: "Города" },
-    ],
-  },
-  {
+    id: "rent",
     title: "Аренда",
     items: [
-      { href: "/admin/rent/boats", label: "Судна для аренды" },
-      { href: "/admin/rent/boat", label: "Судно" },
-      { href: "/admin/rent/parameters", label: "Параметры судов" },
+      { label: "Суда", href: "/admin/boats" },
+      { label: "Судно для аренды", href: "/admin/rent/boats" },
+      { label: "Параметры", href: "/admin/rent/parameters" },
     ],
   },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState<string>("rent");
+
+  useEffect(() => {
+    setOpen("rent");
+  }, [pathname]);
 
   return (
-    <aside className={styles.sidebar}>
-      {sections.map((section) => (
-        <div key={section.title} className={styles.section}>
-          <div className={styles.sectionTitle}>{section.title}</div>
-          <nav className={styles.nav}>
-            {section.items.map((item) => {
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={active ? styles.navLinkActive : styles.navLink}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
+    <aside style={sidebar}>
+      <h3 style={{ padding: 12 }}>Admin</h3>
+      {MENU.map((g) => (
+        <div key={g.id}>
+          <div onClick={() => setOpen(g.id)} style={group}>
+            {g.title}
+          </div>
+          {open === g.id &&
+            g.items.map((i) => (
+              <Link key={i.href} href={i.href} style={{
+                ...item,
+                background: pathname?.startsWith(i.href) ? "#2a2f3a" : undefined,
+              }}>
+                {i.label}
+              </Link>
+            ))}
         </div>
       ))}
     </aside>
   );
 }
+
+const sidebar: React.CSSProperties = {
+  width: 240,
+  background: "#1b1f2a",
+  color: "#fff",
+  minHeight: "100vh",
+};
+
+const group: React.CSSProperties = {
+  padding: 12,
+  cursor: "pointer",
+  fontWeight: 700,
+};
+
+const item: React.CSSProperties = {
+  display: "block",
+  padding: "8px 24px",
+  color: "#fff",
+  textDecoration: "none",
+};

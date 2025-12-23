@@ -1,7 +1,7 @@
 .footer {
   background: #0f172a;
-  color: #ffffff;
-  padding: 60px 0 24px;
+  color: #fff;
+  padding: 80px 0 30px;
 }
 
 .container {
@@ -13,46 +13,29 @@
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 32px;
+  gap: 40px;
   margin-bottom: 40px;
 }
 
-.title {
-  font-size: 16px;
-  font-weight: 700;
+.grid h3 {
   margin-bottom: 16px;
 }
 
-.text {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
+.grid a {
+  display: block;
+  color: rgba(255,255,255,0.7);
   margin-bottom: 8px;
-}
-
-.list {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.list li {
-  margin-bottom: 12px;
-}
-
-.list a {
-  font-size: 14px;
-  color: rgba(255, 255, 255, 0.7);
   text-decoration: none;
 }
 
-.list a:hover {
-  color: #ffffff;
+.grid a:hover {
+  color: #fff;
 }
 
 .copy {
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-  padding-top: 24px;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.5);
   text-align: center;
+  font-size: 12px;
+  color: rgba(255,255,255,0.5);
+  border-top: 1px solid rgba(255,255,255,0.1);
+  padding-top: 24px;
 }

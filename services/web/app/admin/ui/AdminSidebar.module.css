@@ -1,48 +1,90 @@
 .sidebar {
-  background: #0a1029;
-  border-right: 1px solid rgba(255, 255, 255, 0.06);
-  padding: 24px 16px;
-  min-height: calc(100vh - 64px);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
+  width: 260px;
+  min-height: 100vh;
+  background: #1f2328;
+  color: #fff;
+  padding: 14px 10px;
 }
 
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-}
-
-.sectionTitle {
-  font-size: 12px;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: #9ca3af;
-  padding: 0 8px;
+.logo {
+  font-weight: 900;
+  font-size: 18px;
+  padding: 10px 10px 14px 10px;
+  opacity: 0.95;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 
-.navLink {
-  color: #cbd5e1;
-  text-decoration: none;
-  padding: 10px 12px;
-  border-radius: 8px;
-  transition: background 0.15s ease, color 0.15s ease;
+.group {
+  border-radius: 12px;
+  overflow: hidden;
 }
 
-.navLink:hover {
+.groupHeader {
+  width: 100%;
+  background: transparent;
+  border: 0;
+  color: #fff;
+  padding: 10px 10px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.groupHeader:hover {
   background: rgba(255, 255, 255, 0.06);
 }
 
-.navLinkActive {
-  composes: navLink;
-  background: rgba(59, 130, 246, 0.15);
-  color: #e5e7eb;
-  border: 1px solid rgba(59, 130, 246, 0.4);
+.groupTitle {
+  font-weight: 800;
+  font-size: 14px;
+  opacity: 0.92;
+}
+
+.chev {
+  opacity: 0.8;
+  transform: rotate(-90deg);
+  transition: transform 160ms ease;
+}
+
+.chevOpen {
+  transform: rotate(0deg);
+}
+
+.groupItems {
+  display: none;
+  padding: 4px 0 8px 0;
+}
+
+.groupItemsOpen {
+  display: block;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: rgba(255, 255, 255, 0.86);
+  text-decoration: none;
+  padding: 8px 10px 8px 18px; /* вложенность */
+  font-size: 13px;
+}
+
+.item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.itemActive {
+  background: rgba(255, 255, 255, 0.10);
+  color: #fff;
+}
+
+.bullet {
+  opacity: 0.6;
 }

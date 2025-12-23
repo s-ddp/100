@@ -1,0 +1,5 @@
+[
+  { "id": "spb", "name": "Санкт-Петербург", "active": true },
+  { "id": "kron", "name": "Кронштадт", "active": true },
+  { "id": "peterhof", "name": "Петергоф", "active": true }
+]

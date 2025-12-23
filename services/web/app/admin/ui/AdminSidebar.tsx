@@ -3,54 +3,27 @@
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
-import styles from "./AdminSidebar.module.css";
+import { useState, useEffect } from "react";
 
-type NavItem = { label: string; href: string };
-type NavGroup = { id: string; label: string; items: NavItem[] };
-
-const GROUPS: NavGroup[] = [
-  {
-    id: "system",
-    label: "Информация о системе",
-    items: [{ label: "Пользователи", href: "/admin/users" }, { label: "Настройки", href: "/admin/settings" }],
-  },
+const MENU = [
   {
     id: "rent",
-    label: "Аренда",
+    title: "Аренда",
     items: [
       { label: "Суда", href: "/admin/boats" },
       { label: "Судно для аренды", href: "/admin/rent/boats" },
       { label: "Параметры", href: "/admin/rent/parameters" },
     ],
   },
-  {
-    id: "orders",
-    label: "Заказы",
-    items: [{ label: "Список заказов", href: "/admin/orders" }],
-  },
-  {
-    id: "dictionaries",
-    label: "Справочники",
-    items: [{ label: "Города", href: "/admin/dictionaries/cities" }, { label: "Переводы", href: "/admin/translations" }],
-  },
-  {
-    id: "shop",
-    label: "Интернет-магазин",
-    items: [
-      { label: "Клиенты", href: "/admin/shop/clients" },
-      { label: "Финансы", href: "/admin/shop/finance" },
-      { label: "Заказы (магазин)", href: "/admin/shop/orders" },
-    ],
-  },
-  {
-    id: "reports",
-    label: "Отчёты",
-    items: [{ label: "Отчёты", href: "/admin/reports" }],
-  },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [open, setOpen] = useState<string>("rent");
+
+  useEffect(() => {
+    setOpen("rent");
+  }, [pathname]);
 
   const groupByPath = useMemo(() => {
     for (const g of GROUPS) {
@@ -71,38 +44,44 @@ export default function AdminSidebar() {
   }
 
   return (
-    <aside className={styles.sidebar}>
-      <div className={styles.logo}>Admin</div>
-
-      <nav className={styles.nav}>
-        {GROUPS.map((g) => {
-          const open = openGroupId === g.id;
-          return (
-            <div key={g.id} className={styles.group}>
-              <button className={styles.groupHeader} onClick={() => toggleGroup(g.id)} aria-expanded={open}>
-                <span className={styles.groupTitle}>{g.label}</span>
-                <span className={`${styles.chev} ${open ? styles.chevOpen : ""}`}>▾</span>
-              </button>
-
-              <div className={`${styles.groupItems} ${open ? styles.groupItemsOpen : ""}`}>
-                {g.items.map((it) => {
-                  const active = pathname === it.href || (it.href !== "/admin" && pathname?.startsWith(it.href));
-                  return (
-                    <Link
-                      key={it.href}
-                      href={it.href}
-                      className={`${styles.item} ${active ? styles.itemActive : ""}`}
-                    >
-                      <span className={styles.bullet}>•</span>
-                      <span>{it.label}</span>
-                    </Link>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </nav>
+    <aside style={sidebar}>
+      <h3 style={{ padding: 12 }}>Admin</h3>
+      {MENU.map((g) => (
+        <div key={g.id}>
+          <div onClick={() => setOpen(g.id)} style={group}>
+            {g.title}
+          </div>
+          {open === g.id &&
+            g.items.map((i) => (
+              <Link key={i.href} href={i.href} style={{
+                ...item,
+                background: pathname?.startsWith(i.href) ? "#2a2f3a" : undefined,
+              }}>
+                {i.label}
+              </Link>
+            ))}
+        </div>
+      ))}
     </aside>
   );
 }
+
+const sidebar: React.CSSProperties = {
+  width: 240,
+  background: "#1b1f2a",
+  color: "#fff",
+  minHeight: "100vh",
+};
+
+const group: React.CSSProperties = {
+  padding: 12,
+  cursor: "pointer",
+  fontWeight: 700,
+};
+
+const item: React.CSSProperties = {
+  display: "block",
+  padding: "8px 24px",
+  color: "#fff",
+  textDecoration: "none",
+};

@@ -1,187 +1,36 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import Link from "next/link";
-import { apiAdminGetBoats, apiGetBoatTypes, apiGetLocations, apiAdminToggleBoatActive } from "@/app/lib/api";
+import { useEffect, useState } from "react";
+import { apiAdminGetBoats } from "@/app/lib/api";
 
-type BoatType = { id: string; name: string };
-type Location = { id: string; name: string };
-type Boat = any;
-
-export default function AdminRentActiveBoatsPage() {
-  const [types, setTypes] = useState<BoatType[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [boats, setBoats] = useState<Boat[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // UI state
-  const [tabTypeId, setTabTypeId] = useState<string>("ALL");
-  const [filterLocationId, setFilterLocationId] = useState<string>("ALL");
-  const [q, setQ] = useState("");
-
-  async function loadAll() {
-    setLoading(true);
-    setError(null);
-    try {
-      const [t, l, b] = await Promise.all([
-        apiGetBoatTypes(),
-        apiGetLocations(),
-        apiAdminGetBoats("?isActive=true"), // ВАЖНО: тут только активные
-      ]);
-      setTypes(t.items);
-      setLocations(l.items);
-      setBoats(b.items);
-    } catch (e: any) {
-      setError(e?.message || "Ошибка загрузки");
-    } finally {
-      setLoading(false);
-    }
-  }
+export default function ActiveRentBoats() {
+  const [boats, setBoats] = useState<any[]>([]);
 
   useEffect(() => {
-    loadAll();
+    apiAdminGetBoats("?isActive=true").then((r) => setBoats(r.items));
   }, []);
 
-  const filtered = useMemo(() => {
-    const qq = q.trim().toLowerCase();
-    return boats.filter((b) => {
-      if (tabTypeId !== "ALL" && b.typeId !== tabTypeId) return false;
-      if (filterLocationId !== "ALL" && b.locationId !== filterLocationId) return false;
-      if (qq) {
-        const hay = `${b.name ?? ""} ${(b.type?.name ?? "")} ${(b.location?.name ?? "")}`.toLowerCase();
-        if (!hay.includes(qq)) return false;
-      }
-      return true;
-    });
-  }, [boats, tabTypeId, filterLocationId, q]);
-
-  async function toggleActive(id: string, next: boolean) {
-    try {
-      await apiAdminToggleBoatActive(id, next);
-      await loadAll(); // если выключили — судно исчезнет из этого раздела (это правильно)
-    } catch (e: any) {
-      alert(e?.message || "Не удалось изменить активность");
-    }
-  }
-
   return (
-    <main style={{ padding: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        <h1 style={{ margin: 0 }}>Судно для аренды</h1>
+    <main style={{ padding: 24 }}>
+      <h1>Судно для аренды</h1>
 
-        {/* Кнопки создания тут НЕТ. Ссылка на "Суда" */}
-        <Link
-          href="/admin/boats"
-          style={{
-            padding: "8px 12px",
-            borderRadius: 12,
-            border: "1px solid #ddd",
-            textDecoration: "none",
-            color: "black",
-            fontWeight: 800,
-          }}
-        >
-          Перейти в “Суда”
-        </Link>
-      </div>
+      {boats.length === 0 && <p>Нет активных судов</p>}
 
-      {/* Tabs */}
-      <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button onClick={() => setTabTypeId("ALL")} style={tabBtn(tabTypeId === "ALL")}>
-          Все суда
-        </button>
-        {types.map((t) => (
-          <button key={t.id} onClick={() => setTabTypeId(t.id)} style={tabBtn(tabTypeId === t.id)}>
-            {t.name}
-          </button>
-        ))}
-      </div>
-
-      {/* Filters */}
-      <div
-        style={{
-          marginTop: 16,
-          display: "grid",
-          gridTemplateColumns: "1fr 260px",
-          gap: 12,
-          alignItems: "center",
-        }}
-      >
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск..." style={inputStyle()} />
-
-        <select value={filterLocationId} onChange={(e) => setFilterLocationId(e.target.value)} style={inputStyle()}>
-          <option value="ALL">Все локации</option>
-          {locations.map((loc) => (
-            <option key={loc.id} value={loc.id}>
-              {loc.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {loading && <p style={{ marginTop: 16 }}>Загрузка…</p>}
-      {error && <p style={{ marginTop: 16, color: "crimson" }}>{error}</p>}
-
-      {!loading && !error && (
-        <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-          {filtered.map((b) => (
-            <div
-              key={b.id}
-              style={{
-                border: "1px solid #e6e6e6",
-                borderRadius: 14,
-                padding: 14,
-                display: "grid",
-                gridTemplateColumns: "140px 1fr 220px",
-                gap: 12,
-                alignItems: "center",
-              }}
-            >
-              <div style={{ width: 140, height: 90, borderRadius: 12, overflow: "hidden", background: "#f2f2f2" }}>
-                {b.images?.[0]?.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={b.images[0].url} alt={b.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : null}
-              </div>
-
-              <div>
-                <div style={{ display: "flex", gap: 10, alignItems: "baseline", flexWrap: "wrap" }}>
-                  <span style={{ fontWeight: 900 }}>{b.name}</span>
-                  <span style={{ opacity: 0.7 }}>{b.type?.name}</span>
-                  <span style={{ opacity: 0.7 }}>•</span>
-                  <span style={{ opacity: 0.7 }}>{b.location?.name}</span>
-                </div>
-              </div>
-
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", alignItems: "center" }}>
-                <label style={{ display: "flex", gap: 8, alignItems: "center", userSelect: "none" }}>
-                  <input type="checkbox" checked={true} onChange={(e) => toggleActive(b.id, e.target.checked)} />
-                  Активно
-                </label>
-              </div>
-            </div>
-          ))}
-
-          {!filtered.length && <p>Нет активных судов. Активируй судно в разделе “Суда”.</p>}
+      {boats.map((b) => (
+        <div key={b.id} style={card}>
+          <b>{b.name}</b>
+          <span style={{ opacity: 0.6 }}>
+            {b.type?.name} · {b.location?.name}
+          </span>
         </div>
-      )}
+      ))}
     </main>
   );
 }
 
-function tabBtn(active: boolean): React.CSSProperties {
-  return {
-    padding: "8px 12px",
-    borderRadius: 999,
-    border: "1px solid #ddd",
-    background: active ? "black" : "white",
-    color: active ? "white" : "black",
-    cursor: "pointer",
-    fontWeight: 800,
-  };
-}
-
-function inputStyle(): React.CSSProperties {
-  return { padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd", outline: "none" };
-}
+const card: React.CSSProperties = {
+  border: "1px solid #2a2f3a",
+  borderRadius: 12,
+  padding: 12,
+  marginBottom: 8,
+};

@@ -1,186 +1,104 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   apiAdminGetBoats,
+  apiAdminToggleBoatActive,
   apiGetBoatTypes,
   apiGetLocations,
-  apiAdminToggleBoatActive,
 } from "@/app/lib/api";
 
-type BoatType = { id: string; name: string };
-type Location = { id: string; name: string };
-type Boat = any;
-
 export default function AdminBoatsPage() {
-  const [types, setTypes] = useState<BoatType[]>([]);
-  const [locations, setLocations] = useState<Location[]>([]);
-  const [boats, setBoats] = useState<Boat[]>([]);
+  const [boats, setBoats] = useState<any[]>([]);
+  const [types, setTypes] = useState<any[]>([]);
+  const [locations, setLocations] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
-  // filters
-  const [filterTypeId, setFilterTypeId] = useState<string>("ALL");
-  const [filterLocationId, setFilterLocationId] = useState<string>("ALL");
-  const [filterActive, setFilterActive] = useState<string>("ALL"); // ALL|true|false
-  const [q, setQ] = useState("");
-
-  async function loadAll() {
+  async function load() {
     setLoading(true);
-    setError(null);
-    try {
-      const [t, l, b] = await Promise.all([apiGetBoatTypes(), apiGetLocations(), apiAdminGetBoats()]);
-      setTypes(t.items);
-      setLocations(l.items);
-      setBoats(b.items);
-    } catch (e: any) {
-      setError(e?.message || "Ошибка загрузки");
-    } finally {
-      setLoading(false);
-    }
+    const [b, t, l] = await Promise.all([
+      apiAdminGetBoats(),
+      apiGetBoatTypes(),
+      apiGetLocations(),
+    ]);
+    setBoats(b.items);
+    setTypes(t.items);
+    setLocations(l.items);
+    setLoading(false);
   }
 
   useEffect(() => {
-    loadAll();
+    load();
   }, []);
 
-  const filtered = useMemo(() => {
-    const qq = q.trim().toLowerCase();
-    return boats.filter((b) => {
-      if (filterTypeId !== "ALL" && b.typeId !== filterTypeId) return false;
-      if (filterLocationId !== "ALL" && b.locationId !== filterLocationId) return false;
-      if (filterActive !== "ALL" && String(Boolean(b.isActive)) !== filterActive) return false;
-
-      if (qq) {
-        const hay = `${b.name ?? ""} ${(b.type?.name ?? "")} ${(b.location?.name ?? "")}`.toLowerCase();
-        if (!hay.includes(qq)) return false;
-      }
-      return true;
-    });
-  }, [boats, filterTypeId, filterLocationId, filterActive, q]);
-
   async function toggleActive(id: string, next: boolean) {
-    try {
-      await apiAdminToggleBoatActive(id, next);
-      await loadAll();
-    } catch (e: any) {
-      alert(e?.message || "Не удалось изменить активность");
-    }
+    await apiAdminToggleBoatActive(id, next);
+    await load();
   }
 
   return (
-    <main style={{ padding: 20 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        <h1 style={{ margin: 0 }}>Суда</h1>
-
-        {/* КНОПКА СОЗДАНИЯ ТУТ */}
-        <Link
-          href="/admin/rent/boats/new"
-          style={{
-            padding: "10px 14px",
-            borderRadius: 10,
-            background: "black",
-            color: "white",
-            textDecoration: "none",
-            fontWeight: 800,
-          }}
-        >
-          + Завести судно
+    <main style={{ padding: 24 }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <h1>Суда</h1>
+        <Link href="/admin/boats/new" style={btnPrimary}>
+          ➕ Добавить судно
         </Link>
       </div>
 
-      {/* Filters */}
-      <div
-        style={{
-          marginTop: 16,
-          display: "grid",
-          gridTemplateColumns: "1fr 220px 220px 220px",
-          gap: 12,
-          alignItems: "center",
-        }}
-      >
-        <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск..." style={inputStyle()} />
+      {loading && <p>Загрузка…</p>}
 
-        <select value={filterTypeId} onChange={(e) => setFilterTypeId(e.target.value)} style={inputStyle()}>
-          <option value="ALL">Все типы</option>
-          {types.map((t) => (
-            <option key={t.id} value={t.id}>
-              {t.name}
-            </option>
-          ))}
-        </select>
-
-        <select value={filterLocationId} onChange={(e) => setFilterLocationId(e.target.value)} style={inputStyle()}>
-          <option value="ALL">Все локации</option>
-          {locations.map((l) => (
-            <option key={l.id} value={l.id}>
-              {l.name}
-            </option>
-          ))}
-        </select>
-
-        <select value={filterActive} onChange={(e) => setFilterActive(e.target.value)} style={inputStyle()}>
-          <option value="ALL">Активность: все</option>
-          <option value="true">Только активные</option>
-          <option value="false">Только неактивные</option>
-        </select>
-      </div>
-
-      {loading && <p style={{ marginTop: 16 }}>Загрузка…</p>}
-      {error && <p style={{ marginTop: 16, color: "crimson" }}>{error}</p>}
-
-      {!loading && !error && (
+      {!loading && (
         <div style={{ marginTop: 16, display: "grid", gap: 12 }}>
-          {filtered.map((b) => (
-            <div
-              key={b.id}
-              style={{
-                border: "1px solid #e6e6e6",
-                borderRadius: 14,
-                padding: 14,
-                display: "grid",
-                gridTemplateColumns: "140px 1fr 220px",
-                gap: 12,
-                alignItems: "center",
-              }}
-            >
-              <div style={{ width: 140, height: 90, borderRadius: 12, overflow: "hidden", background: "#f2f2f2" }}>
-                {b.images?.[0]?.url ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={b.images[0].url} alt={b.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                ) : null}
-              </div>
-
+          {boats.map((b) => (
+            <div key={b.id} style={card}>
               <div>
-                <div style={{ display: "flex", gap: 10, alignItems: "baseline", flexWrap: "wrap" }}>
-                  <span style={{ fontWeight: 900 }}>{b.name}</span>
-                  <span style={{ opacity: 0.7 }}>{b.type?.name}</span>
-                  <span style={{ opacity: 0.7 }}>•</span>
-                  <span style={{ opacity: 0.7 }}>{b.location?.name}</span>
-                </div>
-
-                <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
-                  ID: {b.id}
-                </div>
+                <b>{b.name}</b>{" "}
+                <span style={{ opacity: 0.6 }}>
+                  ({b.type?.name} · {b.location?.name})
+                </span>
+                <div style={{ fontSize: 12, opacity: 0.6 }}>ID: {b.id}</div>
               </div>
 
-              <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", alignItems: "center" }}>
-                <label style={{ display: "flex", gap: 8, alignItems: "center", userSelect: "none" }}>
-                  <input type="checkbox" checked={Boolean(b.isActive)} onChange={(e) => toggleActive(b.id, e.target.checked)} />
+              <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                <label>
+                  <input
+                    type="checkbox"
+                    checked={b.isActive}
+                    onChange={(e) => toggleActive(b.id, e.target.checked)}
+                  />{" "}
                   Активно для аренды
                 </label>
+                <Link href={`/admin/boats/${b.id}`} style={btn}>
+                  Редактировать
+                </Link>
               </div>
             </div>
           ))}
-
-          {!filtered.length && <p>Судов не найдено.</p>}
         </div>
       )}
     </main>
   );
 }
 
-function inputStyle(): React.CSSProperties {
-  return { padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd", outline: "none" };
-}
+const card: React.CSSProperties = {
+  border: "1px solid #2a2f3a",
+  borderRadius: 12,
+  padding: 12,
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+};
+
+const btn: React.CSSProperties = {
+  padding: "6px 10px",
+  borderRadius: 8,
+  border: "1px solid #2a2f3a",
+  textDecoration: "none",
+};
+
+const btnPrimary: React.CSSProperties = {
+  ...btn,
+  background: "#0b5cff",
+  color: "#fff",
+};

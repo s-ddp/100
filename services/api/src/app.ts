@@ -9,6 +9,7 @@ import { adminOrdersRouter } from "./routes/adminOrders.js";
 import { paymentsRouter } from "./routes/payments.js";
 import { adminRentRouter } from "./routes/adminRent.js";
 import { publicRentRouter } from "./routes/publicRent.js";
+import { adminBoatsRouter } from "./routes/adminBoats.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import seatmapRouter from "./modules/seatmap/seatmap.routes.js";
 import { logger } from "./logger.js";
@@ -32,6 +33,7 @@ export function createApp(config: AppConfig) {
   app.use("/trips", tripsRouter);
   app.use("/admin/orders", adminOrdersRouter);
   app.use("/payments", paymentsRouter);
+  app.use("/admin/boats", adminBoatsRouter);
   app.use("/admin/rent", adminRentRouter);
   app.use("/rent", publicRentRouter);
 

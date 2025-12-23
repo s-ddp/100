@@ -2,143 +2,190 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import {
+  apiAdminGetBoat,
+  apiAdminToggleBoatActive,
+  apiAdminUpdateBoat,
+  apiGetBoatTypes,
+  apiGetLocations,
+} from "@/app/lib/api";
 
-type City = { id: string; name: string; active: boolean };
+type Boat = any;
 
-type RentParam = {
-  id: string;
-  name: string;
-  type: "text" | "number" | "enum" | "multiselect" | "boolean";
-  useInFilters: boolean;
-  active: boolean;
-  options: string[];
-};
-
-type Boat = {
-  id: string;
-  name: string;
-  cityId: string;
-  type: string;
-  pricePerHour: number;
-  images: string[];
-  params: Record<string, any>;
-  active: boolean;
-};
-
-function typeLabel(t: RentParam["type"]) {
-  switch (t) {
-    case "text":
-      return "Текст";
-    case "number":
-      return "Число";
-    case "enum":
-      return "Список (один вариант)";
-    case "multiselect":
-      return "Список (несколько вариантов)";
-    case "boolean":
-      return "Да / Нет";
-  }
-}
+type Option = { id: string; name: string };
 
 export default function AdminBoatCardPage({ params }: { params: { id: string } }) {
+  const router = useRouter();
   const id = params.id;
 
   const [boat, setBoat] = useState<Boat | null>(null);
-  const [cities, setCities] = useState<City[]>([]);
-  const [rentParams, setRentParams] = useState<RentParam[]>([]);
+  const [types, setTypes] = useState<Option[]>([]);
+  const [locations, setLocations] = useState<Option[]>([]);
+  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  async function load() {
-    const [b, meta] = await Promise.all([
-      fetch(`/api/admin/rent/boats/${id}`, { cache: "no-store" }).then((r) => r.json()),
-      fetch(`/api/rent/metadata`, { cache: "no-store" }).then((r) => r.json()),
-    ]);
-
-    if (b?.boat) setBoat(b.boat);
-    setCities(meta?.cities || []);
-    setRentParams((meta?.parameters || []).filter((p: RentParam) => p.active));
-  }
+  const [imagesText, setImagesText] = useState("");
 
   useEffect(() => {
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [tRes, lRes, boatRes] = await Promise.all([
+          apiGetBoatTypes(),
+          apiGetLocations(),
+          apiAdminGetBoat(id),
+        ]);
+        setTypes(tRes.items);
+        setLocations(lRes.items);
+        setBoat(boatRes.item);
+        setImagesText((boatRes.item.images || []).map((i: any) => i.url).join("\n"));
+      } catch (e: any) {
+        setError(e?.message || "Не удалось загрузить судно");
+      } finally {
+        setLoading(false);
+      }
+    }
     load();
   }, [id]);
 
-  const activeParams = useMemo(() => rentParams.filter((p) => p.active), [rentParams]);
-
-  function setField<K extends keyof Boat>(key: K, value: Boat[K]) {
-    if (!boat) return;
-    setBoat({ ...boat, [key]: value });
-  }
-
-  function setParamValue(paramId: string, value: any) {
-    if (!boat) return;
-    setBoat({ ...boat, params: { ...(boat.params || {}), [paramId]: value } });
-  }
+  const parameters = useMemo(() => boat?.parameters || [], [boat]);
 
   async function save() {
     if (!boat) return;
     setSaving(true);
+    setError(null);
     try {
-      await fetch("/api/admin/rent/boats", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(boat),
-      });
-      alert("Сохранено");
+      const images = imagesText
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean)
+        .map((url, idx) => ({ url, sortOrder: idx }));
+
+      const payload = {
+        name: boat.name,
+        description: boat.description,
+        typeId: boat.typeId,
+        locationId: boat.locationId,
+        isActive: boat.isActive,
+        images,
+        parameters: parameters.map((p: any) => ({
+          parameterId: p.parameterId,
+          valueText: p.valueText ?? null,
+          valueNumber: typeof p.valueNumber === "number" ? p.valueNumber : null,
+          valueBool: typeof p.valueBool === "boolean" ? p.valueBool : null,
+        })),
+      };
+
+      const res = await apiAdminUpdateBoat(id, payload);
+      setBoat(res.item);
+      setImagesText((res.item.images || []).map((i: any) => i.url).join("\n"));
+    } catch (e: any) {
+      setError(e?.message || "Не удалось сохранить");
     } finally {
       setSaving(false);
     }
   }
 
-  async function remove() {
-    if (!confirm("Удалить судно?")) return;
-    await fetch(`/api/admin/rent/boats/${id}`, { method: "DELETE" });
-    window.location.href = "/admin/rent/boats";
+  async function toggleActive(next: boolean) {
+    try {
+      await apiAdminToggleBoatActive(id, next);
+      setBoat((prev: any) => (prev ? { ...prev, isActive: next } : prev));
+    } catch (e: any) {
+      alert(e?.message || "Не удалось изменить активность");
+    }
   }
 
-  if (!boat) {
-    return <div style={{ padding: 28, opacity: 0.8 }}>Загрузка карточки судна…</div>;
-  }
+  if (loading) return <div style={{ padding: 28 }}>Загрузка карточки судна…</div>;
+  if (!boat) return <div style={{ padding: 28 }}>Судно не найдено</div>;
 
   return (
-    <div style={{ padding: 28 }}>
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, marginBottom: 18 }}>
+    <div style={{ padding: 28, display: "grid", gap: 16, maxWidth: 1000 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
         <div>
           <div style={{ opacity: 0.7, marginBottom: 6 }}>
-            <Link href="/admin/rent/boats" style={{ color: "#9fb3ff", textDecoration: "none" }}>
+            <Link href="/admin/rent/boats" style={{ color: "#0b4bff", textDecoration: "none" }}>
               ← Судна
             </Link>
           </div>
-          <h1 style={{ fontSize: 28, margin: 0 }}>Судно</h1>
-          <div style={{ opacity: 0.7, marginTop: 6 }}>Редактирование карточки + динамические параметры.</div>
+          <h1 style={{ fontSize: 28, margin: 0 }}>{boat.name || "Судно"}</h1>
         </div>
 
-        <div style={{ display: "flex", gap: 10 }}>
-          <button
-            onClick={remove}
-            style={{
-              padding: "10px 14px",
-              borderRadius: 10,
-              background: "transparent",
-              border: "1px solid rgba(255,255,255,.16)",
-              color: "#fff",
-              cursor: "pointer",
-              fontWeight: 700,
-            }}
-          >
-            Удалить
-          </button>
+        <label style={{ display: "flex", gap: 10, alignItems: "center" }}>
+          <input
+            type="checkbox"
+            checked={Boolean(boat.isActive)}
+            onChange={(e) => toggleActive(e.target.checked)}
+          />
+          Активно
+        </label>
+      </div>
+
+      {error && <div style={{ color: "crimson" }}>{error}</div>}
+
+      <div style={{ background: "#fff", border: "1px solid #e5e5e5", borderRadius: 12, padding: 16 }}>
+        <div style={{ display: "grid", gap: 12 }}>
+          <input
+            value={boat.name || ""}
+            onChange={(e) => setBoat({ ...boat, name: e.target.value })}
+            placeholder="Название"
+            style={input()}
+          />
+
+          <textarea
+            value={boat.description || ""}
+            onChange={(e) => setBoat({ ...boat, description: e.target.value })}
+            placeholder="Описание"
+            style={{ ...input(), minHeight: 120 }}
+          />
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+            <select
+              value={boat.typeId}
+              onChange={(e) => setBoat({ ...boat, typeId: e.target.value })}
+              style={input()}
+            >
+              {types.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.name}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={boat.locationId}
+              onChange={(e) => setBoat({ ...boat, locationId: e.target.value })}
+              style={input()}
+            >
+              {locations.map((l) => (
+                <option key={l.id} value={l.id}>
+                  {l.name}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <textarea
+            value={imagesText}
+            onChange={(e) => setImagesText(e.target.value)}
+            placeholder="Фото (URL). По одной ссылке в строке."
+            style={{ ...input(), minHeight: 100 }}
+          />
+
           <button
             onClick={save}
             disabled={saving}
             style={{
               padding: "10px 14px",
-              borderRadius: 10,
-              background: "#2b5cff",
-              border: "1px solid rgba(255,255,255,.08)",
-              color: "#fff",
+              borderRadius: 12,
+              border: "1px solid #ddd",
+              background: "black",
+              color: "white",
+              fontWeight: 800,
               cursor: "pointer",
-              fontWeight: 700,
+              width: 200,
               opacity: saving ? 0.7 : 1,
             }}
           >
@@ -147,262 +194,32 @@ export default function AdminBoatCardPage({ params }: { params: { id: string } }
         </div>
       </div>
 
-      <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: 16,
-          alignItems: "start",
-        }}
-      >
-        {/* Основные поля */}
-        <div style={{ border: "1px solid rgba(255,255,255,.10)", borderRadius: 14, padding: 16 }}>
-          <div style={{ fontWeight: 800, marginBottom: 12 }}>Основное</div>
-
-          <label style={{ display: "block", marginBottom: 10 }}>
-            <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 6 }}>Название</div>
-            <input
-              value={boat.name}
-              onChange={(e) => setField("name", e.target.value)}
-              style={{
-                width: "100%",
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid rgba(255,255,255,.10)",
-                background: "rgba(255,255,255,.04)",
-                color: "#fff",
-                outline: "none",
-              }}
-            />
-          </label>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-            <label style={{ display: "block" }}>
-              <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 6 }}>Город</div>
-              <select
-                value={boat.cityId}
-                onChange={(e) => setField("cityId", e.target.value)}
+      <div style={{ background: "#fff", border: "1px solid #e5e5e5", borderRadius: 12, padding: 16 }}>
+        <div style={{ fontWeight: 800, marginBottom: 10 }}>Параметры</div>
+        {parameters.length === 0 ? (
+          <div style={{ opacity: 0.7 }}>Параметры пока не заданы.</div>
+        ) : (
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+            {parameters.map((p: any) => (
+              <span
+                key={p.id}
                 style={{
-                  width: "100%",
-                  padding: "10px 12px",
+                  fontSize: 12,
+                  padding: "6px 10px",
                   borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,.10)",
-                  background: "rgba(255,255,255,.04)",
-                  color: "#fff",
-                  outline: "none",
+                  background: "#f5f5f5",
                 }}
               >
-                {cities.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label style={{ display: "block" }}>
-              <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 6 }}>Тип судна</div>
-              <select
-                value={boat.type}
-                onChange={(e) => setField("type", e.target.value)}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,.10)",
-                  background: "rgba(255,255,255,.04)",
-                  color: "#fff",
-                  outline: "none",
-                }}
-              >
-                <option value="catamaran">Катер</option>
-                <option value="motor-yacht">Моторная яхта</option>
-                <option value="sail-yacht">Парусная яхта</option>
-                <option value="jet-ski">Гидроцикл</option>
-              </select>
-            </label>
-
-            <label style={{ display: "block" }}>
-              <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 6 }}>Цена за час (₽)</div>
-              <input
-                type="number"
-                value={boat.pricePerHour}
-                onChange={(e) => setField("pricePerHour", Number(e.target.value))}
-                style={{
-                  width: "100%",
-                  padding: "10px 12px",
-                  borderRadius: 10,
-                  border: "1px solid rgba(255,255,255,.10)",
-                  background: "rgba(255,255,255,.04)",
-                  color: "#fff",
-                  outline: "none",
-                }}
-              />
-            </label>
-
-            <label style={{ display: "flex", alignItems: "center", gap: 10, marginTop: 18 }}>
-              <input
-                type="checkbox"
-                checked={boat.active}
-                onChange={(e) => setField("active", e.target.checked)}
-              />
-              <span style={{ opacity: 0.85 }}>Активно</span>
-            </label>
+                {p.parameter?.name}: {p.valueText ?? p.valueNumber ?? (typeof p.valueBool === "boolean" ? (p.valueBool ? "да" : "нет") : "")}
+              </span>
+            ))}
           </div>
-
-          <div style={{ marginTop: 14 }}>
-            <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 6 }}>Фото (URL, по одному на строку)</div>
-            <textarea
-              value={(boat.images || []).join("\n")}
-              onChange={(e) => setField("images", e.target.value.split("\n").map((x) => x.trim()).filter(Boolean))}
-              style={{
-                width: "100%",
-                minHeight: 120,
-                padding: "10px 12px",
-                borderRadius: 10,
-                border: "1px solid rgba(255,255,255,.10)",
-                background: "rgba(255,255,255,.04)",
-                color: "#fff",
-                outline: "none",
-              }}
-            />
-          </div>
-        </div>
-
-        {/* Динамические параметры */}
-        <div style={{ border: "1px solid rgba(255,255,255,.10)", borderRadius: 14, padding: 16 }}>
-          <div style={{ fontWeight: 800, marginBottom: 12 }}>Параметры (из /admin/rent/parameters)</div>
-
-          {activeParams.length === 0 ? (
-            <div style={{ opacity: 0.7 }}>Нет активных параметров. Создай их в “Параметры судов”.</div>
-          ) : (
-            <div style={{ display: "grid", gap: 12 }}>
-              {activeParams.map((p) => {
-                const v = boat.params?.[p.id];
-
-                if (p.type === "text") {
-                  return (
-                    <label key={p.id}>
-                      <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 6 }}>
-                        {p.name} <span style={{ opacity: 0.6 }}>({typeLabel(p.type)})</span>
-                      </div>
-                      <input
-                        value={v ?? ""}
-                        onChange={(e) => setParamValue(p.id, e.target.value)}
-                        style={{
-                          width: "100%",
-                          padding: "10px 12px",
-                          borderRadius: 10,
-                          border: "1px solid rgba(255,255,255,.10)",
-                          background: "rgba(255,255,255,.04)",
-                          color: "#fff",
-                          outline: "none",
-                        }}
-                      />
-                    </label>
-                  );
-                }
-
-                if (p.type === "number") {
-                  return (
-                    <label key={p.id}>
-                      <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 6 }}>
-                        {p.name} <span style={{ opacity: 0.6 }}>({typeLabel(p.type)})</span>
-                      </div>
-                      <input
-                        type="number"
-                        value={v ?? ""}
-                        onChange={(e) => setParamValue(p.id, e.target.value === "" ? "" : Number(e.target.value))}
-                        style={{
-                          width: "100%",
-                          padding: "10px 12px",
-                          borderRadius: 10,
-                          border: "1px solid rgba(255,255,255,.10)",
-                          background: "rgba(255,255,255,.04)",
-                          color: "#fff",
-                          outline: "none",
-                        }}
-                      />
-                    </label>
-                  );
-                }
-
-                if (p.type === "boolean") {
-                  return (
-                    <label key={p.id} style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <input
-                        type="checkbox"
-                        checked={Boolean(v)}
-                        onChange={(e) => setParamValue(p.id, e.target.checked)}
-                      />
-                      <span style={{ opacity: 0.9 }}>
-                        {p.name} <span style={{ opacity: 0.6 }}>({typeLabel(p.type)})</span>
-                      </span>
-                    </label>
-                  );
-                }
-
-                if (p.type === "enum") {
-                  return (
-                    <label key={p.id}>
-                      <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 6 }}>
-                        {p.name} <span style={{ opacity: 0.6 }}>({typeLabel(p.type)})</span>
-                      </div>
-                      <select
-                        value={v ?? ""}
-                        onChange={(e) => setParamValue(p.id, e.target.value)}
-                        style={{
-                          width: "100%",
-                          padding: "10px 12px",
-                          borderRadius: 10,
-                          border: "1px solid rgba(255,255,255,.10)",
-                          background: "rgba(255,255,255,.04)",
-                          color: "#fff",
-                          outline: "none",
-                        }}
-                      >
-                        <option value="">—</option>
-                        {(p.options || []).map((opt) => (
-                          <option key={opt} value={opt}>
-                            {opt}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  );
-                }
-
-                const arr = Array.isArray(v) ? v : [];
-                return (
-                  <div key={p.id}>
-                    <div style={{ fontSize: 13, opacity: 0.75, marginBottom: 8 }}>
-                      {p.name} <span style={{ opacity: 0.6 }}>({typeLabel(p.type)})</span>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-                      {(p.options || []).map((opt) => {
-                        const checked = arr.includes(opt);
-                        return (
-                          <label key={opt} style={{ display: "flex", alignItems: "center", gap: 8, opacity: 0.9 }}>
-                            <input
-                              type="checkbox"
-                              checked={checked}
-                              onChange={(e) => {
-                                const next = e.target.checked ? [...arr, opt] : arr.filter((x) => x !== opt);
-                                setParamValue(p.id, next);
-                              }}
-                            />
-                            <span>{opt}</span>
-                          </label>
-                        );
-                      })}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+        )}
       </div>
     </div>
   );
+}
+
+function input(): React.CSSProperties {
+  return { padding: "10px 12px", borderRadius: 12, border: "1px solid #ddd", outline: "none" };
 }

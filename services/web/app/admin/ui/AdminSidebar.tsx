@@ -44,6 +44,14 @@ const sections = [
     title: "Справочники",
     items: [{ href: "/admin/dictionaries", label: "Справочники" }],
   },
+  {
+    title: "Аренда",
+    items: [
+      { href: "/admin/rent/boats", label: "Судна для аренды" },
+      { href: "/admin/rent/boat", label: "Судно" },
+      { href: "/admin/rent/parameters", label: "Параметры судов" },
+    ],
+  },
 ];
 
 export default function AdminSidebar() {

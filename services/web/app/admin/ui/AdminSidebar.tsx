@@ -1,86 +1,110 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import styles from "./AdminSidebar.module.css";
+import { useEffect, useState } from "react";
 
-const sections = [
+type MenuGroup = {
+  id: string;
+  title: string;
+  items: { label: string; href: string }[];
+};
+
+const MENU: MenuGroup[] = [
   {
-    title: "Управление системой",
-    items: [
-      { href: "/admin/users", label: "Управление доступом" },
-      { href: "/admin/settings", label: "Настройки" },
-      { href: "/admin/translations", label: "Переводы" },
-    ],
-  },
-  {
-    title: "Содержание сайта",
-    items: [
-      { href: "/admin/content/pages", label: "Страницы" },
-      { href: "/admin/content/news", label: "Новости" },
-      { href: "/admin/content/navigation", label: "Навигация" },
-    ],
-  },
-  {
-    title: "Интернет-магазин",
-    items: [
-      { href: "/admin/shop/orders", label: "Заказы" },
-      { href: "/admin/shop/clients", label: "Клиенты" },
-      { href: "/admin/shop/finance", label: "Финансы" },
-    ],
-  },
-  {
-    title: "Работа с поставщиками",
-    items: [
-      { href: "/admin/suppliers/list", label: "Поставщики" },
-      { href: "/admin/suppliers/settlements", label: "Расчёты с поставщиками" },
-    ],
-  },
-  {
-    title: "Отчетность",
-    items: [{ href: "/admin/reports", label: "Отчеты" }],
-  },
-  {
-    title: "Справочники",
-    items: [
-      { href: "/admin/dictionaries", label: "Справочники" },
-      { href: "/admin/dictionaries/cities", label: "Города" },
-    ],
-  },
-  {
+    id: "rent",
     title: "Аренда",
     items: [
-      { href: "/admin/rent/boats", label: "Судна для аренды" },
-      { href: "/admin/rent/boat", label: "Судно" },
-      { href: "/admin/rent/parameters", label: "Параметры судов" },
+      { label: "Суда", href: "/admin/boats" },
+      { label: "Судно для аренды", href: "/admin/rent/boats" },
+      { label: "Параметры", href: "/admin/rent/parameters" },
     ],
   },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
+  const [openGroup, setOpenGroup] = useState<string>("rent");
+
+  // при смене страницы — раскрываем нужную группу
+  useEffect(() => {
+    setOpenGroup("rent");
+  }, [pathname]);
 
   return (
-    <aside className={styles.sidebar}>
-      {sections.map((section) => (
-        <div key={section.title} className={styles.section}>
-          <div className={styles.sectionTitle}>{section.title}</div>
-          <nav className={styles.nav}>
-            {section.items.map((item) => {
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={active ? styles.navLinkActive : styles.navLink}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-      ))}
+    <aside style={sidebar}>
+      <div style={logo}>Admin</div>
+
+      {MENU.map((group) => {
+        const opened = openGroup === group.id;
+
+        return (
+          <div key={group.id}>
+            <button
+              onClick={() => setOpenGroup(opened ? "" : group.id)}
+              style={groupBtn}
+            >
+              {group.title}
+              <span style={{ opacity: 0.6 }}>{opened ? "▾" : "▸"}</span>
+            </button>
+
+            {opened &&
+              group.items.map((item) => {
+                const active =
+                  pathname === item.href ||
+                  pathname.startsWith(item.href + "/");
+
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    style={{
+                      ...itemStyle,
+                      background: active ? "#2a2f3a" : undefined,
+                    }}
+                  >
+                    {item.label}
+                  </Link>
+                );
+              })}
+          </div>
+        );
+      })}
     </aside>
   );
 }
+
+/* ===== styles ===== */
+
+const sidebar: React.CSSProperties = {
+  width: 240,
+  minHeight: "100vh",
+  background: "#1b1f2a",
+  color: "#fff",
+  padding: 8,
+};
+
+const logo: React.CSSProperties = {
+  fontWeight: 900,
+  padding: 12,
+};
+
+const groupBtn: React.CSSProperties = {
+  width: "100%",
+  background: "none",
+  border: "none",
+  color: "#fff",
+  padding: "10px 12px",
+  fontWeight: 700,
+  display: "flex",
+  justifyContent: "space-between",
+  cursor: "pointer",
+};
+
+const itemStyle: React.CSSProperties = {
+  display: "block",
+  padding: "8px 24px",
+  color: "#fff",
+  textDecoration: "none",
+  fontSize: 14,
+};

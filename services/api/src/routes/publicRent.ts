@@ -4,6 +4,10 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 export const publicRentRouter = Router();
 
+/**
+ * Public: list of ACTIVE boats
+ * GET /rent/boats?typeId=&locationId=
+ */
 publicRentRouter.get("/boats", async (req, res) => {
   const { typeId, locationId } = req.query;
 
@@ -25,8 +29,13 @@ publicRentRouter.get("/boats", async (req, res) => {
   res.json({ items });
 });
 
+/**
+ * Public: ACTIVE boat by id
+ * GET /rent/boats/:id
+ */
 publicRentRouter.get("/boats/:id", async (req, res) => {
   const id = req.params.id;
+
   const item = await prisma.boat.findFirst({
     where: { id, isActive: true },
     include: {

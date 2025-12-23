@@ -2,33 +2,35 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { apiAdminGetBoats, apiGetBoatTypes, apiGetLocations, apiAdminToggleBoatActive } from "@/app/lib/api";
+import {
+  apiAdminGetBoats,
+  apiGetBoatTypes,
+  apiGetLocations,
+  apiAdminToggleBoatActive,
+} from "@/app/lib/api";
 
 type BoatType = { id: string; name: string };
 type Location = { id: string; name: string };
 type Boat = any;
 
-export default function AdminRentActiveBoatsPage() {
+export default function AdminBoatsPage() {
   const [types, setTypes] = useState<BoatType[]>([]);
   const [locations, setLocations] = useState<Location[]>([]);
   const [boats, setBoats] = useState<Boat[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // UI state
-  const [tabTypeId, setTabTypeId] = useState<string>("ALL");
+  // filters
+  const [filterTypeId, setFilterTypeId] = useState<string>("ALL");
   const [filterLocationId, setFilterLocationId] = useState<string>("ALL");
+  const [filterActive, setFilterActive] = useState<string>("ALL"); // ALL|true|false
   const [q, setQ] = useState("");
 
   async function loadAll() {
     setLoading(true);
     setError(null);
     try {
-      const [t, l, b] = await Promise.all([
-        apiGetBoatTypes(),
-        apiGetLocations(),
-        apiAdminGetBoats("?isActive=true"), // ВАЖНО: тут только активные
-      ]);
+      const [t, l, b] = await Promise.all([apiGetBoatTypes(), apiGetLocations(), apiAdminGetBoats()]);
       setTypes(t.items);
       setLocations(l.items);
       setBoats(b.items);
@@ -46,20 +48,22 @@ export default function AdminRentActiveBoatsPage() {
   const filtered = useMemo(() => {
     const qq = q.trim().toLowerCase();
     return boats.filter((b) => {
-      if (tabTypeId !== "ALL" && b.typeId !== tabTypeId) return false;
+      if (filterTypeId !== "ALL" && b.typeId !== filterTypeId) return false;
       if (filterLocationId !== "ALL" && b.locationId !== filterLocationId) return false;
+      if (filterActive !== "ALL" && String(Boolean(b.isActive)) !== filterActive) return false;
+
       if (qq) {
         const hay = `${b.name ?? ""} ${(b.type?.name ?? "")} ${(b.location?.name ?? "")}`.toLowerCase();
         if (!hay.includes(qq)) return false;
       }
       return true;
     });
-  }, [boats, tabTypeId, filterLocationId, q]);
+  }, [boats, filterTypeId, filterLocationId, filterActive, q]);
 
   async function toggleActive(id: string, next: boolean) {
     try {
       await apiAdminToggleBoatActive(id, next);
-      await loadAll(); // если выключили — судно исчезнет из этого раздела (это правильно)
+      await loadAll();
     } catch (e: any) {
       alert(e?.message || "Не удалось изменить активность");
     }
@@ -68,34 +72,22 @@ export default function AdminRentActiveBoatsPage() {
   return (
     <main style={{ padding: 20 }}>
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-        <h1 style={{ margin: 0 }}>Судно для аренды</h1>
+        <h1 style={{ margin: 0 }}>Суда</h1>
 
-        {/* Кнопки создания тут НЕТ. Ссылка на "Суда" */}
+        {/* КНОПКА СОЗДАНИЯ ТУТ */}
         <Link
-          href="/admin/boats"
+          href="/admin/rent/boats/new"
           style={{
-            padding: "8px 12px",
-            borderRadius: 12,
-            border: "1px solid #ddd",
+            padding: "10px 14px",
+            borderRadius: 10,
+            background: "black",
+            color: "white",
             textDecoration: "none",
-            color: "black",
             fontWeight: 800,
           }}
         >
-          Перейти в “Суда”
+          + Завести судно
         </Link>
-      </div>
-
-      {/* Tabs */}
-      <div style={{ marginTop: 16, display: "flex", gap: 8, flexWrap: "wrap" }}>
-        <button onClick={() => setTabTypeId("ALL")} style={tabBtn(tabTypeId === "ALL")}>
-          Все суда
-        </button>
-        {types.map((t) => (
-          <button key={t.id} onClick={() => setTabTypeId(t.id)} style={tabBtn(tabTypeId === t.id)}>
-            {t.name}
-          </button>
-        ))}
       </div>
 
       {/* Filters */}
@@ -103,20 +95,35 @@ export default function AdminRentActiveBoatsPage() {
         style={{
           marginTop: 16,
           display: "grid",
-          gridTemplateColumns: "1fr 260px",
+          gridTemplateColumns: "1fr 220px 220px 220px",
           gap: 12,
           alignItems: "center",
         }}
       >
         <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск..." style={inputStyle()} />
 
-        <select value={filterLocationId} onChange={(e) => setFilterLocationId(e.target.value)} style={inputStyle()}>
-          <option value="ALL">Все локации</option>
-          {locations.map((loc) => (
-            <option key={loc.id} value={loc.id}>
-              {loc.name}
+        <select value={filterTypeId} onChange={(e) => setFilterTypeId(e.target.value)} style={inputStyle()}>
+          <option value="ALL">Все типы</option>
+          {types.map((t) => (
+            <option key={t.id} value={t.id}>
+              {t.name}
             </option>
           ))}
+        </select>
+
+        <select value={filterLocationId} onChange={(e) => setFilterLocationId(e.target.value)} style={inputStyle()}>
+          <option value="ALL">Все локации</option>
+          {locations.map((l) => (
+            <option key={l.id} value={l.id}>
+              {l.name}
+            </option>
+          ))}
+        </select>
+
+        <select value={filterActive} onChange={(e) => setFilterActive(e.target.value)} style={inputStyle()}>
+          <option value="ALL">Активность: все</option>
+          <option value="true">Только активные</option>
+          <option value="false">Только неактивные</option>
         </select>
       </div>
 
@@ -152,34 +159,26 @@ export default function AdminRentActiveBoatsPage() {
                   <span style={{ opacity: 0.7 }}>•</span>
                   <span style={{ opacity: 0.7 }}>{b.location?.name}</span>
                 </div>
+
+                <div style={{ marginTop: 8, fontSize: 12, opacity: 0.75 }}>
+                  ID: {b.id}
+                </div>
               </div>
 
               <div style={{ display: "flex", gap: 10, justifyContent: "flex-end", alignItems: "center" }}>
                 <label style={{ display: "flex", gap: 8, alignItems: "center", userSelect: "none" }}>
-                  <input type="checkbox" checked={true} onChange={(e) => toggleActive(b.id, e.target.checked)} />
-                  Активно
+                  <input type="checkbox" checked={Boolean(b.isActive)} onChange={(e) => toggleActive(b.id, e.target.checked)} />
+                  Активно для аренды
                 </label>
               </div>
             </div>
           ))}
 
-          {!filtered.length && <p>Нет активных судов. Активируй судно в разделе “Суда”.</p>}
+          {!filtered.length && <p>Судов не найдено.</p>}
         </div>
       )}
     </main>
   );
-}
-
-function tabBtn(active: boolean): React.CSSProperties {
-  return {
-    padding: "8px 12px",
-    borderRadius: 999,
-    border: "1px solid #ddd",
-    background: active ? "black" : "white",
-    color: active ? "white" : "black",
-    cursor: "pointer",
-    fontWeight: 800,
-  };
 }
 
 function inputStyle(): React.CSSProperties {

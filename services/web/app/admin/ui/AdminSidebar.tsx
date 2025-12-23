@@ -1,86 +1,108 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 import styles from "./AdminSidebar.module.css";
 
-const sections = [
+type NavItem = { label: string; href: string };
+type NavGroup = { id: string; label: string; items: NavItem[] };
+
+const GROUPS: NavGroup[] = [
   {
-    title: "Управление системой",
+    id: "system",
+    label: "Информация о системе",
+    items: [{ label: "Пользователи", href: "/admin/users" }, { label: "Настройки", href: "/admin/settings" }],
+  },
+  {
+    id: "rent",
+    label: "Аренда",
     items: [
-      { href: "/admin/users", label: "Управление доступом" },
-      { href: "/admin/settings", label: "Настройки" },
-      { href: "/admin/translations", label: "Переводы" },
+      { label: "Суда", href: "/admin/boats" },
+      { label: "Судно для аренды", href: "/admin/rent/boats" },
+      { label: "Параметры", href: "/admin/rent/parameters" },
     ],
   },
   {
-    title: "Содержание сайта",
+    id: "orders",
+    label: "Заказы",
+    items: [{ label: "Список заказов", href: "/admin/orders" }],
+  },
+  {
+    id: "dictionaries",
+    label: "Справочники",
+    items: [{ label: "Города", href: "/admin/dictionaries/cities" }, { label: "Переводы", href: "/admin/translations" }],
+  },
+  {
+    id: "shop",
+    label: "Интернет-магазин",
     items: [
-      { href: "/admin/content/pages", label: "Страницы" },
-      { href: "/admin/content/news", label: "Новости" },
-      { href: "/admin/content/navigation", label: "Навигация" },
+      { label: "Клиенты", href: "/admin/shop/clients" },
+      { label: "Финансы", href: "/admin/shop/finance" },
+      { label: "Заказы (магазин)", href: "/admin/shop/orders" },
     ],
   },
   {
-    title: "Интернет-магазин",
-    items: [
-      { href: "/admin/shop/orders", label: "Заказы" },
-      { href: "/admin/shop/clients", label: "Клиенты" },
-      { href: "/admin/shop/finance", label: "Финансы" },
-    ],
-  },
-  {
-    title: "Работа с поставщиками",
-    items: [
-      { href: "/admin/suppliers/list", label: "Поставщики" },
-      { href: "/admin/suppliers/settlements", label: "Расчёты с поставщиками" },
-    ],
-  },
-  {
-    title: "Отчетность",
-    items: [{ href: "/admin/reports", label: "Отчеты" }],
-  },
-  {
-    title: "Справочники",
-    items: [
-      { href: "/admin/dictionaries", label: "Справочники" },
-      { href: "/admin/dictionaries/cities", label: "Города" },
-    ],
-  },
-  {
-    title: "Аренда",
-    items: [
-      { href: "/admin/rent/boats", label: "Судна для аренды" },
-      { href: "/admin/rent/boat", label: "Судно" },
-      { href: "/admin/rent/parameters", label: "Параметры судов" },
-    ],
+    id: "reports",
+    label: "Отчёты",
+    items: [{ label: "Отчёты", href: "/admin/reports" }],
   },
 ];
 
 export default function AdminSidebar() {
   const pathname = usePathname();
 
+  const groupByPath = useMemo(() => {
+    for (const g of GROUPS) {
+      if (g.items.some((it) => pathname?.startsWith(it.href))) return g.id;
+    }
+    return "rent";
+  }, [pathname]);
+
+  const [openGroupId, setOpenGroupId] = useState<string>(groupByPath);
+
+  // при переходе — открываем группу текущего раздела и закрываем предыдущую
+  useEffect(() => {
+    setOpenGroupId(groupByPath);
+  }, [groupByPath]);
+
+  function toggleGroup(id: string) {
+    setOpenGroupId((prev) => (prev === id ? "" : id)); // одна открыта, остальные закрыты
+  }
+
   return (
     <aside className={styles.sidebar}>
-      {sections.map((section) => (
-        <div key={section.title} className={styles.section}>
-          <div className={styles.sectionTitle}>{section.title}</div>
-          <nav className={styles.nav}>
-            {section.items.map((item) => {
-              const active = pathname === item.href;
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={active ? styles.navLinkActive : styles.navLink}
-                >
-                  {item.label}
-                </Link>
-              );
-            })}
-          </nav>
-        </div>
-      ))}
+      <div className={styles.logo}>Admin</div>
+
+      <nav className={styles.nav}>
+        {GROUPS.map((g) => {
+          const open = openGroupId === g.id;
+          return (
+            <div key={g.id} className={styles.group}>
+              <button className={styles.groupHeader} onClick={() => toggleGroup(g.id)} aria-expanded={open}>
+                <span className={styles.groupTitle}>{g.label}</span>
+                <span className={`${styles.chev} ${open ? styles.chevOpen : ""}`}>▾</span>
+              </button>
+
+              <div className={`${styles.groupItems} ${open ? styles.groupItemsOpen : ""}`}>
+                {g.items.map((it) => {
+                  const active = pathname === it.href || (it.href !== "/admin" && pathname?.startsWith(it.href));
+                  return (
+                    <Link
+                      key={it.href}
+                      href={it.href}
+                      className={`${styles.item} ${active ? styles.itemActive : ""}`}
+                    >
+                      <span className={styles.bullet}>•</span>
+                      <span>{it.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })}
+      </nav>
     </aside>
   );
 }

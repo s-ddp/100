@@ -39,11 +39,11 @@ export default function AdminRentParameters() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
 
-  const usageLabel = (p: Parameter) => {
-    const usage: string[] = [];
-    if (p.useInCard) usage.push("карточка");
-    if (p.useInFilter) usage.push("фильтр");
-    return usage.join(", ") || "—";
+  const typeLabels: Record<ParameterType, string> = {
+    text: "Текст",
+    number: "Число",
+    enum: "Список (один вариант)",
+    multiselect: "Список (несколько вариантов)",
   };
 
   const openForCreate = () => {
@@ -121,8 +121,8 @@ export default function AdminRentParameters() {
           <thead>
             <tr>
               <th>Название параметра</th>
-              <th>Тип</th>
-              <th>Использование</th>
+              <th>Тип параметра</th>
+              <th>Используется в фильтрах</th>
               <th>Статус</th>
               <th>Действия</th>
             </tr>
@@ -138,8 +138,8 @@ export default function AdminRentParameters() {
             {parameters.map((p) => (
               <tr key={p.id}>
                 <td>{p.name}</td>
-                <td>{p.type}</td>
-                <td>{usageLabel(p)}</td>
+                <td>{typeLabels[p.type]}</td>
+                <td>{p.useInFilter ? "да" : "нет"}</td>
                 <td className={p.status === "active" ? styles.statusActive : styles.statusInactive}>
                   {p.status === "active" ? "активен" : "выключен"}
                 </td>
@@ -192,10 +192,10 @@ export default function AdminRentParameters() {
                     })
                   }
                 >
-                  <option value="text">text</option>
-                  <option value="number">number</option>
-                  <option value="enum">enum</option>
-                  <option value="multiselect">multiselect</option>
+                  <option value="text">Текст</option>
+                  <option value="number">Число</option>
+                  <option value="enum">Список (один вариант)</option>
+                  <option value="multiselect">Список (несколько вариантов)</option>
                 </select>
               </label>
 

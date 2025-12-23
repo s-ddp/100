@@ -26,6 +26,16 @@ export default function Rent() {
 
       <section className={styles.filters}>
         <div>
+          <label>Город</label>
+          <select>
+            <option>Все города</option>
+            <option>Санкт-Петербург</option>
+            <option>Кронштадт</option>
+            <option>Петергоф</option>
+          </select>
+        </div>
+
+        <div>
           <label>Тип судна</label>
           <select>
             <option>Все</option>

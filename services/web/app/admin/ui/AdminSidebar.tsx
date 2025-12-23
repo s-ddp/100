@@ -42,7 +42,10 @@ const sections = [
   },
   {
     title: "Справочники",
-    items: [{ href: "/admin/dictionaries", label: "Справочники" }],
+    items: [
+      { href: "/admin/dictionaries", label: "Справочники" },
+      { href: "/admin/dictionaries/cities", label: "Города" },
+    ],
   },
   {
     title: "Аренда",

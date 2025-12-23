@@ -1,0 +1,42 @@
+[
+  {
+    "id": "p_length",
+    "name": "Длина судна (м)",
+    "type": "number",
+    "useInFilters": true,
+    "active": true,
+    "options": []
+  },
+  {
+    "id": "p_capacity",
+    "name": "Количество человек",
+    "type": "number",
+    "useInFilters": true,
+    "active": true,
+    "options": []
+  },
+  {
+    "id": "p_route",
+    "name": "Маршрут следования",
+    "type": "enum",
+    "useInFilters": true,
+    "active": true,
+    "options": ["Каналы", "Нева", "Финский залив"]
+  },
+  {
+    "id": "p_amenities",
+    "name": "Удобства",
+    "type": "multiselect",
+    "useInFilters": true,
+    "active": true,
+    "options": ["Бар", "Туалет", "Музыка", "Пледы", "Кондиционер"]
+  },
+  {
+    "id": "p_captain",
+    "name": "Капитан включен",
+    "type": "boolean",
+    "useInFilters": true,
+    "active": true,
+    "options": []
+  }
+]

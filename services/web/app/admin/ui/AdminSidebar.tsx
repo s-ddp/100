@@ -27,7 +27,7 @@ export default function AdminSidebar() {
   const pathname = usePathname();
   const [openGroup, setOpenGroup] = useState<string>("rent");
 
-  // при смене страницы — раскрываем нужную группу
+  // при переходе — раскрываем группу
   useEffect(() => {
     setOpenGroup("rent");
   }, [pathname]);
@@ -46,7 +46,7 @@ export default function AdminSidebar() {
               style={groupBtn}
             >
               {group.title}
-              <span style={{ opacity: 0.6 }}>{opened ? "▾" : "▸"}</span>
+              <span>{opened ? "▾" : "▸"}</span>
             </button>
 
             {opened &&
